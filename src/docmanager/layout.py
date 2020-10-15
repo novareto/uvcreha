@@ -2,10 +2,10 @@ import wrapt
 import reg
 import horseman.response
 from pathlib import Path
+
+from chameleon.zpt.loader import TemplateLoader
 from .resources import siguvtheme
-from adhoc.utils.request import Request
-from adhoc.utils.tales import TemplateLoader, tales_expressions
-from adhoc.utils.slot import Slot
+from docmanager.request import Request
 from horseman.meta import Overhead
 
 
