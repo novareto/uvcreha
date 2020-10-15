@@ -1,0 +1,47 @@
+#accordeonAnsicht {
+
+    .card {        
+        border: none;
+        border-top: 1px solid $primary;
+
+        .card-header {
+            border: none;
+            padding: 0;
+            background-color: #fff;
+
+            button {
+                padding: 1.5rem 0;
+                font-size: 22px;
+                font-weight: 600;
+
+                &:hover {
+                    text-decoration: none;
+                    color: $primary;
+                }
+            }
+
+            button::after {
+                content: "–";
+                margin: 0 .3em 0 .3em !important;
+                width: .5em !important;
+                height: .5em !important;
+                display: inline-block !important;
+                position: absolute;
+                right: 0;
+            }
+
+            button.collapsed::after {
+                content: "+";
+            }
+
+        }
+
+        .card-body {
+            padding: 0 0 1rem 0;
+        }
+
+    }
+    
+}
+
+

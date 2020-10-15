@@ -1,0 +1,27 @@
+#document-actions {
+  margin-top: 48px;
+  margin-bottom: 48px;
+  font-size: 14px;
+
+  ul {
+    li {
+      margin-right: 10px;
+
+      a {
+        color: #878787 !important;
+      }
+      
+      &:not(:last-child):after {
+        content: "|";
+        padding-left: 10px;
+        color: #878787;
+      }
+    }
+  }
+}
+
+@include media-breakpoint-down(md) {
+  #document-actions {
+    margin-bottom: 96px;
+  } 
+}

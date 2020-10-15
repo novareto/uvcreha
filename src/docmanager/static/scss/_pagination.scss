@@ -1,0 +1,32 @@
+.pagination {
+    * {
+        border: none !important;
+    }
+    li {
+        a {
+            -webkit-font-smoothing: subpixel-antialiased;
+            border-radius: 0 !important;
+            color: $primary;
+            svg {
+                width: 10px;
+                path {
+                    fill: $primary;
+                }
+            }
+            &:hover {
+                background: $primary !important;
+                color: #FFFFFF;
+                svg {
+                    path {
+                        fill: #FFFFFF;
+                    }
+                }
+            }
+        }
+        &.active {
+            a {
+                background: $primary;
+            }
+        }
+    }
+}

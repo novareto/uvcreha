@@ -1,0 +1,22 @@
+<div id="siguv-navigation" class="enabled">
+  <nav class="navbar navbar-expand-lg py-4">
+    <div class="container">
+      <a class="navbar-brand" href="" tal:attributes="href '/'">
+        <img src="fanstatic/adhoc/bg-etem.svg" alt="">
+      </a>
+      <ul class="navbar-nav mr-auto">
+        <!--
+        <li tal:repeat="um provider.menus['globalmenu'].entries" tal:attributes="class um.selected and 'active' or ''">
+          <a tal:attributes="href um.url()">
+            <span class="menu-item-title" tal:content="um.title" />
+          </a>
+        </li>
+        -->
+      </ul>
+      <div id="sidebar-handle">
+        <img class="icon icon-inline icon-lg" src="fanstatic/adhoc/justify.svg" alt="Sign Sidebar" style="margin: -3px 5px 0 0 !important;">
+        <span>Menü</span>
+      </div>
+    </div>
+  </nav>
+</div>

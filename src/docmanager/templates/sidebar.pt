@@ -1,0 +1,49 @@
+<div id="portal-mainnavigation">
+  <div id="portal-navigation-cover"></div>
+  <nav id="portal-navigation" class="sidebar-left">
+    <div class="menu">
+      <div id="sidebar-section-profile" class="menu-section">
+        <div class="menu-profile">
+          <div class="profile-image"></div>
+          <div class="profile-info">
+            <div class="profile-name">
+              <a href="" tal:attributes="href 'blab'"> USER </a>
+            </div>
+          </div>
+          </div>
+      </div>
+      <!--
+      <div class="menu-section"
+           tal:condition="'quicklinks' in provider.menus">
+        <div class="menu-section-title">Links</div>
+          <div class="menu-section-content">
+            <a tal:repeat="um provider.menus['quicklinks']"
+               tal:attributes="href um.url()">
+              <span class="menu-item-title" tal:content="um.title"></span>
+            </a>
+          </div>
+      </div>
+      -->
+      <!--
+      <div class="menu-section" id="sidebar-section-navigation"
+           tal:condition="'personalpreferences' in provider.menus">
+        <div class="menu-section-title">Meine Einstellungen</div>
+        <div id="navigation-wrapper" class="navigation-dynamic">
+          <div class="menu-section-content">
+            <div class="has-no-back">
+              <a class="link-folder"
+                 tal:repeat="um provider.menus['personalpreferences']"
+                 tal:attributes="href um.url()">
+                <span class="menu-item-title" tal:content="um.title" />
+                <span class="menu-item-nav bi bi-caret-right-fill">
+                  &nbsp;
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      -->
+    </div>
+  </nav>
+</div>

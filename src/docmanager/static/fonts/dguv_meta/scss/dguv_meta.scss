@@ -1,0 +1,23 @@
+/* Regular */
+@font-face {
+  font-family: 'DGUVMeta';
+  font-style: normal;
+  font-weight: 400;
+  src: local('DGUVMeta Normal'), local('DGUVMeta-Normal'), url('../fonts/dguv_meta/webfonts/DGUVMeta-Normal.otf') format('opentype');
+}
+
+/* Semi Bold */
+@font-face {
+  font-family: 'DGUVMeta';
+  font-style: normal;
+  font-weight: 500;
+  src: local('DGUVMeta Medium'), local('DGUVMeta-Medium'), url('../fonts/dguv_meta/webfonts/DGUVMeta-Medium.otf') format('opentype');
+}
+
+/* Bold */
+@font-face {
+  font-family: 'DGUVMeta';
+  font-style: normal;
+  font-weight: 600;
+  src: local('DGUVMeta Bold'), local('DGUVMeta-Bold'), url('../fonts/dguv_meta/webfonts/DGUVMeta-Bold.otf') format('opentype');
+}
