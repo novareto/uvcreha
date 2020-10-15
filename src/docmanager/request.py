@@ -8,7 +8,7 @@ class Request(Overhead, Validatable):
         'app', 'environ', 'params', 'data', 'method', 'content_type'
     )
 
-    def __init__(self, app, environ, session, **params):
+    def __init__(self, app, environ, **params):
         self.app = app
         self.environ = environ
         self.params = params
@@ -24,8 +24,8 @@ class Request(Overhead, Validatable):
 
     @property
     def session(self):
-        return self.environ.get(self.app.config.env.principal_key)
+        return self.environ.get(self.app.config.env.session)
 
     @property
     def principal(self):
-        return self.environ.get(self.app.config.env.principal_key)
+        return self.environ.get(self.app.config.env.principal)
