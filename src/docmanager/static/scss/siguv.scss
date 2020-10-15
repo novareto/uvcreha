@@ -1,0 +1,83 @@
+// Bootstrap Variable Overrides
+
+$enable-rounded: false;
+
+$breadcrumb-divider: none;
+
+$blue: #004994;
+$dguv-blue: #0063af;
+
+$primary:       #004994;
+$secondary:     #9C9C9C;
+$success:       #51AE31;
+$info:          #008C8E;
+$warning:       #FFCC00;
+$danger:        #D40F14;
+$light:         #EDEDED;
+$dark:          #555555;
+
+$font-family-sans-serif: "DGUVMetaWeb", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+$headings-font-weight: 300;
+
+// Option A: Include all of Bootstrap
+
+@import "../bootstrap-4.5.0/scss/bootstrap";
+
+// Option B: Include parts of Bootstrap
+
+// Required
+// @import "node_modules/bootstrap/scss/functions";
+// @import "node_modules/bootstrap/scss/variables";
+// @import "node_modules/bootstrap/scss/mixins";
+
+// Optional
+// @import "node_modules/bootstrap/scss/reboot";
+// @import "node_modules/bootstrap/scss/type";
+// @import "node_modules/bootstrap/scss/images";
+// @import "node_modules/bootstrap/scss/code";
+// @import "node_modules/bootstrap/scss/grid";
+
+// Import Tokyo Styles
+// This works as long as plonetheme.tokyo is available as source checkout
+/*
+
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/base";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/controlpanel";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/errors";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/events";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/fonts";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/footer";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/header";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/icons";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/messages";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/news";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/overrides";
+@import "../plonetheme.tokyo/src/plonetheme/tokyo/theme/scss/widgets";
+*/
+
+// Custom Mixins
+
+@import "mixins";
+
+
+// Import SIGUV Styles
+
+@import "accordion";
+@import "base";
+@import "breadcrumbs";
+@import "bootstrap_icons";
+@import "cards";
+@import "document";
+@import "document_actions";
+//@import "fonts";
+@import "footer";
+@import "forms";
+@import "header";
+@import "icons";
+@import "listing";
+@import "messages";
+@import "navigation";
+@import "pagination";
+@import "shariff";
+@import "sidebar";

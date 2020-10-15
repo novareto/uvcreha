@@ -1,0 +1,61 @@
+import os
+from setuptools import setup, find_packages
+
+
+version = "0.1"
+
+install_requires = [
+    'bjoern',
+    'cached-property',
+    'chameleon',
+    'cromlech.jwt',
+    'cromlech.session',
+    'cromlech.sessions.file',
+    'fanstatic',
+    'horseman',
+    'pyArango',
+    'pydantic',
+    'reg',
+    'rutter',
+    'roughrider.auth',
+    'roughrider.routing',
+    'roughrider.traversing',
+    'roughrider.validation',
+    'roughrider.zodb',
+    'wrapt',
+    'wtforms',
+]
+
+test_requires = [
+    'WebTest',
+]
+
+
+setup(
+    name='docmanager',
+    version=version,
+    author='Novareto GmbH',
+    author_email='contact@example.com',
+    url='http://www.example.com',
+    download_url='',
+    description='Docmanager WebSite',
+    long_description=(open("README.txt").read() + "\n" +
+                      open(os.path.join("docs", "HISTORY.txt")).read()),
+    license='ZPL',
+    classifiers=[
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Zope Public License',
+        'Programming Language :: Python:: 3 :: Only',
+        ],
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=install_requires,
+    extras_require={
+        'test': test_requires,
+    },
+    entry_points={
+    }
+)

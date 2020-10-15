@@ -1,0 +1,19 @@
+app:
+
+  db:
+    user: user
+    password: password
+    database: docmanager
+    url: http://127.0.0.1:8529
+
+  env:
+    session: docmanager.session
+    principal: docmanager.principal
+
+server:
+  host: 0.0.0.0
+  port: 8080
+
+defaults:
+  - hydra/job_logging: colorlog
+  - hydra/hydra_logging: colorlog

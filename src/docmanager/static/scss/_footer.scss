@@ -1,0 +1,63 @@
+#portal-footer {
+
+  .page-footer {
+    background-color: $primary;
+    color: $white;
+    padding: 3rem 0;
+
+    a {
+      color: $white;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    ul {
+      padding: 0;
+
+      li {
+        list-style-type: none;
+
+        &:before {
+          margin-left: 0;
+        }
+
+        @include arrowed('FFFFFF', 0);
+
+      }
+    }
+
+    .list-header {
+      font-weight: 600;
+    }
+
+    .social-profiles {
+      margin-top: 26px;
+      padding-top: 6px;
+      border-top: 1px solid transparentize(#ffffff, .5);
+
+      .social-icons {
+        display: flex;
+        justify-content: space-between;
+
+        .icon {
+          flex: 0 0 10%;
+          max-height: 35px;
+          svg {
+            width: 100%;
+            height: 100%;
+            path {
+              fill: #FFF;
+            }
+          }
+        }
+      }
+    }
+
+    .legal {
+      margin-top: 2rem;
+    }
+
+  }
+}

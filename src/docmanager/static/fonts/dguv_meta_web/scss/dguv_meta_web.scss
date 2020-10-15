@@ -1,0 +1,15 @@
+/* Regular */
+@font-face {
+  font-family: 'DGUVMetaWeb';
+  font-style: normal;
+  font-weight: 400;
+  src: local('DGUVMeta Normal'), local('DGUVMetaWeb-Normal'), url('../fonts/dguv_meta_web/webfonts/dguvmetaweb-normal.woff') format('woff');
+}
+
+/* Bold */
+@font-face {
+  font-family: 'DGUVMetaWeb';
+  font-style: bold;
+  font-weight: 600;
+  src: local('DGUVMeta Bold'), local('DGUVMetaWeb-Bold'), url('../fonts/dguv_meta_web/webfonts/dguvmetaweb-bold.woff') format('woff');
+}

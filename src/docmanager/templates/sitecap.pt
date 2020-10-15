@@ -1,0 +1,43 @@
+<div id="portal-header" class="bg-light">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-end">
+      <div class="align-middle">
+        <span class="site-action">
+          <a href="https://newbgetem.bg-kooperation.de/sign-language"
+             title="Gebärdensprache">
+            <span>Gebärdensprache</span>
+          </a>
+        </span>
+        <span class="site-action">
+          <a href="https://newbgetem.bg-kooperation.de/plain-language"
+             title="Leichte Sprache">
+            <span>Leichte Sprache</span>
+          </a>
+        </span>
+      </div>
+      <div>
+        <form class="mr-4">
+          <label class="sr-only"
+                 for="inlineFormInputGroup">Suchbegriff/Webcode</label>
+          <div class="input-group">
+            <input type="text"
+                   class="form-control border-dark"
+                   id="inlineFormInputGroup"
+                   placeholder="Suchbegriff/Webcode" />
+            <div class="input-group-append">
+              <button type="submit"
+                      class="btn btn-light border-dark">Suchen</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div>
+        <span class="site-action mr-0">
+          <a href="https://www.siguv.de/" title="Login-Extranet">
+            <span>Login-Extranet</span>
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

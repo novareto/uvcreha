@@ -1,0 +1,13 @@
+.siguv-form {
+
+    fieldset {
+        border: none;
+        padding: 24px 24px;
+        background: #f5f5f5;
+    }
+    
+    fieldset:not(:last-of-type) {
+        border-bottom: 1px solid #575756;
+    }
+    
+}

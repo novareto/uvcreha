@@ -1,0 +1,58 @@
+.list-item {    
+
+    padding: 1.5rem 0;
+    border-top: 1px solid $primary;
+
+
+    .media-default {
+        display: none;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    a:hover {
+        text-decoration: none;
+
+        h3 {
+            color: $primary;
+        }
+        
+
+        p {
+            color: $primary;
+        }
+
+    }
+
+    h3 {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    p {
+        font-size: 16px;
+        color: #3c3c3c;
+    }
+
+}
+
+
+@include media-breakpoint-up(lg) {
+
+    .list-item {
+
+        h3 {
+            font-size: 22px;
+        }
+    
+        p {
+            font-size: 22px;
+        }
+        
+    }
+    
+    
+  }
+  

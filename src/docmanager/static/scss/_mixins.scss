@@ -1,0 +1,23 @@
+@mixin transition($x){
+  -webkit-transition: $x;
+  -moz-transition: $x;
+  -ms-transition: $x;
+  -o-transition: $x;
+  transition: $x;
+}
+
+@mixin arrowed($arrow-color: '000000', $left-margin: 0) {
+    &:before {
+    content: "";
+    background: url('data:image/svg+xml;charset=utf8, %3Csvg%20width%3D%27434px%27%20height%3D%27500px%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20xmlns%3Axlink%3D%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%27%3E%3Cg%3E%3Cpath%20d%3D%27M294.671697%2C215.182669%20L0.000000%2C215.182669%20L0.000000%2C285.440041%20L295.353808%2C285.440041%20L145.289517%2C449.146539%20L191.673025%2C498.940599%20L432.458000%2C249.970300%20L191.673025%2C1.000000%20L145.289517%2C51.476170%20Z%27%20fill%3D%27%23' + $arrow-color + '%27%20stroke%3D%27none%27%20%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+    background-size: contain;
+    margin: 0 .4em 0 0;
+    width: .6em;
+    height: .6em;
+    background-repeat: no-repeat;
+    display: inline-block;
+    vertical-align: baseline;
+    margin-left: $left-margin;
+  }
+}
+

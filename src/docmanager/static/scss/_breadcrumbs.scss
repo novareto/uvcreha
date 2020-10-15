@@ -1,0 +1,34 @@
+.breadcrumb {
+    background-color: transparent;
+    margin-top: 1rem;
+    padding: 0.75rem 0;
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "";
+        background: url("data:image/svg+xml;charset=utf8,%3Csvg%20width%3D%27434px%27%20height%3D%27500px%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20xmlns%3Axlink%3D%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%27%3E%3Cg%3E%3Cpath%20d%3D%27M294.671697%2C215.182669%20L0.000000%2C215.182669%20L0.000000%2C285.440041%20L295.353808%2C285.440041%20L145.289517%2C449.146539%20L191.673025%2C498.940599%20L432.458000%2C249.970300%20L191.673025%2C1.000000%20L145.289517%2C51.476170%20Z%27%20fill%3D%27%23999AA5%27%20stroke%3D%27none%27%20%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-size: auto;
+        background-size: contain;
+        margin: 0 .2em 0 0;
+        width: .65em;
+        height: .65em;
+        display: inline-block;
+    }
+
+    .active {
+        font-weight: bold;
+        color: #3c3c3c;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .breadcrumb {
+        overflow: scroll;
+        white-space: nowrap;
+        display: block;
+        .breadcrumb-item {
+            display: inline-block;
+            padding-left: 0.3rem;
+        }
+    }
+}

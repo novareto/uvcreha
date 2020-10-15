@@ -1,0 +1,49 @@
+#portal-header {
+  padding: 14px 0;
+  font-size: 14px;
+  height: auto;
+  color: #3c3c3c;
+  display: none;
+
+  .site-action {
+
+    margin-right: 2rem;
+
+    a {
+      color: #3c3c3c;
+
+      &:hover {
+        color: $primary;
+        text-decoration: none;
+      }
+
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      fill: #3c3c3c;
+      position: relative;
+      top: -2px;
+    }
+
+  }
+
+  input, button {
+    font-size: 14px;
+  }
+
+}
+
+@include media-breakpoint-up(md) {
+  #portal-header {
+    display: block;
+    justify-content: center;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  #portal-header {
+    justify-content: flex-end;
+  }
+}
