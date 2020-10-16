@@ -11,5 +11,6 @@ class User(BaseModel):
     def instanciate(cls, request: Request, userid: str, **bindable):
         connector = request.app.db.connector
         users = connector.collection('users')
-        userdata = users.get(userid)
-        return cls(**userdata)
+        if (userdata := users.get(userid)) is not None:
+            return cls(**userdata)
+        raise LookupError(f'User {userid} is unknown.')

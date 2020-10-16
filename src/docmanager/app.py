@@ -11,7 +11,7 @@ import roughrider.validation.dispatch
 from roughrider.validation.types import Factory
 
 from docmanager.models import User
-from docmanager.db import Database
+from docmanager.db import Database, Users
 from docmanager.layout import template_endpoint
 from docmanager.request import Request
 
@@ -103,10 +103,8 @@ def index(request: Request):
 
 
 @application.route('/user.add', methods=['POST', 'PUT'])
-def add_user(request: Request, user: User):
-    connector = request.app.db.connector
-    users = connector.collection('users')
-    metadata = users.insert(user.dict())
+def add_user(users: Factory(Users), user: User):
+    metadata = users.collection.insert(user.dict())
     return horseman.response.json_reply(
         201, body={'userid': metadata['_key']})
 
@@ -119,8 +117,6 @@ def user_view(user: Factory(User)):
 
 
 @application.route('/users/{userid}', methods=['DELETE'])
-def user_delete(request: Request, userid: str):
-    connector = request.app.db.connector
-    users = connector.collection('users')
-    users.delete(userid)
+def user_delete(users: Factory(Users), userid: str):
+    users.collection.delete(userid)
     return horseman.response.reply(204)
