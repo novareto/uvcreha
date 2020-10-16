@@ -9,7 +9,7 @@ import horseman.response
 import cromlech.session
 import cromlech.sessions.file
 
-from docmanager.db import Database
+from docmanager.db import Database, create_graph
 import docmanager.app
 
 
@@ -28,6 +28,7 @@ def session_middleware(config):
 def run(config):
 
     database = Database(**config.app.db)
+    create_graph(database)
 
     docmanager.app.application.set_configuration(config.app)
     docmanager.app.application.set_database(database)

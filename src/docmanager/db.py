@@ -52,16 +52,22 @@ class Database:
         })
 
 
-class Collection(Validatable):
+def create_graph(db: Database):
+    if db.connector.has_graph('ownership'):
+        ownership = db.connector.graph('ownership')
+    else:
+        ownership = db.connector.create_graph('ownership')
 
-    def __init__(self, collection):
-        self.collection = collection
+    # Vertices
+    if not ownership.has_vertex_collection('users'):
+        ownership.create_vertex_collection('users')
+    if not ownership.has_vertex_collection('documents'):
+        ownership.create_vertex_collection('documents')
 
-
-class Users(Collection):
-
-    @classmethod
-    def instanciate(cls, request: Request, **bindable):
-        connector = request.app.db.connector
-        collection = connector.collection('users')
-        return cls(collection)
+    # Edges
+    if not ownership.has_edge_definition('own'):
+        ownership.create_edge_definition(
+            edge_collection='own',
+            from_vertex_collections=['users'],
+            to_vertex_collections=['documents']
+        )
