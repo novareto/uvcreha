@@ -2,6 +2,8 @@ from collections import namedtuple
 from cached_property import cached_property
 from arango import ArangoClient
 from functools import cached_property
+from roughrider.validation.types import Validatable
+from docmanager.request import Request
 
 
 DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
@@ -48,3 +50,18 @@ class Database:
         field_schema.update({
             'title': 'Database'
         })
+
+
+class Collection(Validatable):
+
+    def __init__(self, collection):
+        self.collection = collection
+
+
+class Users(Collection):
+
+    @classmethod
+    def instanciate(cls, request: Request, **bindable):
+        connector = request.app.db.connector
+        collection = connector.collection('users')
+        return cls(collection)
