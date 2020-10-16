@@ -27,7 +27,10 @@ def session_middleware(config):
 @hydra.main(config_path="config.yaml")
 def run(config):
 
+    database = Database(**config.app.db)
+
     docmanager.app.application.set_configuration(config.app)
+    docmanager.app.application.set_database(database)
     docmanager.app.application.register_middleware(
         session_middleware(config.app.env))
 
