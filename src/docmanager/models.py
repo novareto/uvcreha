@@ -14,3 +14,15 @@ class User(BaseModel):
         if (userdata := users.get(userid)) is not None:
             return cls(**userdata)
         raise LookupError(f'User {userid} is unknown.')
+
+
+class Document(BaseModel):
+    body: str
+
+    @classmethod
+    def instanciate(cls, request: Request, docid: str, **bindable):
+        connector = request.app.db.connector
+        documents = connector.collection('documents')
+        if (docdata := documents.get(docid)) is not None:
+            return cls(**docdata)
+        raise LookupError(f'Document {docid} is unknown.')

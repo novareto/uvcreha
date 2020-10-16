@@ -10,8 +10,8 @@ import roughrider.routing.route
 import roughrider.validation.dispatch
 from roughrider.validation.types import Factory
 
-from docmanager.models import User
-from docmanager.db import Database, Users
+from docmanager.models import User, Document
+from docmanager.db import Database
 from docmanager.layout import template_endpoint
 from docmanager.request import Request
 
@@ -103,8 +103,9 @@ def index(request: Request):
 
 
 @application.route('/user.add', methods=['POST', 'PUT'])
-def add_user(users: Factory(Users), user: User):
-    metadata = users.collection.insert(user.dict())
+def add_user(request: Request, user: User):
+    users = request.app.db.connector.collection('users')
+    metadata = users.insert(user.dict())
     return horseman.response.json_reply(
         201, body={'userid': metadata['_key']})
 
@@ -116,7 +117,32 @@ def user_view(user: Factory(User)):
         headers={'Content-Type': 'application/json'})
 
 
+@application.route('/users/{userid}/documents', methods=['GET'])
+def user_list_docs(request: Request, userid: str):
+    ownership = request.app.db.connector.graph('ownership')
+    own = ownership.edge_collection('own')
+    links = own.edges(f'users/{userid}', direction='out')
+    documents = [edge['_to'] for edge in links['edges']]
+    return horseman.response.json_reply(200, body=documents)
+
+
 @application.route('/users/{userid}', methods=['DELETE'])
-def user_delete(users: Factory(Users), userid: str):
-    users.collection.delete(userid)
+def user_delete(request: Request, userid: str):
+    users = request.app.db.connector.collection('users')
+    users.delete(userid)
     return horseman.response.reply(204)
+
+
+@application.route('/users/{userid}/document.add', methods=['POST', 'PUT'])
+def add_document(request: Request, userid: str, document: Document):
+    documents = request.app.db.connector.collection('documents')
+    metadata = documents.insert(document.dict())
+    ownership = request.app.db.connector.graph('ownership')
+    own = ownership.edge_collection('own')
+    own.insert({
+        '_key': f"{userid}-{metadata['_key']}",
+        '_from': f"users/{userid}",
+        '_to': metadata['_id'],
+    })
+    return horseman.response.json_reply(
+        201, body={'docid': metadata['_key']})
