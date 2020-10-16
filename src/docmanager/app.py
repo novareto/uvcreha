@@ -116,3 +116,11 @@ def user_view(user: Factory(User)):
     return horseman.response.reply(
         200, body=user.json(),
         headers={'Content-Type': 'application/json'})
+
+
+@application.route('/users/{userid}', methods=['DELETE'])
+def user_delete(request: Request, userid: str):
+    connector = request.app.db.connector
+    users = connector.collection('users')
+    users.delete(userid)
+    return horseman.response.reply(204)
