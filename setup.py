@@ -55,5 +55,11 @@ setup(
         'test': test_requires,
     },
     entry_points={
+        'chameleon.tales': [
+            'slot = docmanager.utils.slot:SlotExpr',
+        ],
+        'fanstatic.libraries': [
+            'docmanager = docmanager.resources:library',
+        ],
     }
 )

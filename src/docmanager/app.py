@@ -15,6 +15,8 @@ from docmanager.db import Database
 from docmanager.layout import template_endpoint
 from docmanager.request import Request
 
+from .layout import template_endpoint, TEMPLATES, layout
+
 
 class Application(horseman.meta.SentryNode,
                   roughrider.routing.node.RoutingNode):
@@ -97,9 +99,12 @@ class Application(horseman.meta.SentryNode,
 application = Application()
 
 
+
 @application.route('/', methods=['GET'])
+@template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
-    return horseman.response.reply(200, body='Something')
+    import pdb; pdb.set_trace()
+    return dict(request=request)
 
 
 @application.route('/user.add', methods=['POST', 'PUT'])
