@@ -3,7 +3,9 @@ import hydra.utils
 import logging
 import bjoern
 import fanstatic
+import functools
 import pathlib
+import fanstatic
 import rutter.urlmap
 import horseman.response
 import cromlech.session
@@ -11,6 +13,10 @@ import cromlech.sessions.file
 
 from docmanager.db import Database, create_graph
 import docmanager.app
+
+
+def fanstatic_middleware(config):
+    return functools.partial(fanstatic.Fanstatic, **config)
 
 
 def session_middleware(config):
@@ -34,6 +40,8 @@ def run(config):
     docmanager.app.application.set_database(database)
     docmanager.app.application.register_middleware(
         session_middleware(config.app.env))
+    docmanager.app.application.register_middleware(
+        fanstatic_middleware(config.app.assets))
 
     # Serving the app
     server = config.server
