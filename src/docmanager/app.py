@@ -16,6 +16,7 @@ from docmanager.layout import template_endpoint
 from docmanager.request import Request
 
 from .layout import template_endpoint, TEMPLATES, layout
+from .utils.openapi import generate_doc
 
 
 class Application(horseman.meta.SentryNode,
@@ -107,10 +108,30 @@ def index(request: Request):
     return dict(request=request)
 
 
-@application.route('/user.add', methods=['POST', 'PUT'])
+
+@application.route('/doc')
+@template_endpoint(template=TEMPLATES['swagger.pt'], raw=False)
+def doc_swagger(request: Request):
+    return {'url': '/openapi.json'}
+
+
+@application.route('/openapi.json')
+def openapi(request: Request):
+    open_api = generate_doc(request.app.routes)
+    return horseman.response.reply(
+        200,
+        body=open_api.json(by_alias=True, exclude_none=True, indent=2),
+        headers={'Content-Type': 'application/json'}
+    )
+
+
+
+@application.route('/user.add', methods=['POST', 'PUT'], ns="api")
 def add_user(request: Request, user: User):
     users = request.app.db.connector.collection('users')
-    metadata = users.insert(user.dict())
+    data = user.dict()
+    data['_key'] = user.username
+    metadata = users.insert(data)
     return horseman.response.json_reply(
         201, body={'userid': metadata['_key']})
 

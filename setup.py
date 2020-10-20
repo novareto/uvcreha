@@ -13,6 +13,7 @@ install_requires = [
     'cromlech.sessions.file',
     'fanstatic',
     'horseman',
+    'openapi_schema_pydantic',
     'python-arango',
     'pydantic',
     'reg',
