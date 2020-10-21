@@ -1,5 +1,6 @@
 import logging
 import re
+import reg
 from pathlib import Path
 from autoroutes import Routes
 
@@ -17,6 +18,24 @@ from docmanager.request import Request
 
 from .layout import template_endpoint, TEMPLATES, layout
 from .utils.openapi import generate_doc
+from pkg_resources import iter_entry_points
+from pydantic import BaseModel
+
+
+class ModelsRegistry(dict):
+    __slots__ = ()
+
+    def register(self, name, model):
+        if name in self:
+            raise KeyError(f'Model {name} already exists.')
+        if not issubclass(model, BaseModel):
+            raise ValueError(f'Model {name} is not a valid pydatic model.')
+        self[name] = model
+
+    def load(self):
+        self.clear()
+        for loader in iter_entry_points('docmanager.models'):
+            self.register(loader.name, loader.load())
 
 
 class Application(horseman.meta.SentryNode,
@@ -35,6 +54,7 @@ class Application(horseman.meta.SentryNode,
         self.db = db
         self._middlewares = []
         self._routes_registry = {}
+        self._models_registry= ModelsRegistry()
 
     @property
     def logger(self):
@@ -96,6 +116,11 @@ class Application(horseman.meta.SentryNode,
             caller = middleware(caller)
         return caller(environ, start_response)
 
+    def register_type(self, name):
+        def add_type(content_type):
+            return self._models_registry.register(name, content_type)
+        return add_type
+
 
 application = Application()
 
@@ -104,7 +129,9 @@ application = Application()
 @application.route('/', methods=['GET'])
 @template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
-    import pdb; pdb.set_trace()
+    event_klass = request.app._models_registry.get('event')
+    obj = event_klass(name="hans", subject="klaus", state="send")
+    request.app.db.add_document('cklinger', obj.dict())
     return dict(request=request)
 
 
@@ -159,16 +186,18 @@ def user_delete(request: Request, userid: str):
     return horseman.response.reply(204)
 
 
+
 @application.route('/users/{userid}/document.add', methods=['POST', 'PUT'])
 def add_document(request: Request, userid: str, document: Document):
-    documents = request.app.db.connector.collection('documents')
-    metadata = documents.insert(document.dict())
-    ownership = request.app.db.connector.graph('ownership')
-    own = ownership.edge_collection('own')
-    own.insert({
-        '_key': f"{userid}-{metadata['_key']}",
-        '_from': f"users/{userid}",
-        '_to': metadata['_id'],
-    })
+    key = request.app.db.add_document(userid, document.dict())
+#    documents = request.app.db.connector.collection('documents')
+#    metadata = documents.insert(document.dict())
+#    ownership = request.app.db.connector.graph('ownership')
+#    own = ownership.edge_collection('own')
+#    own.insert({
+#        '_key': f"{userid}-{metadata['_key']}",
+#        '_from': f"users/{userid}",
+#        '_to': metadata['_id'],
+#    })
     return horseman.response.json_reply(
-        201, body={'docid': metadata['_key']})
+        201, body={'docid': key})

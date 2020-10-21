@@ -14,6 +14,7 @@ install_requires = [
     'fanstatic',
     'horseman',
     'openapi_schema_pydantic',
+    'orjson',
     'python-arango',
     'pydantic',
     'reg',

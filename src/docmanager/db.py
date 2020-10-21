@@ -4,6 +4,7 @@ from arango import ArangoClient
 from functools import cached_property
 from roughrider.validation.types import Validatable
 from docmanager.request import Request
+import orjson
 
 
 DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
@@ -13,7 +14,7 @@ class Database:
 
     def __init__(self, url: str='http://localhost:8529', **config):
         self.config = DB_CONFIG(**config)
-        self.client = ArangoClient(url)
+        self.client = ArangoClient(url, serializer=orjson.dumps, deserializer=orjson.loads)
 
     def ensure_database(self):
         sys_db = self.client.db(
@@ -51,6 +52,17 @@ class Database:
             'title': 'Database'
         })
 
+    def add_document(self, userid, data):
+        documents = self.connector.collection('documents')
+        ownership = self.connector.graph('ownership')
+        metadata = documents.insert(data)
+        own = ownership.edge_collection('own')
+        own.insert({
+            '_key': f"{userid}-{metadata['_key']}",
+            '_from': f"users/{userid}",
+            '_to': metadata['_id'],
+        })
+        return metadata['_key']
 
 def create_graph(db: Database):
     if db.connector.has_graph('ownership'):

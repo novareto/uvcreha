@@ -13,6 +13,7 @@ import cromlech.sessions.file
 
 from docmanager.db import Database, create_graph
 import docmanager.app
+import docmanager.types
 
 
 def fanstatic_middleware(config):
