@@ -26,10 +26,9 @@ from docmanager.request import Request
 from docmanager.utils.openapi import generate_doc
 
 
-class Application(horseman.meta.SentryNode, horseman.meta.APINode):
+class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     __slots__ = ('config', 'db')
-
 
     def __init__(self, config=None, db=None, request_factory=Request):
         self.routes = Routes()
@@ -51,8 +50,11 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
-            for permission in permissions:
-                print(f'Check for {permission}')
+            user = environ.get(self.config.env.principal)
+            if user is None:
+                raise SecurityError(None, permissions)
+            if not permissions.issubset(user.permissions):
+                raise SecurityError(user, permissions - user.permissions)
 
     def resolve(self, path_info, environ):
         try:
@@ -98,7 +100,7 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
 application = Application()
 
 
-@application.routes.register('/', methods=['GET'], permissions=['document.view'])
+@application.routes.register('/', methods=['GET'], permissions={'document.view'})
 @template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
     event_klass = request.app._models_registry.get('event')

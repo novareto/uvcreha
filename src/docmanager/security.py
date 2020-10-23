@@ -1,5 +1,5 @@
 class SecurityError(Exception):
 
-    def __init__(self, permission, principal):
-        self.permission = permission
+    def __init__(self, principal, *permissions):
+        self.permissions = permissions
         self.principal = principal

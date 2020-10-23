@@ -1,126 +1,57 @@
 import collections
-import wtforms.form
-import wtforms.fields
-import wtforms.validators
 from pathlib import Path
 from chameleon import PageTemplateLoader
-
-import horseman.response
-import roughrider.auth.meta
 from horseman.prototyping import Environ
-from horseman.meta import APIView, SentryNode
-from horseman.parsing import parse
-
-from adhoc.models import User
-from adhoc.db import Database, User
-from adhoc.layout import template_endpoint
 
 
 TEMPLATES = PageTemplateLoader(
     str((Path(__file__).parent / 'templates').resolve()), ".pt")
 
 
-User = collections.namedtuple('User', ['username'])
+User = collections.namedtuple(
+    'User', ['username', 'password', 'permissions'])
+
+
+USERS = {
+    'admin': User(
+        username='admin',
+        password='admin',
+        permissions={'document.view'})
+}
 
 
 class Auth:
 
-    def __init__(self, db, session_key: str, login_path: str):
-        self.db = db
-        self.session_key = session_key
-        self.login_path = login_path
-
-    @property
-    def unauthorized(self):
-        return horseman.response.Response.create(302, headers={
-            'Location': self.login_path
-        })
-
-    @property
-    def forbidden(self):
-        return horseman.response.Response.create(403)
+    def __init__(self, session, principal, **kwargs):
+        self.session = session
+        self.principal = principal
 
     def from_credentials(self, environ: Environ, credentials: dict) -> User:
-        if (credentials['username'] == 'admin' and
-            credentials['password'] == 'admin'):
-            return User(username='admin')
+        if (user := USERS.get(credentials['username'])):
+            if credentials['password'] == user.password:
+                return user
         return None
 
     def identify(self, environ: Environ) -> User:
-        if (user := environ.get('adhoc.principal', None)) is not None:
+        if (user := environ.get(self.principal, None)) is not None:
             return user
-        session = environ[self.session_key]
+        session = environ[self.session]
         if (username := session.get('username', None)) is not None:
-            user = User(username=username)
-            environ['adhoc.principal'] = user
+            user = USERS[username]
+            environ[self.principal] = user
             return user
         return None
 
+    def get_principal(self, environ):
+        return environ[self.principal]
+
     def remember(self, environ: Environ, user: User):
-        session = environ[self.session_key]
+        session = environ[self.session]
         session['username'] = user.username
-        environ['adhoc.principal'] = user
+        environ[self.principal] = user
 
     def __call__(self, app):
         def auth_application_wrapper(environ, start_response):
-            user = self.identify(environ)
-            if user is None:
-                return self.unauthorized(environ, start_response)
+            self.identify(environ)
             return app(environ, start_response)
         return auth_application_wrapper
-
-
-class LoginForm(wtforms.form.Form):
-    username = wtforms.fields.StringField(
-        'Username', validators=(wtforms.validators.InputRequired(),))
-    password = wtforms.fields.PasswordField(
-        'Password', validators=(wtforms.validators.InputRequired(),))
-
-
-class LoginView(APIView):
-
-    @template_endpoint(TEMPLATES['login.pt'])
-    def GET(self, request, environ):
-        form = LoginForm()
-        return {'form': form, 'error': None}
-
-    @template_endpoint(TEMPLATES['login.pt'])
-    def POST(self, request, environ):
-        data, files = parse(environ['wsgi.input'], request.content_type)
-        form = LoginForm(data)
-        if not form.validate():
-            return {'form': form, 'error': 'form'}
-        if (user := request.app.auth.from_credentials(
-                environ, data.to_dict())) is not None:
-            request.app.auth.remember(environ, user)
-            print('Login Successfull')
-            return horseman.response.Response.create(
-                302, headers={'Location': '/'})
-        return {'form': form, 'error': 'auth'}
-
-
-def LogoutView(request, environ):
-    request.session.store.clear(request.session.sid)
-    return horseman.response.Response.create(
-            302, headers={'Location': '/'})
-
-
-class AuthNode(SentryNode):
-
-    traversables = {
-        '/login': LoginView(),
-        '/logout': LogoutView
-    }
-
-    def __init__(self, auth, logger, request_factory):
-        self.auth = auth
-        self.logger = logger
-        self.request_factory = request_factory
-
-    def resolve(self, path_info, environ):
-        if endpoint := self.traversables.get(path_info):
-            request = self.request_factory(self, environ)
-            return endpoint(request, environ)
-
-    def handle_exception(self, exc_info, environ):
-        self.logger.debug(exc_info)
