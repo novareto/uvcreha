@@ -10,11 +10,12 @@ import orjson
 DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
 
 
-class Database:
+class Database(Validatable):
 
     def __init__(self, url: str='http://localhost:8529', **config):
         self.config = DB_CONFIG(**config)
-        self.client = ArangoClient(url, serializer=orjson.dumps, deserializer=orjson.loads)
+        self.client = ArangoClient(
+            url, serializer=orjson.dumps, deserializer=orjson.loads)
 
     def ensure_database(self):
         sys_db = self.client.db(
@@ -36,22 +37,6 @@ class Database:
     def query(self, aql: str, *args, **kwargs):
         return self.connector.AQLQuery(aql, *args, **kwargs)
 
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not isinstance(v, cls):
-            raise TypeError('Database required')
-        return v
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update({
-            'title': 'Database'
-        })
-
     def add_document(self, userid, data):
         documents = self.connector.collection('documents')
         ownership = self.connector.graph('ownership')
@@ -63,6 +48,7 @@ class Database:
             '_to': metadata['_id'],
         })
         return metadata['_key']
+
 
 def create_graph(db: Database):
     if db.connector.has_graph('ownership'):

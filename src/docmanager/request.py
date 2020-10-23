@@ -5,19 +5,20 @@ from roughrider.validation.types import Validatable
 class Request(Overhead, Validatable):
 
     __slots__ = (
-        'app', 'environ', 'params', 'data', 'method', 'content_type'
+        'app', 'environ', 'route', 'data', 'method',
     )
 
-    def __init__(self, app, environ, **params):
+    def __init__(self, app, environ, route):
         self.app = app
         self.environ = environ
-        self.params = params
-        self.data = {}
+        self.route = route
         self.method = environ['REQUEST_METHOD']
+        self.data = {}
+
+    @property
+    def content_type(self):
         if self.method in ('POST', 'PATCH', 'PUT'):
-            self.content_type = environ.get('CONTENT_TYPE')
-        else:
-            self.content_type = None
+            return self.environ.get('CONTENT_TYPE')
 
     def set_data(self, data):
         self.data = data
