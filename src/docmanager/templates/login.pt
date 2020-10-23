@@ -1,0 +1,18 @@
+<div>
+  <h2>Login</h2>
+  <p tal:condition="error == 'auth'">
+    Wrong credentials.
+  </p>
+  <form method="POST" action="" tal:attributes="action path">
+    <tal:fields tal:repeat="field form">
+      <label tal:content="field.label" />
+      <div tal:content="structure field()" />
+      <ul class="errors" tal:condition="field.errors">
+        <li tal:repeat="error form.username.errors">
+          <span tal:content="error" />
+        </li>
+      </ul>
+    </tal:fields>
+    <input type="submit" value="Send" />
+  </form>
+</div>
