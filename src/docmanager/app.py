@@ -1,59 +1,42 @@
 import logging
 import re
 import reg
+from collections import namedtuple
+from dataclasses import dataclass, field
+from http import HTTPStatus
 from pathlib import Path
-from autoroutes import Routes
+from pkg_resources import iter_entry_points
+
+from pydantic import BaseModel
 
 import horseman.meta
 import horseman.response
-import roughrider.routing.node
+from horseman.http import HTTPError
+
 import roughrider.routing.route
 import roughrider.validation.dispatch
 from roughrider.validation.types import Factory
 
-from docmanager.models import User, Document
+from docmanager.security import SecurityError
+from docmanager.routing import Routes
+from docmanager.models import ModelsRegistry, User, Document
 from docmanager.db import Database
-from docmanager.layout import template_endpoint
+from docmanager.layout import template_endpoint, TEMPLATES, layout
 from docmanager.request import Request
-
-from .layout import template_endpoint, TEMPLATES, layout
-from .utils.openapi import generate_doc
-from pkg_resources import iter_entry_points
-from pydantic import BaseModel
+from docmanager.utils.openapi import generate_doc
 
 
-class ModelsRegistry(dict):
-    __slots__ = ()
-
-    def register(self, name, model):
-        if name in self:
-            raise KeyError(f'Model {name} already exists.')
-        if not issubclass(model, BaseModel):
-            raise ValueError(f'Model {name} is not a valid pydatic model.')
-        self[name] = model
-
-    def load(self):
-        self.clear()
-        for loader in iter_entry_points('docmanager.models'):
-            self.register(loader.name, loader.load())
-
-
-class Application(horseman.meta.SentryNode,
-                  roughrider.routing.node.RoutingNode):
+class Application(horseman.meta.SentryNode, horseman.meta.APINode):
 
     __slots__ = ('config', 'db')
-    clean_path_pattern = re.compile(r":[^}]+(?=})")
 
-    def __init__(
-            self, routes=None, config=None, db=None, request_factory=Request):
-        if routes is None:
-            routes = Routes()
-        self.routes = routes
+
+    def __init__(self, config=None, db=None, request_factory=Request):
+        self.routes = Routes()
         self.config = config
         self.request_factory = request_factory
         self.db = db
         self._middlewares = []
-        self._routes_registry = {}
         self._models_registry= ModelsRegistry()
 
     @property
@@ -66,40 +49,30 @@ class Application(horseman.meta.SentryNode,
     def set_database(self, db: Database):
         self.db = db
 
+    def check_permissions(self, route, environ):
+        if permissions := route.extras.get('permissions'):
+            for permission in permissions:
+                print(f'Check for {permission}')
+
+    def resolve(self, path_info, environ):
+        try:
+            route = self.routes.match(
+                environ['REQUEST_METHOD'], path_info)
+            if route is None:
+                return None
+            environ['horseman.path.params'] = route.params
+            self.check_permissions(route, environ)
+            request = self.request_factory(self, environ, route)
+            return route.endpoint(request)
+        except LookupError:
+            raise HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
+        except SecurityError as error:
+            if error.principal is None:
+                raise HTTPError(HTTPStatus.UNAUTHORIZED)
+            raise HTTPError(HTTPStatus.FORBIDDEN)
+
     def register_middleware(self, middleware, order=0):
         self._middlewares.append((order, middleware))
-
-    def route(self, path: str, methods: list=None, **extras):
-        def routing(view):
-            for fullpath, method, func in \
-                roughrider.routing.route.route_payload(
-                    path, view, methods):
-                cleaned = self.clean_path_pattern.sub("", fullpath)
-                name = extras.pop("name", None)
-                if not name:
-                    name = view.__name__.lower()
-                if name in self._routes_registry:
-                    _, handler = self._routes_registry[name]
-                    if handler != view:
-                        ref = f"{handler.__module__}.{handler.__name__}"
-                        raise ValueError(
-                            f"Route with name {name} already exists: {ref}.")
-                self._routes_registry[name] = cleaned, view
-                payload = {
-                    method: roughrider.validation.dispatch.Dispatcher(func),
-                    **extras
-                }
-                self.routes.add(fullpath, **payload)
-        return routing
-
-    def url_for(self, name: str, **kwargs):
-        try:
-            path, _ = self._routes_registry[name]
-            # Raises a KeyError too if some param misses
-            return path.format(**kwargs)
-        except KeyError:
-            raise ValueError(
-                f"No route found with name {name} and params {kwargs}")
 
     def middlewares(self):
         def ordered(e):
@@ -125,8 +98,7 @@ class Application(horseman.meta.SentryNode,
 application = Application()
 
 
-
-@application.route('/', methods=['GET'])
+@application.routes.register('/', methods=['GET'], permissions=['document.view'])
 @template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
     event_klass = request.app._models_registry.get('event')
@@ -135,14 +107,13 @@ def index(request: Request):
     return dict(request=request)
 
 
-
-@application.route('/doc')
+@application.routes.register('/doc')
 @template_endpoint(template=TEMPLATES['swagger.pt'], raw=False)
 def doc_swagger(request: Request):
     return {'url': '/openapi.json'}
 
 
-@application.route('/openapi.json')
+@application.routes.register('/openapi.json')
 def openapi(request: Request):
     open_api = generate_doc(request.app.routes)
     return horseman.response.reply(
@@ -152,8 +123,7 @@ def openapi(request: Request):
     )
 
 
-
-@application.route('/user.add', methods=['POST', 'PUT'], ns="api")
+@application.routes.register('/user.add', methods=['POST', 'PUT'], ns="api")
 def add_user(request: Request, user: User):
     users = request.app.db.connector.collection('users')
     data = user.dict()
@@ -163,14 +133,14 @@ def add_user(request: Request, user: User):
         201, body={'userid': metadata['_key']})
 
 
-@application.route('/users/{userid}', methods=['GET'])
+@application.routes.register('/users/{userid}', methods=['GET'])
 def user_view(user: Factory(User)):
     return horseman.response.reply(
         200, body=user.json(),
         headers={'Content-Type': 'application/json'})
 
 
-@application.route('/users/{userid}/documents', methods=['GET'])
+@application.routes.register('/users/{userid}/documents', methods=['GET'])
 def user_list_docs(request: Request, userid: str):
     ownership = request.app.db.connector.graph('ownership')
     own = ownership.edge_collection('own')
@@ -179,15 +149,17 @@ def user_list_docs(request: Request, userid: str):
     return horseman.response.json_reply(200, body=documents)
 
 
-@application.route('/users/{userid}', methods=['DELETE'])
+@application.routes.register('/users/{userid}', methods=['DELETE'])
 def user_delete(request: Request, userid: str):
     users = request.app.db.connector.collection('users')
     users.delete(userid)
     return horseman.response.reply(204)
 
 
-
-@application.route('/users/{userid}/document.add', methods=['POST', 'PUT'])
+@application.routes.register(
+    '/users/{userid}/document.add',
+    methods=['POST', 'PUT']
+)
 def add_document(request: Request, userid: str, document: Document):
     key = request.app.db.add_document(userid, document.dict())
 #    documents = request.app.db.connector.collection('documents')
