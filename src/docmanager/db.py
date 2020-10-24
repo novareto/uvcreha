@@ -52,14 +52,26 @@ class Database:
             'title': 'Database'
         })
 
-    def add_document(self, userid, data):
+    def add_files(self, userid, data):
         documents = self.connector.collection('documents')
         ownership = self.connector.graph('ownership')
-        metadata = documents.insert(data)
-        own = ownership.edge_collection('own')
+        metadata = files.insert(data)
+        own = ownership.edge_collection('own_files')
         own.insert({
             '_key': f"{userid}-{metadata['_key']}",
             '_from': f"users/{userid}",
+            '_to': metadata['_id'],
+        })
+        return metadata['_key']
+
+    def add_document(self, file_id, data):
+        documents = self.connector.collection('documents')
+        ownership = self.connector.graph('ownership')
+        metadata = documents.insert(data)
+        own = ownership.edge_collection('own_files')
+        own.insert({
+            '_key': f"{file_id}-{metadata['_key']}",
+            '_from': f"files/{file_id}",
             '_to': metadata['_id'],
         })
         return metadata['_key']
@@ -73,6 +85,8 @@ def create_graph(db: Database):
     # Vertices
     if not ownership.has_vertex_collection('users'):
         ownership.create_vertex_collection('users')
+    if not ownership.has_vertex_collection('files'):
+        ownership.create_vertex_collection('files')
     if not ownership.has_vertex_collection('documents'):
         ownership.create_vertex_collection('documents')
 
@@ -81,5 +95,11 @@ def create_graph(db: Database):
         ownership.create_edge_definition(
             edge_collection='own',
             from_vertex_collections=['users'],
+            to_vertex_collections=['files']
+        )
+    if not ownership.has_edge_definition('own_files'):
+        ownership.create_edge_definition(
+            edge_collection='own_files',
+            from_vertex_collections=['files'],
             to_vertex_collections=['documents']
         )

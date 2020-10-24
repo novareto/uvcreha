@@ -14,6 +14,7 @@ import cromlech.sessions.file
 from docmanager.db import Database, create_graph
 import docmanager.app
 import docmanager.types
+import docmanager.auth
 
 
 def fanstatic_middleware(config):
@@ -31,6 +32,11 @@ def session_middleware(config):
         manager, environ_key=config.session)
 
 
+def auth_middleware(config):
+    auth = docmanager.auth.Auth(config.app.env.session, login_path="/login")
+    return auth
+
+
 @hydra.main(config_path="config.yaml")
 def run(config):
 
@@ -44,6 +50,10 @@ def run(config):
     docmanager.app.application.register_middleware(
         fanstatic_middleware(config.app.assets))
 
+    docmanager.app.application.register_middleware(
+        auth_middleware(config),
+        order=10
+    )
     # Serving the app
     server = config.server
     host, port = server.host, server.port

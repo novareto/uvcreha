@@ -10,11 +10,8 @@ import roughrider.auth.meta
 from horseman.prototyping import Environ
 from horseman.meta import APIView, SentryNode
 from horseman.parsing import parse
-
-from adhoc.models import User
-from adhoc.db import Database, User
-from adhoc.layout import template_endpoint
-
+from .app import application
+from .layout import template_endpoint
 
 TEMPLATES = PageTemplateLoader(
     str((Path(__file__).parent / 'templates').resolve()), ".pt")
@@ -25,8 +22,7 @@ User = collections.namedtuple('User', ['username'])
 
 class Auth:
 
-    def __init__(self, db, session_key: str, login_path: str):
-        self.db = db
+    def __init__(self, session_key: str, login_path: str):
         self.session_key = session_key
         self.login_path = login_path
 
@@ -77,6 +73,7 @@ class LoginForm(wtforms.form.Form):
         'Password', validators=(wtforms.validators.InputRequired(),))
 
 
+@application.route('/login')
 class LoginView(APIView):
 
     @template_endpoint(TEMPLATES['login.pt'])
@@ -104,23 +101,3 @@ def LogoutView(request, environ):
     return horseman.response.Response.create(
             302, headers={'Location': '/'})
 
-
-class AuthNode(SentryNode):
-
-    traversables = {
-        '/login': LoginView(),
-        '/logout': LogoutView
-    }
-
-    def __init__(self, auth, logger, request_factory):
-        self.auth = auth
-        self.logger = logger
-        self.request_factory = request_factory
-
-    def resolve(self, path_info, environ):
-        if endpoint := self.traversables.get(path_info):
-            request = self.request_factory(self, environ)
-            return endpoint(request, environ)
-
-    def handle_exception(self, exc_info, environ):
-        self.logger.debug(exc_info)

@@ -17,6 +17,12 @@ class User(BaseModel):
         raise LookupError(f'User {userid} is unknown.')
 
 
+class Files(BaseModel):
+
+    az: str
+    creation_date: datetime = Field(default_factory=datetime.utcnow)
+
+
 class Base(BaseModel):
     name: str
     content_type: str 
