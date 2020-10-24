@@ -10,11 +10,12 @@ import orjson
 DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
 
 
-class Database:
+class Database(Validatable):
 
     def __init__(self, url: str='http://localhost:8529', **config):
         self.config = DB_CONFIG(**config)
-        self.client = ArangoClient(url, serializer=orjson.dumps, deserializer=orjson.loads)
+        self.client = ArangoClient(
+            url, serializer=orjson.dumps, deserializer=orjson.loads)
 
     def ensure_database(self):
         sys_db = self.client.db(
