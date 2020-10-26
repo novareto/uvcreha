@@ -4,8 +4,8 @@ import requests
 URL = "http://localhost:8080"
 DATA_USER = {'username': 'cklinger', 'password':'password' }
 
-#req = requests.put(URL+'/user.add', data=DATA_USER)
-#print(req)
+req = requests.put(URL+'/user.add', data=DATA_USER)
+print(req)
 
 req = requests.get(URL + '/users/cklinger')
 print(req.json())

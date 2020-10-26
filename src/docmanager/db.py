@@ -17,15 +17,6 @@ class Database(Validatable):
         self.client = ArangoClient(
             url, serializer=orjson.dumps, deserializer=orjson.loads)
 
-    def ensure_database(self):
-        sys_db = self.client.db(
-            '_system',
-            username=self.config.user,
-            password=self.config.password
-        )
-        if not sys_db.has_database(self.config.database):
-            sys_db.create_database(self.config.database)
-
     @cached_property
     def connector(self):
         return self.client.db(
@@ -33,6 +24,24 @@ class Database(Validatable):
             username=self.config.user,
             password=self.config.password
         )
+
+    @cached_property
+    def system_database(self):
+        return self.client.db(
+            '_system',
+            username=self.config.user,
+            password=self.config.password
+        )
+
+    def ensure_database(self):
+        sys_db = self.system_database
+        if not sys_db.has_database(self.config.database):
+            sys_db.create_database(self.config.database)
+
+    def delete_database(self):
+        sys_db = self.system_database
+        if not sys_db.has_database(self.config.database):
+            sys_db.delete_database(self.config.database)
 
     def query(self, aql: str, *args, **kwargs):
         return self.connector.AQLQuery(aql, *args, **kwargs)
@@ -57,7 +66,7 @@ class Database(Validatable):
         files = self.connector.collection('files')
         ownership = self.connector.graph('ownership')
         metadata = files.insert(data)
-        own = ownership.edge_collection('own_files')
+        own = ownership.edge_collection('own')
         own.insert({
             '_key': f"{userid}-{metadata['_key']}",
             '_from': f"users/{userid}",
@@ -69,15 +78,19 @@ class Database(Validatable):
         documents = self.connector.collection('documents')
         ownership = self.connector.graph('ownership')
         metadata = documents.insert(data)
-        own = ownership.edge_collection('own_files')
+        own = ownership.edge_collection('own')
         own.insert({
-            '_key': f"{file_id}-{metadata['_key']}",
-            '_from': f"files/{file_id}",
+            '_key': f"{userid}-{metadata['_key']}",
+            '_from': f"users/{userid}",
             '_to': metadata['_id'],
         })
         return metadata['_key']
 
+
 def create_graph(db: Database):
+    db.delete_database()
+    db.ensure_database()
+
     if db.connector.has_graph('ownership'):
         ownership = db.connector.graph('ownership')
     else:
@@ -85,7 +98,7 @@ def create_graph(db: Database):
 
     # Vertices
     if not ownership.has_vertex_collection('users'):
-        ownership.create_vertex_collection('users')
+        ownership.create_vertex_collcetion('users')
     if not ownership.has_vertex_collection('files'):
         ownership.create_vertex_collection('files')
     if not ownership.has_vertex_collection('documents'):
@@ -96,11 +109,5 @@ def create_graph(db: Database):
         ownership.create_edge_definition(
             edge_collection='own',
             from_vertex_collections=['users'],
-            to_vertex_collections=['files']
-        )
-    if not ownership.has_edge_definition('own_files'):
-        ownership.create_edge_definition(
-            edge_collection='own_files',
-            from_vertex_collections=['files'],
-            to_vertex_collections=['documents']
+            to_vertex_collections=['files', 'documents']
         )
