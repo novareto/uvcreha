@@ -17,7 +17,7 @@ class ProtectedModel(abc.ABC):
         pass
 
 
-class Files(BaseModel):
+class File(BaseModel):
 
     az: str
     creation_date: datetime = Field(default_factory=datetime.utcnow)

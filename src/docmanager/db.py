@@ -53,8 +53,8 @@ class Database(Validatable):
             'title': 'Database'
         })
 
-    def add_files(self, userid, data):
-        documents = self.connector.collection('documents')
+    def add_file(self, userid, data):
+        files = self.connector.collection('files')
         ownership = self.connector.graph('ownership')
         metadata = files.insert(data)
         own = ownership.edge_collection('own_files')
@@ -65,7 +65,7 @@ class Database(Validatable):
         })
         return metadata['_key']
 
-    def add_document(self, file_id, data):
+    def add_document(self, userid, file_id, data):
         documents = self.connector.collection('documents')
         ownership = self.connector.graph('ownership')
         metadata = documents.insert(data)

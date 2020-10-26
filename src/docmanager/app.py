@@ -19,7 +19,7 @@ from roughrider.validation.types import Factory
 
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
-from docmanager.models import ModelsRegistry, User, Document
+from docmanager.models import ModelsRegistry, User, Document, File
 from docmanager.db import Database
 from docmanager.layout import template_endpoint, TEMPLATES, layout
 from docmanager.request import Request
@@ -157,21 +157,21 @@ def user_delete(request: Request, userid: str):
     users.delete(userid)
     return horseman.response.reply(204)
 
-
 @application.routes.register(
-    '/users/{userid}/document.add',
+    '/users/{userid}/file.add',
     methods=['POST', 'PUT']
 )
-def add_document(request: Request, userid: str, document: Document):
-    key = request.app.db.add_document(userid, document.dict())
-#    documents = request.app.db.connector.collection('documents')
-#    metadata = documents.insert(document.dict())
-#    ownership = request.app.db.connector.graph('ownership')
-#    own = ownership.edge_collection('own')
-#    own.insert({
-#        '_key': f"{userid}-{metadata['_key']}",
-#        '_from': f"users/{userid}",
-#        '_to': metadata['_id'],
-#    })
+def add_file(request: Request, userid: str, file: File):
+    key = request.app.db.add_file(userid, file.dict())
+    return horseman.response.json_reply(
+        201, body={'docid': key})
+
+@application.routes.register(
+    '/users/{userid}/{file_id}/document.add',
+    methods=['POST', 'PUT']
+)
+def add_document(request: Request, userid: str, file_id:str, document: Document):
+    import pdb; pdb.set_trace()
+    key = request.app.db.add_document(userid, file_id, document.dict())
     return horseman.response.json_reply(
         201, body={'docid': key})
