@@ -63,5 +63,8 @@ setup(
         'fanstatic.libraries': [
             'docmanager = docmanager.resources:library',
         ],
+        'docmanager.models': [
+            'user = docmanager.models:User',
+        ],
     }
 )

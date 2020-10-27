@@ -12,7 +12,7 @@ from horseman.meta import APIView, SentryNode
 from horseman.parsing import parse
 
 from docmanager.request import Request
-from docmanager.layout import template_endpoint
+from docmanager.layout import template
 from docmanager.app import ROUTER
 
 
@@ -36,18 +36,18 @@ class LoginForm(wtforms.form.Form):
 @ROUTER.register('/login')
 class LoginView(APIView):
 
-    @template_endpoint(TEMPLATES['login.pt'], raw=False)
+    @template(TEMPLATES['login.pt'], raw=False)
     def GET(self, request: Request):
         form = LoginForm()
         return {'form': form, 'error': None, 'path': request.route.path}
 
-    @template_endpoint(TEMPLATES['login.pt'], raw=False)
+    @template(TEMPLATES['login.pt'], raw=False)
     def POST(self, request: Request):
         form = LoginForm(request.data['form'])
         if not form.validate():
             return {'form': form, 'error': 'form'}
         if (user := request.app['auth'].from_credentials(
-                request.environ, request.data['form'].to_dict())) is not None:
+                request.data['form'].to_dict())) is not None:
             request.app['auth'].remember(request.environ, user)
             print('The login was successful')
             return horseman.response.Response.create(
