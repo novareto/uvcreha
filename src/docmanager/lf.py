@@ -1,6 +1,6 @@
 from docmanager.app import ROUTER
 from docmanager.utils.form import BaseForm, FormView, Triggers
-from docmanager.layout import template_endpoint, TEMPLATES, layout
+from docmanager.layout import template, TEMPLATES, layout
 from docmanager.request import Request
 import wtforms
 import horseman.response
