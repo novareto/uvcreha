@@ -43,24 +43,20 @@ def run(config):
     database = Database(**config.app.db)
     create_graph(database)
 
-    docmanager.app.application['auth'] = docmanager.auth.Auth(
-        **config.app.env)
-    docmanager.app.application.set_configuration(config.app)
-    docmanager.app.application.set_database(database)
-    docmanager.app.application.register_middleware(
+    app = docmanager.app.Application(config=config.app, db=database)
+    app['auth'] = auth = docmanager.auth.Auth(app)
+
+    app.middlewares.register(
         session_middleware(config.app.env), order=1)
-    docmanager.app.application.register_middleware(
+    app.middlewares.register(
         fanstatic_middleware(config.app.assets), order=0)
-    docmanager.app.application.register_middleware(
-        docmanager.app.application['auth'], order=2)
+    app.middlewares.register(auth, order=2)
 
     # Serving the app
     server = config.server
     host, port = server.host, server.port
-    docmanager.app.application.logger.info(
-        f"Server Started on http://{host}:{port}")
-    bjoern.run(docmanager.app.application,
-               host, int(port), reuse_port=True)
+    app.logger.info(f"Server Started on http://{host}:{port}")
+    bjoern.run(app, host, int(port), reuse_port=True)
 
 
 if __name__ == "__main__":

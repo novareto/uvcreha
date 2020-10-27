@@ -13,7 +13,7 @@ from horseman.parsing import parse
 
 from docmanager.request import Request
 from docmanager.layout import template_endpoint
-from docmanager.app import application
+from docmanager.app import ROUTER
 
 
 TEMPLATES = PageTemplateLoader(
@@ -33,7 +33,7 @@ class LoginForm(wtforms.form.Form):
     )
 
 
-@application.routes.register('/login')
+@ROUTER.register('/login')
 class LoginView(APIView):
 
     @template_endpoint(TEMPLATES['login.pt'], raw=False)
@@ -55,7 +55,7 @@ class LoginView(APIView):
         return {'form': form, 'error': 'auth', 'path': request.route.path}
 
 
-@application.routes.register('/logout')
+@ROUTER.register('/logout')
 def LogoutView(request, environ):
     request.session.store.clear(request.session.sid)
     return horseman.response.Response.create(
