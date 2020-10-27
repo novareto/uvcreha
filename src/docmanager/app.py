@@ -26,17 +26,37 @@ from docmanager.request import Request
 from docmanager.utils.openapi import generate_doc
 
 
+ROUTER = Routes()
+
+
+class MiddlewaresRegistry:
+
+    def __init__(self):
+        self._middlewares = []
+
+    def register(self, middleware, order=0):
+        self._middlewares.append((order, middleware))
+
+    def __len__(self):
+        return len(self._middlewares)
+
+    def __iter__(self):
+        def ordered(e):
+            return -e[0], repr(e[1])
+        yield from (m[1] for m in sorted(self._middlewares, key=ordered))
+
+
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     __slots__ = ('config', 'db')
+    request_factory = Request
 
-    def __init__(self, config=None, db=None, request_factory=Request):
-        self.routes = Routes()
+    def __init__(self, config=None, db=None, routes=ROUTER):
+        self.routes = routes
         self.config = config
-        self.request_factory = request_factory
         self.db = db
-        self._middlewares = []
-        self._models_registry= ModelsRegistry()
+        self.middlewares = MiddlewaresRegistry()
+        self._models_registry = ModelsRegistry()
 
     @property
     def logger(self):
@@ -50,7 +70,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
-            user = environ.get(self.config.env.principal) or  environ[self.config.env.session].get('principal')
+            user = environ.get(self.config.env.principal)
             if user is None:
                 raise SecurityError(None, permissions)
             if not permissions.issubset(user.permissions):
@@ -73,21 +93,13 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
                 raise HTTPError(HTTPStatus.UNAUTHORIZED)
             raise HTTPError(HTTPStatus.FORBIDDEN)
 
-    def register_middleware(self, middleware, order=0):
-        self._middlewares.append((order, middleware))
-
-    def middlewares(self):
-        def ordered(e):
-            return -e[0], repr(e[1])
-        yield from (m[1] for m in sorted(self._middlewares, key=ordered))
-
     def handle_exception(self, exc_info, environ):
         exc_type, exc, traceback = exc_info
         self.logger.debug(exc)
 
     def __call__(self, environ, start_response):
         caller = super().__call__
-        for middleware in self.middlewares():
+        for middleware in self.middlewares:
             caller = middleware(caller)
         return caller(environ, start_response)
 
@@ -97,10 +109,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         return add_type
 
 
-application = Application()
-
-
-@application.routes.register('/', methods=['GET'], permissions={'document.view'})
+@ROUTER.register('/', methods=['GET'], permissions={'document.view'})
 @template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
     #event_klass = request.app._models_registry.get('event')
@@ -109,13 +118,13 @@ def index(request: Request):
     return dict(request=request)
 
 
-@application.routes.register('/doc')
+@ROUTER.register('/doc')
 @template_endpoint(template=TEMPLATES['swagger.pt'], raw=False)
 def doc_swagger(request: Request):
     return {'url': '/openapi.json'}
 
 
-@application.routes.register('/openapi.json')
+@ROUTER.register('/openapi.json')
 def openapi(request: Request):
     open_api = generate_doc(request.app.routes)
     return horseman.response.reply(
@@ -125,7 +134,7 @@ def openapi(request: Request):
     )
 
 
-@application.routes.register('/user.add', methods=['POST', 'PUT'], ns="api")
+@ROUTER.register('/user.add', methods=['POST', 'PUT'], ns="api")
 def add_user(request: Request, user: User):
     users = request.app.db.connector.collection('users')
     data = user.dict()
@@ -135,14 +144,14 @@ def add_user(request: Request, user: User):
         201, body={'userid': metadata['_key']})
 
 
-@application.routes.register('/users/{userid}', methods=['GET'])
+@ROUTER.register('/users/{userid}', methods=['GET'])
 def user_view(user: Factory(User)):
     return horseman.response.reply(
         200, body=user.json(),
         headers={'Content-Type': 'application/json'})
 
 
-@application.routes.register('/users/{userid}/documents', methods=['GET'])
+@ROUTER.register('/users/{userid}/documents', methods=['GET'])
 def user_list_docs(request: Request, userid: str):
     ownership = request.app.db.connector.graph('ownership')
     own = ownership.edge_collection('own')
@@ -151,13 +160,13 @@ def user_list_docs(request: Request, userid: str):
     return horseman.response.json_reply(200, body=documents)
 
 
-@application.routes.register('/users/{userid}', methods=['DELETE'])
+@ROUTER.register('/users/{userid}', methods=['DELETE'])
 def user_delete(request: Request, userid: str):
     users = request.app.db.connector.collection('users')
     users.delete(userid)
     return horseman.response.reply(204)
 
-@application.routes.register(
+@ROUTER.register(
     '/users/{userid}/file.add',
     methods=['POST', 'PUT']
 )
@@ -166,7 +175,7 @@ def add_file(request: Request, userid: str, file: File):
     return horseman.response.json_reply(
         201, body={'docid': key})
 
-@application.routes.register(
+@ROUTER.register(
     '/users/{userid}/{file_id}/document.add',
     methods=['POST', 'PUT']
 )
