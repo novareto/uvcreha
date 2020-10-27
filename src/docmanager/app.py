@@ -50,7 +50,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
-            user = environ.get(self.config.env.principal)
+            user = environ.get(self.config.env.principal) or  environ[self.config.env.session].get('principal')
             if user is None:
                 raise SecurityError(None, permissions)
             if not permissions.issubset(user.permissions):
@@ -103,9 +103,9 @@ application = Application()
 @application.routes.register('/', methods=['GET'], permissions={'document.view'})
 @template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
-    event_klass = request.app._models_registry.get('event')
-    obj = event_klass(name="hans", subject="klaus", state="send")
-    request.app.db.add_document('cklinger', obj.dict())
+    #event_klass = request.app._models_registry.get('event')
+    #obj = event_klass(name="hans", subject="klaus", state="send")
+    #request.app.db.add_document('cklinger', obj.dict())
     return dict(request=request)
 
 
@@ -171,7 +171,6 @@ def add_file(request: Request, userid: str, file: File):
     methods=['POST', 'PUT']
 )
 def add_document(request: Request, userid: str, file_id:str, document: Document):
-    import pdb; pdb.set_trace()
     key = request.app.db.add_document(userid, file_id, document.dict())
     return horseman.response.json_reply(
         201, body={'docid': key})

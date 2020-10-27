@@ -18,6 +18,7 @@ import docmanager
 import docmanager.app
 import docmanager.types
 import docmanager.auth
+import docmanager.lf
 
 
 def fanstatic_middleware(config):

@@ -41,6 +41,7 @@ class Base(BaseModel):
 class User(BaseModel):
     username: str
     password: str
+    permissions: dict = {'document.view'}
 
     @classmethod
     def instanciate(cls, request: Request, userid: str, **bindable):
