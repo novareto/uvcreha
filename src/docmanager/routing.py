@@ -38,7 +38,6 @@ class Routes(autoroutes.Routes):
             for fullpath, method, func in \
                 roughrider.routing.route.route_payload(
                     path, view, methods):
-                print(fullpath)
                 cleaned = self.clean_path_pattern.sub("", fullpath)
                 name = extras.pop("name", None)
                 if not name:
