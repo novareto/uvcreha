@@ -1,4 +1,4 @@
-from docmanager.app import application
+from docmanager.app import ROUTER
 from docmanager.utils.form import BaseForm, FormView, Triggers
 from docmanager.layout import template_endpoint, TEMPLATES, layout
 from docmanager.request import Request
@@ -19,8 +19,7 @@ class LoginForm(BaseForm):
     )
 
 
-
-@application.routes.register("/reg")
+@ROUTER.register("/reg")
 class RegistrationForm(FormView):
 
     title = "Registration Form"
@@ -46,4 +45,3 @@ class RegistrationForm(FormView):
     @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
     def abbrechen(form, *args):
         pass
-

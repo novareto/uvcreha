@@ -28,5 +28,5 @@ class Request(Overhead, Validatable):
         return self.environ.get(self.app.config.env.session)
 
     @property
-    def principal(self):
-        return self.environ.get(self.app.config.env.principal)
+    def user(self):
+        return self.environ.get(self.app.config.env.user)
