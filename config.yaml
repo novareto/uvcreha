@@ -9,6 +9,7 @@ app:
   env:
     session: docmanager.session
     principal: docmanager.principal
+    user: principal
 
   logger:
     name: docmanager.logger

@@ -30,11 +30,11 @@ def query_slot(econtext, name):
     #view = econtext.get('view')
 
     try:
-        slot = layout.slot(name)
+        slot = layout.slot(request, name)
     except :
         raise
     else:
-        return layout.slot(name)
+        return layout.slot(request, name)
 
 
 class SlotExpr(object):

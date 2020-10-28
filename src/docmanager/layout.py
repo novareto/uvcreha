@@ -82,13 +82,13 @@ class Layout:
         ns = {**self._namespace, **extra}
         return self._template.render(content=content, **ns)
 
-    @reg.dispatch_method(reg.match_key("name"))
-    def slot(self, name):
+    @reg.dispatch_method(reg.match_instance('request'), reg.match_key("name"))
+    def slot(self, request, name):
         raise RuntimeError("Unknown slot.")
 
-    def register_slot(self, name):
+    def register_slot(self, request, name):
         def add_slot(slot):
-            return self.slot.register(reg.methodify(slot), name=name)
+            return self.slot.register(reg.methodify(slot), request=request, name=name)
 
         return add_slot
 
@@ -96,25 +96,25 @@ class Layout:
 layout = Layout("layout.pt")
 
 
-@layout.register_slot(name="sitecap")
+@layout.register_slot(request=Request, name="sitecap")
 @template(template=TEMPLATES["sitecap.pt"])
-def sitecap(request):
+def sitecap(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(name="globalmenu")
+@layout.register_slot(request=Request, name="globalmenu")
 @template(TEMPLATES["globalmenu.pt"], layout=None, raw=True)
-def globalmenu(request):
+def globalmenu(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(name="navbar")
+@layout.register_slot(request=Request, name="navbar")
 @template(TEMPLATES["navbar.pt"], layout=None, raw=True)
-def navbar(request):
+def navbar(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(name="sidebar")
+@layout.register_slot(request=Request, name="sidebar")
 @template(TEMPLATES["sidebar.pt"], layout=None, raw=True)
-def sidebar(request):
+def sidebar(request, name):
     return dict(request=request)

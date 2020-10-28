@@ -5,6 +5,9 @@ import roughrider.routing.route
 import roughrider.validation.dispatch
 
 
+from docmanager import logger
+
+
 @dataclasses.dataclass
 class Route:
     path: str
@@ -35,6 +38,7 @@ class Routes(autoroutes.Routes):
 
     def register(self, path: str, methods: list=None, **extras):
         def routing(view):
+            logger.debug(f'Register Route -> Path: {path} Methods: {methods} View: {view}')
             for fullpath, method, func in \
                 roughrider.routing.route.route_payload(
                     path, view, methods):
