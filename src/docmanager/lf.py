@@ -34,7 +34,7 @@ class RegistrationForm(FormView):
         if not form.validate():
             return form
         if (user := request.app['auth'].from_credentials(
-                request, data.to_dict())) is not None:
+                data.to_dict())) is not None:
             request.app['auth'].remember(request.environ, user)
             print('The login was successful')
             return horseman.response.Response.create(

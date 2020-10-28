@@ -6,6 +6,7 @@ from arango.exceptions import DocumentGetError
 from pydantic import BaseModel, Field
 
 from docmanager.request import Request
+from docmanager import logger
 
 
 class ProtectedModel(abc.ABC):
@@ -69,4 +70,5 @@ class ModelsRegistry(dict):
     def load(self):
         self.clear()
         for loader in iter_entry_points('docmanager.models'):
+            logger.info(f'Register Model "{loader.name}"')
             self.register(loader.name, loader.load())

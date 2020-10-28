@@ -57,6 +57,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         self.db = db
         self.middlewares = MiddlewaresRegistry()
         self.models = ModelsRegistry()
+        self.models.load()
 
     @property
     def logger(self):

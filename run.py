@@ -21,6 +21,10 @@ import docmanager.auth
 import docmanager.lf
 
 
+import uvcreha.example
+import uvcreha.example.app
+
+
 def fanstatic_middleware(config):
     return functools.partial(fanstatic.Fanstatic, **config)
 
@@ -39,6 +43,7 @@ def session_middleware(config):
 @hydra.main(config_path="config.yaml")
 def run(config):
     importscan.scan(docmanager)
+    importscan.scan(uvcreha.example)
 
     database = Database(**config.app.db)
     create_graph(database)
@@ -51,6 +56,8 @@ def run(config):
     app.middlewares.register(
         fanstatic_middleware(config.app.assets), order=0)
     app.middlewares.register(auth, order=2)
+    from uvcreha.example.app import CustomRequest
+    app.request_factory = CustomRequest
 
     # Serving the app
     server = config.server
