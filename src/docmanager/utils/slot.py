@@ -24,17 +24,16 @@ class Slot(ABC):
 def query_slot(econtext, name):
     """Compute the result of a slot expression
     """
-    from docmanager.layout import layout
     #context = econtext.get('context')
     request = econtext.get('request')
     #view = econtext.get('view')
 
     try:
-        slot = layout.slot(request, name)
+        slot = request.app.ui.slot(request, name)
     except :
         raise
     else:
-        return layout.slot(request, name)
+        return request.app.ui.slot(request, name)
 
 
 class SlotExpr(object):

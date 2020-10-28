@@ -1,4 +1,5 @@
 import hydra
+import bjoern
 import logging
 import fanstatic
 import functools
@@ -45,8 +46,9 @@ def run(config):
     app = docmanager.app.application
     app.database = database
     app.config = config.app
-    app.request_factory = CustomRequest
-    app.plugins.register(docmanager.auth.Auth(database, config.env))
+    app.request_factory = uvcreha.example.app.CustomRequest
+    auth = docmanager.auth.Auth(database, config.app.env)
+    app.plugins.register(name="authentication", plugin=auth)
 
     app.middlewares.register(
         session_middleware(config.app.env), order=1)
@@ -56,8 +58,8 @@ def run(config):
 
     # Serving the app
     logger = logging.getLogger('docmanager')
-    logger.info(f"Server Started on http://{config.host}:{config.port}")
-    bjoern.run(app, host, int(port), reuse_port=True)
+    logger.info(f"Server Started on http://{config.server.host}:{config.server.port}")
+    bjoern.run(app, config.server.host, int(config.server.port), reuse_port=True)
 
 if __name__ == "__main__":
     run()
