@@ -46,8 +46,9 @@ class LoginView(APIView):
         form = LoginForm(request.data['form'])
         if not form.validate():
             return {'form': form, 'error': 'form'}
-        if (user := request.app['auth'].from_credentials(
+        if (userdata := request.app['auth'].from_credentials(
                 request.data['form'].to_dict())) is not None:
+            user = request.app.models['user'](**userdata)
             request.app['auth'].remember(request.environ, user)
             print('The login was successful')
             return horseman.response.Response.create(

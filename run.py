@@ -1,25 +1,19 @@
-
 import hydra
-import hydra.utils
 import logging
-import bjoern
 import fanstatic
 import functools
 import pathlib
 import importscan
 import fanstatic
-import rutter.urlmap
-import horseman.response
+
 import cromlech.session
 import cromlech.sessions.file
-
 from docmanager.db import Database, create_graph
+
 import docmanager
 import docmanager.app
-import docmanager.types
+import docmanager.layout
 import docmanager.auth
-import docmanager.lf
-
 
 import uvcreha.example
 import uvcreha.example.app
@@ -48,23 +42,22 @@ def run(config):
     database = Database(**config.app.db)
     create_graph(database)
 
-    app = docmanager.app.Application(config=config.app, db=database)
-    app['auth'] = auth = docmanager.auth.Auth(app)
+    app = docmanager.app.application
+    app.database = database
+    app.config = config.app
+    app.request_factory = CustomRequest
+    app.plugins.register(docmanager.auth.Auth(database, config.env))
 
     app.middlewares.register(
         session_middleware(config.app.env), order=1)
     app.middlewares.register(
         fanstatic_middleware(config.app.assets), order=0)
     app.middlewares.register(auth, order=2)
-    from uvcreha.example.app import CustomRequest
-    app.request_factory = CustomRequest
 
     # Serving the app
-    server = config.server
-    host, port = server.host, server.port
-    app.logger.info(f"Server Started on http://{host}:{port}")
+    logger = logging.getLogger('docmanager')
+    logger.info(f"Server Started on http://{config.host}:{config.port}")
     bjoern.run(app, host, int(port), reuse_port=True)
-
 
 if __name__ == "__main__":
     run()
