@@ -1,18 +1,20 @@
-import wrapt
+import pathlib
 import reg
+import wrapt
 import horseman.response
-from pathlib import Path
 
-from .utils import TemplateLoader
-from .resources import siguvtheme
-from docmanager.request import Request
 from horseman.meta import Overhead
+from docmanager.utils import TemplateLoader
+from docmanager.resources import siguvtheme
+from docmanager.request import Request
+from docmanager.app import application
 
 
-TEMPLATES = TemplateLoader(str((Path(__file__).parent / "templates").resolve()), ".pt")
+TEMPLATES = TemplateLoader(
+    str((pathlib.Path(__file__).parent / "templates").resolve()), ".pt")
 
 
-def template(template, layout=None, raw=True):
+def template(template, layout_name=None, raw=False):
     @wrapt.decorator
     def render(endpoint, instance, args, kwargs):
         result = endpoint(*args, **kwargs)
@@ -24,6 +26,12 @@ def template(template, layout=None, raw=True):
             request = args[0]
         else:
             request = kwargs["request"]
+
+        if layout_name is not None:
+            layout = request.app.layout(request, layout_name)
+        else:
+            layout = None
+
         if layout is not None:
             path = request.environ["PATH_INFO"]
             baseurl = "{}://{}{}/".format(
@@ -64,10 +72,12 @@ def template(template, layout=None, raw=True):
     return render
 
 
+@application.ui.register_layout(Request)
 class Layout:
-    def __init__(self, name, **namespace):
-        self._template = TEMPLATES[name]
-        self._namespace = namespace
+
+    def __init__(self, request, name):
+        self._template = TEMPLATES["layout.pt"]
+        self._namespace = {'request': request}
 
     @property
     def user(self):
@@ -82,40 +92,27 @@ class Layout:
         ns = {**self._namespace, **extra}
         return self._template.render(content=content, **ns)
 
-    @reg.dispatch_method(reg.match_instance('request'), reg.match_key("name"))
-    def slot(self, request, name):
-        raise RuntimeError("Unknown slot.")
 
-    def register_slot(self, request, name):
-        def add_slot(slot):
-            return self.slot.register(reg.methodify(slot), request=request, name=name)
-
-        return add_slot
-
-
-layout = Layout("layout.pt")
-
-
-@layout.register_slot(request=Request, name="sitecap")
+@application.ui.register_slot(request=Request, name="sitecap")
 @template(template=TEMPLATES["sitecap.pt"])
 def sitecap(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(request=Request, name="globalmenu")
-@template(TEMPLATES["globalmenu.pt"], layout=None, raw=True)
+@application.ui.register_slot(request=Request, name="globalmenu")
+@template(TEMPLATES["globalmenu.pt"], raw=True)
 def globalmenu(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(request=Request, name="navbar")
-@template(TEMPLATES["navbar.pt"], layout=None, raw=True)
+@application.ui.register_slot(request=Request, name="navbar")
+@template(TEMPLATES["navbar.pt"], raw=True)
 def navbar(request, name):
     return dict(request=request)
 
 
-@layout.register_slot(request=Request, name="sidebar")
-@template(TEMPLATES["sidebar.pt"], layout=None, raw=True)
+@application.ui.register_slot(request=Request, name="sidebar")
+@template(TEMPLATES["sidebar.pt"], raw=True)
 def sidebar(request, name):
     return dict(request=request)
 
