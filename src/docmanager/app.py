@@ -1,27 +1,15 @@
 import logging
-import re
 import reg
-from collections import namedtuple
-from dataclasses import dataclass, field
-from http import HTTPStatus
-from pathlib import Path
-from pkg_resources import iter_entry_points
 
-from pydantic import BaseModel
+from http import HTTPStatus
 
 import horseman.meta
-import horseman.response
 from horseman.http import HTTPError
-
-import roughrider.routing.route
-import roughrider.validation.dispatch
-from roughrider.validation.types import Factory
 
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
-from docmanager.models import ModelsRegistry, User, Document, File
+from docmanager.models import ModelsRegistry
 from docmanager.db import Database
-from docmanager.layout import template, TEMPLATES, layout
 from docmanager.request import Request
 from docmanager.utils.openapi import generate_doc
 
@@ -29,7 +17,54 @@ from docmanager.utils.openapi import generate_doc
 ROUTER = Routes()
 
 
+class UIRegistry:
+
+    @reg.dispatch_method(
+        reg.match_instance('request'), reg.match_key('name'))
+    def layout(self, request, name):
+        raise RuntimeError("Unknown layout.")
+
+    def register_layout(self, request, name='default'):
+        def add_layout(layout):
+            return self.layout.register(
+                reg.methodify(layout), request=request, name=name)
+        return add_layout
+
+    @reg.dispatch_method(
+        reg.match_instance('request'), reg.match_key("name"))
+    def slot(self, request, name):
+        raise RuntimeError("Unknown slot.")
+
+    def register_slot(self, request, name):
+        def add_slot(slot):
+            return self.slot.register(
+                reg.methodify(slot), request=request, name=name)
+        return add_slot
+
+
+class PluginsRegistry:
+
+    __slots__ = ('_plugins',)
+
+    def __init__(self):
+        self._plugins = {}
+
+    def register(self, name, plugin):
+        self._plugins.__setitem__(name, plugin)
+
+    def get(self, name):
+        return self._plugins.get(name)
+
+    def __len__(self):
+        return len(self._plugins)
+
+    def __iter__(self):
+        return iter(self._plugins)
+
+
 class MiddlewaresRegistry:
+
+    __slots__ = ('_middlewares',)
 
     def __init__(self):
         self._middlewares = []
@@ -48,26 +83,24 @@ class MiddlewaresRegistry:
 
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
-    __slots__ = ('config', 'db')
-    request_factory = Request
+    __slots__ = (
+        'config', 'database', 'routes', 'middlewares', 'layout',
+        'models', 'request_factory')
 
-    def __init__(self, config=None, db=None, routes=ROUTER):
+    def __init__(self, config=None, database=None,
+                 routes=ROUTER, request_factory=Request):
         self.routes = routes
         self.config = config
-        self.db = db
+        self.database = database
+        self.request_factory = request_factory
+        self.plugins = PluginsRegistry()
         self.middlewares = MiddlewaresRegistry()
         self.models = ModelsRegistry()
-        self.models.load()
+        self.ui = UIRegistry()
 
     @property
     def logger(self):
         return logging.getLogger(self.config.logger.name)
-
-    def set_configuration(self, config: dict):
-        self.config = config
-
-    def set_database(self, db: Database):
-        self.db = db
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
@@ -104,78 +137,11 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             caller = middleware(caller)
         return caller(environ, start_response)
 
-
-@ROUTER.register('/', methods=['GET'], permissions={'document.view'})
-@template(template=TEMPLATES["index.pt"], layout=layout, raw=False)
-def index(request: Request):
-    #event_klass = request.app._models_registry.get('event')
-    #obj = event_klass(name="hans", subject="klaus", state="send")
-    #request.app.db.add_document('cklinger', obj.dict())
-    return dict(request=request)
+    def start(self, config):
+        self.models.load()
+        self.logger.info(
+            f"Server Started on http://{config.host}:{config.port}")
+        bjoern.run(app, host, int(port), reuse_port=True)
 
 
-@ROUTER.register('/doc')
-@template(template=TEMPLATES['swagger.pt'], raw=False)
-def doc_swagger(request: Request):
-    return {'url': '/openapi.json'}
-
-
-@ROUTER.register('/openapi.json')
-def openapi(request: Request):
-    open_api = generate_doc(request.app.routes)
-    return horseman.response.reply(
-        200,
-        body=open_api.json(by_alias=True, exclude_none=True, indent=2),
-        headers={'Content-Type': 'application/json'}
-    )
-
-
-@ROUTER.register('/user.add', methods=['POST', 'PUT'], ns="api")
-def add_user(request: Request, user: User):
-    users = request.app.db.connector.collection('users')
-    data = user.dict()
-    data['_key'] = user.username
-    metadata = users.insert(data)
-    return horseman.response.json_reply(
-        201, body={'userid': metadata['_key']})
-
-
-@ROUTER.register('/users/{userid}', methods=['GET'])
-def user_view(user: Factory(User)):
-    return horseman.response.reply(
-        200, body=user.json(),
-        headers={'Content-Type': 'application/json'})
-
-
-@ROUTER.register('/users/{userid}/documents', methods=['GET'])
-def user_list_docs(request: Request, userid: str):
-    ownership = request.app.db.connector.graph('ownership')
-    own = ownership.edge_collection('own')
-    links = own.edges(f'users/{userid}', direction='out')
-    documents = [edge['_to'] for edge in links['edges']]
-    return horseman.response.json_reply(200, body=documents)
-
-
-@ROUTER.register('/users/{userid}', methods=['DELETE'])
-def user_delete(request: Request, userid: str):
-    users = request.app.db.connector.collection('users')
-    users.delete(userid)
-    return horseman.response.reply(204)
-
-@ROUTER.register(
-    '/users/{userid}/file.add',
-    methods=['POST', 'PUT']
-)
-def add_file(request: Request, userid: str, file: File):
-    key = request.app.db.add_file(userid, file.dict())
-    return horseman.response.json_reply(
-        201, body={'docid': key})
-
-@ROUTER.register(
-    '/users/{userid}/{file_id}/document.add',
-    methods=['POST', 'PUT']
-)
-def add_document(request: Request, userid: str, file_id:str, document: Document):
-    key = request.app.db.add_document(userid, file_id, document.dict())
-    return horseman.response.json_reply(
-        201, body={'docid': key})
+application = Application()
