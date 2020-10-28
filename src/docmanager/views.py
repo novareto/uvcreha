@@ -1,11 +1,11 @@
 from roughrider.validation.types import Factory
-from docmanager.app import ROUTER
+from docmanager.app import application
 from docmanager.layout import template, TEMPLATES
 from docmanager.request import Request
 from docmanager.models import User, Document, File
 
 
-@ROUTER.register('/', methods=['GET'], permissions={'document.view'})
+@application.routes.register('/', methods=['GET'], permissions={'document.view'})
 @template(template=TEMPLATES["index.pt"], layout_name='default', raw=False)
 def index(request: Request):
     #event_klass = request.app._models_registry.get('event')
@@ -14,13 +14,13 @@ def index(request: Request):
     return dict(request=request)
 
 
-@ROUTER.register('/doc')
+@application.routes.register('/doc')
 @template(template=TEMPLATES['swagger.pt'], raw=False)
 def doc_swagger(request: Request):
     return {'url': '/openapi.json'}
 
 
-@ROUTER.register('/openapi.json')
+@application.routes.register('/openapi.json')
 def openapi(request: Request):
     open_api = generate_doc(request.app.routes)
     return horseman.response.reply(
@@ -30,7 +30,7 @@ def openapi(request: Request):
     )
 
 
-@ROUTER.register('/user.add', methods=['POST', 'PUT'], ns="api")
+@application.routes.register('/user.add', methods=['POST', 'PUT'], ns="api")
 def add_user(request: Request, user: User):
     users = request.app.db.connector.collection('users')
     data = user.dict()
@@ -40,14 +40,14 @@ def add_user(request: Request, user: User):
         201, body={'userid': metadata['_key']})
 
 
-@ROUTER.register('/users/{userid}', methods=['GET'])
+@application.routes.register('/users/{userid}', methods=['GET'])
 def user_view(user: Factory(User)):
     return horseman.response.reply(
         200, body=user.json(),
         headers={'Content-Type': 'application/json'})
 
 
-@ROUTER.register('/users/{userid}/documents', methods=['GET'])
+@application.routes.register('/users/{userid}/documents', methods=['GET'])
 def user_list_docs(request: Request, userid: str):
     ownership = request.app.db.connector.graph('ownership')
     own = ownership.edge_collection('own')
@@ -56,13 +56,13 @@ def user_list_docs(request: Request, userid: str):
     return horseman.response.json_reply(200, body=documents)
 
 
-@ROUTER.register('/users/{userid}', methods=['DELETE'])
+@application.routes.register('/users/{userid}', methods=['DELETE'])
 def user_delete(request: Request, userid: str):
     users = request.app.db.connector.collection('users')
     users.delete(userid)
     return horseman.response.reply(204)
 
-@ROUTER.register(
+@application.routes.register(
     '/users/{userid}/file.add',
     methods=['POST', 'PUT']
 )
@@ -71,7 +71,7 @@ def add_file(request: Request, userid: str, file: File):
     return horseman.response.json_reply(
         201, body={'docid': key})
 
-@ROUTER.register(
+@application.routes.register(
     '/users/{userid}/{file_id}/document.add',
     methods=['POST', 'PUT']
 )
