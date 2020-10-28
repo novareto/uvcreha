@@ -21,7 +21,7 @@ from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.models import ModelsRegistry, User, Document, File
 from docmanager.db import Database
-from docmanager.layout import template_endpoint, TEMPLATES, layout
+from docmanager.layout import template, TEMPLATES, layout
 from docmanager.request import Request
 from docmanager.utils.openapi import generate_doc
 
@@ -56,7 +56,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         self.config = config
         self.db = db
         self.middlewares = MiddlewaresRegistry()
-        self._models_registry = ModelsRegistry()
+        self.models = ModelsRegistry()
 
     @property
     def logger(self):
@@ -70,7 +70,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
-            user = environ.get(self.config.env.principal)
+            user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
             if not permissions.issubset(user.permissions):
@@ -89,7 +89,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         except LookupError:
             raise HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
         except SecurityError as error:
-            if error.principal is None:
+            if error.user is None:
                 raise HTTPError(HTTPStatus.UNAUTHORIZED)
             raise HTTPError(HTTPStatus.FORBIDDEN)
 
@@ -103,14 +103,9 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             caller = middleware(caller)
         return caller(environ, start_response)
 
-    def register_type(self, name):
-        def add_type(content_type):
-            return self._models_registry.register(name, content_type)
-        return add_type
-
 
 @ROUTER.register('/', methods=['GET'], permissions={'document.view'})
-@template_endpoint(template=TEMPLATES["index.pt"], layout=layout, raw=False)
+@template(template=TEMPLATES["index.pt"], layout=layout, raw=False)
 def index(request: Request):
     #event_klass = request.app._models_registry.get('event')
     #obj = event_klass(name="hans", subject="klaus", state="send")
@@ -119,7 +114,7 @@ def index(request: Request):
 
 
 @ROUTER.register('/doc')
-@template_endpoint(template=TEMPLATES['swagger.pt'], raw=False)
+@template(template=TEMPLATES['swagger.pt'], raw=False)
 def doc_swagger(request: Request):
     return {'url': '/openapi.json'}
 
