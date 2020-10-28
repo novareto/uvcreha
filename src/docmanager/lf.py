@@ -1,9 +1,9 @@
-from docmanager.app import ROUTER
-from docmanager.utils.form import BaseForm, FormView, Triggers
-from docmanager.layout import template, TEMPLATES, layout
-from docmanager.request import Request
 import wtforms
 import horseman.response
+
+from docmanager.app import ROUTER
+from docmanager.utils.form import BaseForm, FormView, Triggers
+from docmanager.request import Request
 
 
 class LoginForm(BaseForm):

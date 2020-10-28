@@ -1,7 +1,7 @@
 import wtforms
 import collections
 from horseman.meta import APIView
-from docmanager.layout import template, TEMPLATES, layout
+from docmanager.layout import template, TEMPLATES
 from docmanager.request import Request
 from horseman.parsing import parse
 
@@ -30,7 +30,7 @@ class FormView(APIView):
     triggers: Triggers = Triggers()
     form: wtforms.Form
 
-    @template(TEMPLATES['registration_form.pt'], layout=layout, raw=False)
+    @template(TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def GET(self, request: Request):
         return {
             'form': self.form(),
@@ -39,7 +39,7 @@ class FormView(APIView):
             'path': request.route.path
         }
 
-    @template(TEMPLATES['registration_form.pt'], layout=layout, raw=False)
+    @template(TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def POST(self, request: Request):
         if request.method == "POST":
             request.environ['wsgi.input'].seek(0)
