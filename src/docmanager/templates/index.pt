@@ -1,1 +1,47 @@
-<h1> Hallo Welt </h1>
+<h1> Versicherten - Portal </h1>
+<p class="lead"> LOREM IPSUM </p>
+
+
+
+
+<div class="card-deck">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title"> Nachrichten </h5>
+      <p class="card-text"> Sie wollen auf sicheren Weg Dokumente mit der Unfallversicherung austaschen.</p>
+    </div>
+    <div class="card-footer">
+      <a href="#" class="card-link">Neue Nachricht erstellen</a>
+      <a href="#" class="card-link">Nachrichten ansehen</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title"> Dokumente </h5>
+      <p class="card-text"> Formulare </p>
+    </div>
+    <div class="card-footer">
+      <a href="#" class="card-link">0 neue Formulare</a>
+      <a href="#" class="card-link">Formulare ansehen</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title"> News </h5>
+    </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">Neues Dokumente <small> 01-01-2020 </small> </li>
+      <li class="list-group-item">Dapibus ac facilisis in</li>
+      <li class="list-group-item">Vestibulum at eros</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title"> Anträge </h5>
+      <p class="card-text"> Hier haben Sie die Möglichkeit verschiedene Antr#ge (Fahrtkosten) online einzureichen</p>
+    </div>
+    <div class="card-footer">
+      <a href="#" class="card-link">Anträge</a>
+    </div>
+  </div>
+</div>

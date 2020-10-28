@@ -7,23 +7,19 @@
           <div class="profile-image"></div>
           <div class="profile-info">
             <div class="profile-name">
-              <a href="" tal:attributes="href 'blab'"> USER </a>
+              <a href="/meinedaten"> <span tal:content="request.user.__class__"> </a>
             </div>
           </div>
           </div>
       </div>
-      <!--
-      <div class="menu-section"
-           tal:condition="'quicklinks' in provider.menus">
+      <div class="menu-section">
         <div class="menu-section-title">Links</div>
           <div class="menu-section-content">
-            <a tal:repeat="um provider.menus['quicklinks']"
-               tal:attributes="href um.url()">
-              <span class="menu-item-title" tal:content="um.title"></span>
+            <a href="/logout">
+              <span class="menu-item-title"> Logout </span>
             </a>
           </div>
       </div>
-      -->
       <!--
       <div class="menu-section" id="sidebar-section-navigation"
            tal:condition="'personalpreferences' in provider.menus">

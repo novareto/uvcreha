@@ -8,7 +8,7 @@
     href="/fanstatic/adhoc/favicon.png"
     />
   <title>UV-REHA</title>
-<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
 </head>
 <body data-with-sidebar="false">
 
@@ -21,29 +21,11 @@
     <div tal:replace="structure slot: sidebar"> </div>
   </header>
 
-    <section id="content" class="container">
-      <div class="content container">
+  <section id="content" class="container">
+    <div class="content container">
 
-        <!--
-
-  <main class="flex-shrink-0 mb-4">
-    <div id="app" class="container">
-      <div id="userprefs" class="pb-4">
-        <ul class="list-inline float-right">
-          <li class="list-inline-item">
-            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13.468 12.37C12.758 11.226 11.195 10 8 10s-4.757 1.225-5.468 2.37A6.987 6.987 0 0 0 8 15a6.987 6.987 0 0 0 5.468-2.63z"/>
-              <path fill-rule="evenodd" d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-              <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/>
-            </svg>
-          </li>
-          <li tal:condition="user is not None" class="list-inline-item"> Logout </li>
-          <li tal:condition="user is None" class="list-inline-item"> <a href="/saml/sso"> Login </a> </li>
-        </ul>
-      </div>
-      -->
       <div tal:condition="messages" tal:repeat="message messages" tal:attributes="class string:mt-4 mb-4 alert alert-${message['type']}">
-            <span tal:replace="message['body']" />
+        <span tal:replace="message['body']" />
       </div>
 
       <div tal:replace="structure content"> </div>
@@ -52,13 +34,7 @@
 
 
   <footer id="portal-footer" class="footer mt-auto"> 
-  <div class="page-footer">
-    <div class="container">
-      <article>
-        You are logged in as
-      </article>
-    </div>
-  </div>
-</footer>
+    <div tal:replace="structure slot: footer"> </div>
+  </footer>
 </body>
 </html>

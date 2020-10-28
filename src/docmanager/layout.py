@@ -118,3 +118,8 @@ def navbar(request, name):
 @template(TEMPLATES["sidebar.pt"], layout=None, raw=True)
 def sidebar(request, name):
     return dict(request=request)
+
+@layout.register_slot(request=Request, name="footer")
+@template(TEMPLATES["footer.pt"], layout=None, raw=True)
+def sidebar(request, name):
+    return dict(request=request)
