@@ -28,7 +28,7 @@ def template(template, layout_name=None, raw=False):
             request = kwargs["request"]
 
         if layout_name is not None:
-            layout = request.app.layout(request, layout_name)
+            layout = request.app.ui.layout(request, layout_name)
         else:
             layout = None
 
@@ -116,7 +116,7 @@ def navbar(request, name):
 def sidebar(request, name):
     return dict(request=request)
 
-@layout.register_slot(request=Request, name="footer")
-@template(TEMPLATES["footer.pt"], layout=None, raw=True)
+@application.ui.register_slot(request=Request, name="footer")
+@template(TEMPLATES["footer.pt"], raw=True)
 def sidebar(request, name):
     return dict(request=request)
