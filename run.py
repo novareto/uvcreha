@@ -33,7 +33,7 @@ def session_middleware(config):
     # Session middleware
     current = pathlib.Path(__file__).parent
     folder = current / "sessions"
-    handler = cromlech.sessions.file.FileStore(folder, 300)
+    handler = cromlech.sessions.file.FileStore(folder, 3000)
     manager = cromlech.session.SignedCookieManager(
         "secret", handler, cookie="my_sid")
     return cromlech.session.WSGISessionManager(

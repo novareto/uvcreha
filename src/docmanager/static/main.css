@@ -105,3 +105,7 @@ a:not([href]):not([tabindex]) {
 nav .breadcrumb-item {
     display: inline-block !important;
 }
+
+html body #content {
+    padding: 4rem 0 2rem 0;
+}

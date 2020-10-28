@@ -29,4 +29,5 @@ class Request(Overhead, Validatable):
 
     @property
     def user(self):
+        import pdb; pdb.set_trace()
         return self.environ.get(self.app.config.env.user)
