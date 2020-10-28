@@ -12,7 +12,7 @@ from horseman.meta import Overhead
 TEMPLATES = TemplateLoader(str((Path(__file__).parent / "templates").resolve()), ".pt")
 
 
-def template_endpoint(template, layout=None, raw=True):
+def template(template, layout=None, raw=True):
     @wrapt.decorator
     def render(endpoint, instance, args, kwargs):
         result = endpoint(*args, **kwargs)
@@ -82,9 +82,6 @@ class Layout:
         ns = {**self._namespace, **extra}
         return self._template.render(content=content, **ns)
 
-    def view(template):
-        return template_endpoint(template, layout=self, raw=False)
-
     @reg.dispatch_method(reg.match_key("name"))
     def slot(self, name):
         raise RuntimeError("Unknown slot.")
@@ -100,24 +97,24 @@ layout = Layout("layout.pt")
 
 
 @layout.register_slot(name="sitecap")
-@template_endpoint(template=TEMPLATES["sitecap.pt"])
+@template(template=TEMPLATES["sitecap.pt"])
 def sitecap(request):
     return dict(request=request)
 
 
 @layout.register_slot(name="globalmenu")
-@template_endpoint(TEMPLATES["globalmenu.pt"], layout=None, raw=True)
+@template(TEMPLATES["globalmenu.pt"], layout=None, raw=True)
 def globalmenu(request):
     return dict(request=request)
 
 
 @layout.register_slot(name="navbar")
-@template_endpoint(TEMPLATES["navbar.pt"], layout=None, raw=True)
+@template(TEMPLATES["navbar.pt"], layout=None, raw=True)
 def navbar(request):
     return dict(request=request)
 
 
 @layout.register_slot(name="sidebar")
-@template_endpoint(TEMPLATES["sidebar.pt"], layout=None, raw=True)
+@template(TEMPLATES["sidebar.pt"], layout=None, raw=True)
 def sidebar(request):
     return dict(request=request)

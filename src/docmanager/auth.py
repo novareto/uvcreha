@@ -15,16 +15,15 @@ class Auth:
     def __init__(self, app):
         self.app = app
 
-    def from_credentials(self, credentials: dict) -> User:
+    def from_credentials(self, credentials: dict):
         USERS = self.app.db.connector.collection('users')
         if (user := USERS.get(credentials['username'])):
             if credentials['password'] == user.get('password'):
-                user = User(**credentials).instanciate(
-                    request, credentials['username'])
-                return user
+                user_class = self.app.models['user']
+                return user_class(**user)
         return None
 
-    def identify(self, environ: Environ) -> User:
+    def identify(self, environ: Environ):
         if (user := environ.get(self.app.config.env.user)) is not None:
             return user
         session = environ.get(self.app.config.env.session)
@@ -32,7 +31,7 @@ class Auth:
             return user
         return None
 
-    def remember(self, environ: Environ, user: User):
+    def remember(self, environ: Environ, user):
         session = environ.get(self.app.config.env.session)
         environ[self.app.config.env.user] = user
 
