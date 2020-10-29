@@ -52,6 +52,10 @@ class User(BaseModel):
             return cls(**userdata)
         raise LookupError(f'User {userid} is unknown.')
 
+    @property
+    def title(self):
+        return self.username
+
 
 class Document(BaseModel):
     body: str

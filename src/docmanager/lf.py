@@ -1,9 +1,10 @@
 import wtforms
 import horseman.response
 
-from docmanager.app import ROUTER
+from docmanager.app import application 
 from docmanager.utils.form import BaseForm, FormView, Triggers
 from docmanager.request import Request
+from docmanager.layout import template, TEMPLATES
 
 
 class LoginForm(BaseForm):
@@ -19,7 +20,7 @@ class LoginForm(BaseForm):
     )
 
 
-@ROUTER.register("/reg")
+@application.routes.register("/reg")
 class RegistrationForm(FormView):
 
     title = "Registration Form"
@@ -46,3 +47,35 @@ class RegistrationForm(FormView):
     @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
     def abbrechen(form, *args):
         pass
+
+
+@application.routes.register("/edit_pw")
+class EditPassword(FormView):
+
+    title = u"Passwort ändern"
+    description = u"Hier können Sie Ihr Passwort ändern"
+    form = LoginForm
+    action = "edit_pw"
+    triggers = Triggers()
+
+
+
+    @triggers.register('speichern', 'Speichern')
+    def speichern(view, request, data, files):
+        form = view.form(data)
+        if not form.validate():
+            return form
+        return horseman.response.Response.create(
+            302, headers={'Location': "/%s" % self.action})
+
+    @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
+    def abbrechen(form, *args):
+        pass
+
+
+
+
+@application.routes.register("/preferences", methods=['GET'], permissions={'document.view'})
+@template(template=TEMPLATES["preferences.pt"], layout_name='default', raw=False)
+def preferences(request: Request):
+    return dict(request=request)

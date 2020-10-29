@@ -74,7 +74,7 @@ class Routes(autoroutes.Routes):
                 method=method,
                 endpoint=endpoint,
                 params=params,
-                extras=methods.pop('extras', {})
+                extras=methods.get('extras', {})
                 )
         except LookupError:
             raise HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)

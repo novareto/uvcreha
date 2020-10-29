@@ -6,6 +6,7 @@ from http import HTTPStatus
 import horseman.meta
 from horseman.http import HTTPError
 
+from docmanager import logger
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.models import ModelsRegistry
@@ -103,13 +104,16 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         return logging.getLogger(self.config.logger.name)
 
     def check_permissions(self, route, environ):
+        #logger.debug("Route %s --> %s" %(route, route.extras.get('permissions')))
+
         if permissions := route.extras.get('permissions'):
             user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
-            import pdb; pdb.set_trace()
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
+        #else:
+        #    logger.debug('No Permission for route %s' %route)
 
     def resolve(self, path_info, environ):
         try:
@@ -118,6 +122,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             if route is None:
                 return None
             environ['horseman.path.params'] = route.params
+            logger.debug("Resolve User %s" % environ.get(self.config.env.user))
             self.check_permissions(route, environ)
             request = self.request_factory(self, environ, route)
             return route.endpoint(request)

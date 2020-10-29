@@ -60,7 +60,7 @@ div#siguv-navigation li.active .menu-item-title {
 }
 
 #portal-navigation .menu .menu-section .menu-profile .profile-image {
-    background-image: url('/fanstatic/uvc.siguvtheme/defaultUser.png');
+    background-image: url('/fanstatic/adhoc/defaultUser.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

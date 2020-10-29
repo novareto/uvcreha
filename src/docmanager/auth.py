@@ -3,14 +3,18 @@ from horseman.prototyping import Environ
 
 class Auth:
 
-    def __init__(self, database, config):
+    def __init__(self, database, config, models):
         self.database = database
         self.config = config
+        self.models = models
 
     def from_credentials(self, credentials: dict) -> dict:
         users = self.database.connector.collection('users')
         if (user := users.get(credentials['username'])):
             if credentials['password'] == user.get('password'):
+                factory = self.models.get('user')
+                if factory:
+                    return factory(**credentials)
                 return user
         return None
 

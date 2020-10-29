@@ -1,0 +1,17 @@
+<h1> Einstellungen </h1>
+<p class="lead"> Hier können Sie Einstellungen zu Ihrem Benutzeraccount vornehmen </p>
+
+<ul>
+  <li>
+    <a href="/edit_pw"> Passwort ändern </a>
+  </li>
+  <li>
+    <a href="/edit_metadata"> Stammdaten verwalten </a>
+  </li>
+  <li>
+    <a href="/edit_mail"> Email Adresse ändern </a>
+  </li>
+  <li>
+    <a href="/edit_news"> Benachrichtigungen verwalten </a>
+  </li>
+</ul>

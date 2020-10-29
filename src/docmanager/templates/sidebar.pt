@@ -1,24 +1,27 @@
 <div id="portal-mainnavigation">
   <div id="portal-navigation-cover"></div>
   <nav id="portal-navigation" class="sidebar-left">
-    <div class="menu">
+    <div class="menu" tal:condition="request.user">
       <div id="sidebar-section-profile" class="menu-section">
         <div class="menu-profile">
           <div class="profile-image"></div>
           <div class="profile-info">
             <div class="profile-name">
-              <a href="/meinedaten"> <span tal:content="request.user.__class__"> </a>
+              <a href="/meinedaten"> <span tal:content="request.user.title"> </a>
             </div>
           </div>
           </div>
       </div>
       <div class="menu-section">
         <div class="menu-section-title">Links</div>
-          <div class="menu-section-content">
-            <a href="/logout">
-              <span class="menu-item-title"> Logout </span>
-            </a>
-          </div>
+        <div class="menu-section-content">
+          <a href="/logout">
+            <span class="menu-item-title"> Logout </span>
+          </a>
+          <a href="/preferences">
+            <span class="menu-item-title"> Einstellungen </span>
+          </a>
+        </div>
       </div>
       <!--
       <div class="menu-section" id="sidebar-section-navigation"

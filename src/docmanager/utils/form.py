@@ -30,10 +30,15 @@ class FormView(APIView):
     triggers: Triggers = Triggers()
     form: wtforms.Form
 
+    def setupForm(self):
+        return self.form() 
+
     @template(TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def GET(self, request: Request):
+        form = self.setupForm()
+        import pdb; pdb.set_trace()
         return {
-            'form': self.form(),
+            'form': form,
             'view': self,
             'error': None,
             'path': request.route.path
