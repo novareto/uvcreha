@@ -2,22 +2,32 @@ import wtforms
 import horseman.response
 
 from docmanager.app import application
-from docmanager.utils.form import BaseForm, FormView, Triggers
+from docmanager.utils.form import FormView, Triggers
 from docmanager.request import Request
 from docmanager.layout import template, TEMPLATES
 
 
-class LoginForm(BaseForm):
+class Schema(dict):
+
+    def omit(self, *args):
+        data = self.copy()
+        data.pop(*args)
+        return data
+
+
+LoginSchema = Schema(
 
     username = wtforms.fields.StringField(
         'Username',
         validators=(wtforms.validators.InputRequired(),)
-    )
+    ),
 
     password = wtforms.fields.PasswordField(
         'Password',
         validators=(wtforms.validators.InputRequired(),)
     )
+    )
+
 
 
 @application.routes.register("/reg")
@@ -25,12 +35,13 @@ class RegistrationForm(FormView):
 
     title = "Registration Form"
     description = "Please fill out all details"
-    form = LoginForm
+    schema = LoginSchema
     action = "reg"
     triggers = Triggers()
 
     @triggers.register('speichern', 'Speichern')
     def speichern(view, request, data, files):
+        
         form = view.form(data)
         if not form.validate():
             return form
@@ -54,18 +65,17 @@ class EditPassword(FormView):
 
     title = u"Passwort ändern"
     description = u"Hier können Sie Ihr Passwort ändern"
-    form = LoginForm
-    del form.username
+    schema = LoginSchema.omit('username')
     action = "edit_pw"
     triggers = Triggers()
 
     @triggers.register('speichern', 'Speichern')
     def speichern(view, request, data, files):
-        form = view.form(data)
+        form = view.setupForm(formdata=data)
         if not form.validate():
-            return form
+            return dict(form=form, view=view)
         return horseman.response.Response.create(
-            302, headers={'Location': "/%s" % self.action})
+            302, headers={'Location': "/%s" % view.action})
 
     @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
     def abbrechen(form, *args):
