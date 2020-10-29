@@ -47,7 +47,7 @@ def run(config):
     app.database = database
     app.config = config.app
     app.request_factory = uvcreha.example.app.CustomRequest
-    auth = docmanager.auth.Auth(database, config.app.env)
+    auth = docmanager.auth.Auth(database, config.app.env, app.models)
     app.plugins.register(name="authentication", plugin=auth)
 
     app.middlewares.register(
@@ -56,6 +56,8 @@ def run(config):
         fanstatic_middleware(config.app.assets), order=0)
     app.middlewares.register(auth, order=2)
 
+
+    app.models.load()
     # Serving the app
     logger = logging.getLogger('docmanager')
     logger.info(f"Server Started on http://{config.server.host}:{config.server.port}")
