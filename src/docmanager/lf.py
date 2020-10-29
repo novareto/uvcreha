@@ -32,22 +32,22 @@ LoginSchema = Schema(
 @application.routes.register("/reg")
 class RegistrationForm(FormView):
 
-    title = "Registration Form"
-    description = "Please fill out all details"
-    schema = LoginSchema
-    action = "reg"
-    triggers = Triggers()
+    title: str = "Registration Form"
+    description: str = "Please fill out all details"
+    schema: Schema = LoginSchema
+    action: str = "reg"
+    triggers: Triggers = Triggers()
 
     @triggers.register(
         'speichern', 'Speichern')
-    def speichern(view, request, data, files):
-        form = view.form(data)
+    def speichern(view, request):
+        form = view.setupForm(formdata=request.data['form'])
         if not form.validate():
             return form
 
         auth = request.app.plugins.get('authentication')
         if (user := auth.from_credentials(
-                data.to_dict())) is not None:
+                request.data['form'].to_dict())) is not None:
             auth.remember(request.environ, user)
             print('The login was successful')
             return horseman.response.Response.create(

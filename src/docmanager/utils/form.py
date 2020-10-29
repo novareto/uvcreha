@@ -58,11 +58,7 @@ class FormView(APIView):
     @template(
         TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def POST(self, request: Request):
-        request.environ['wsgi.input'].seek(0)
-        data, files = parse(
-            request.environ['wsgi.input'], request.content_type)
         for trigger_id in self.triggers.keys():
-            if trigger_id in data:
-                return self.triggers[trigger_id]['method'](
-                    self, request, data, files)
+            if trigger_id in request.data['form']:
+                return self.triggers[trigger_id]['method'](self, request)
         raise KeyError('No action found')
