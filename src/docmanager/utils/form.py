@@ -36,7 +36,6 @@ class FormView(APIView):
     @template(TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def GET(self, request: Request):
         form = self.setupForm()
-        import pdb; pdb.set_trace()
         return {
             'form': form,
             'view': self,

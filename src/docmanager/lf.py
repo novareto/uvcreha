@@ -55,6 +55,7 @@ class EditPassword(FormView):
     title = u"Passwort ändern"
     description = u"Hier können Sie Ihr Passwort ändern"
     form = LoginForm
+    del form.username
     action = "edit_pw"
     triggers = Triggers()
 
