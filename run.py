@@ -56,12 +56,14 @@ def run(config):
         fanstatic_middleware(config.app.assets), order=0)
     app.middlewares.register(auth, order=2)
 
-
     app.models.load()
+
     # Serving the app
     logger = logging.getLogger('docmanager')
-    logger.info(f"Server Started on http://{config.server.host}:{config.server.port}")
-    bjoern.run(app, config.server.host, int(config.server.port), reuse_port=True)
+    logger.info(
+        f"Server started on http://{config.server.host}:{config.server.port}")
+    bjoern.run(
+        app, config.server.host, int(config.server.port), reuse_port=True)
 
 if __name__ == "__main__":
     run()
