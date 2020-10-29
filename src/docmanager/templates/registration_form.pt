@@ -22,7 +22,4 @@
       </tal:action>
     </div>
   </form>
-  <!--
-      <div tal:content="slot: 'footer'">
-  -->
 </div>

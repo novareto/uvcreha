@@ -4,6 +4,7 @@ from horseman.meta import APIView
 from docmanager.layout import template, TEMPLATES
 from docmanager.request import Request
 from horseman.parsing import parse
+from horseman.http import Multidict
 
 
 class Triggers(collections.OrderedDict):
@@ -21,6 +22,7 @@ class Triggers(collections.OrderedDict):
         return add_trigger
 
 
+
 class FormView(APIView):
 
     title: str = ""
@@ -28,10 +30,22 @@ class FormView(APIView):
     action: str = ""
     method: str = "POST"
     triggers: Triggers = Triggers()
-    form: wtforms.Form
+    schema: dict
 
-    def setupForm(self):
-        return self.form() 
+    def setupMeta(self):
+        class Meta(wtforms.meta.DefaultMeta):
+            def render_field(self, field, render_kw):
+                class_ = 'form-control'
+                if field.errors:
+                    class_ += ' is-invalid'
+                render_kw.update({'class_': class_})
+                return field.widget(field, **render_kw)
+        return Meta()
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = wtforms.form.BaseForm(self.schema, meta=self.setupMeta())
+        form.process(data=data, formdata=formdata)
+        return form
 
     @template(TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def GET(self, request: Request):
@@ -57,12 +71,3 @@ class FormView(APIView):
         return {'form': form, 'error': 'auth', 'path': request.route.path}
 
 
-class BaseForm(wtforms.Form):
-
-    class Meta:
-        def render_field(self, field, render_kw):
-            class_ = 'form-control'
-            if field.errors:
-                class_ += ' is-invalid'
-            render_kw.update({'class_': class_})
-            return field.widget(field, **render_kw)
