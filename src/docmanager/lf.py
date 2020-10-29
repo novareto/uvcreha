@@ -10,24 +10,23 @@ from docmanager.layout import template, TEMPLATES
 class Schema(dict):
 
     def omit(self, *args):
-        data = self.copy()
-        data.pop(*args)
-        return data
+        return self.__class__(
+            {k: v for k, v in self.items() if k not in args})
+
+    def select(self, *args):
+        return self.__class__(
+            {k: v for k, v in self.items() if k in args})
 
 
 LoginSchema = Schema(
-
     username = wtforms.fields.StringField(
         'Username',
-        validators=(wtforms.validators.InputRequired(),)
-    ),
+        validators=(wtforms.validators.InputRequired(),)),
 
     password = wtforms.fields.PasswordField(
         'Password',
-        validators=(wtforms.validators.InputRequired(),)
-    )
-    )
-
+        validators=(wtforms.validators.InputRequired(),))
+)
 
 
 @application.routes.register("/reg")
@@ -39,12 +38,13 @@ class RegistrationForm(FormView):
     action = "reg"
     triggers = Triggers()
 
-    @triggers.register('speichern', 'Speichern')
+    @triggers.register(
+        'speichern', 'Speichern')
     def speichern(view, request, data, files):
-        
         form = view.form(data)
         if not form.validate():
             return form
+
         auth = request.app.plugins.get('authentication')
         if (user := auth.from_credentials(
                 data.to_dict())) is not None:
@@ -55,7 +55,8 @@ class RegistrationForm(FormView):
         return horseman.response.Response.create(
             302, headers={'Location': '/reg'})
 
-    @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
+    @triggers.register(
+        'abbrechen', 'Abbrechen', _class="btn btn-secondary")
     def abbrechen(form, *args):
         pass
 
@@ -77,7 +78,8 @@ class EditPassword(FormView):
         return horseman.response.Response.create(
             302, headers={'Location': "/%s" % view.action})
 
-    @triggers.register('abbrechen', 'Abbrechen', _class="btn btn-secondary")
+    @triggers.register(
+        'abbrechen', 'Abbrechen', _class="btn btn-secondary")
     def abbrechen(form, *args):
         pass
 
