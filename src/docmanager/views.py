@@ -14,6 +14,12 @@ def index(request: Request):
     return dict(request=request)
 
 
+@application.routes.register('/view', methods=['GET'])
+@template(template=TEMPLATES["index.pt"], layout_name='default', raw=False)
+def someview(request: Request):
+    return {}
+
+
 @application.routes.register('/doc')
 @template(template=TEMPLATES['swagger.pt'], raw=False)
 def doc_swagger(request: Request):
