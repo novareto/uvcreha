@@ -15,9 +15,6 @@ from docmanager.request import Request
 from docmanager.utils.openapi import generate_doc
 
 
-ROUTER = Routes()
-
-
 class UIRegistry:
 
     @reg.dispatch_method(
@@ -89,7 +86,9 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         'models', 'request_factory')
 
     def __init__(self, config=None, database=None,
-                 routes=ROUTER, request_factory=Request):
+                 routes=None, request_factory=Request):
+        if routes is None:
+            routes = Routes()
         self.routes = routes
         self.config = config
         self.database = database
@@ -142,12 +141,6 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         for middleware in self.middlewares:
             caller = middleware(caller)
         return caller(environ, start_response)
-
-    def start(self, config):
-        self.models.load()
-        self.logger.info(
-            f"Server Started on http://{config.host}:{config.port}")
-        bjoern.run(app, host, int(port), reuse_port=True)
 
 
 application = Application()
