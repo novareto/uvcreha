@@ -1,7 +1,7 @@
 import wtforms
 import horseman.response
 
-from docmanager.app import application 
+from docmanager.app import application
 from docmanager.utils.form import BaseForm, FormView, Triggers
 from docmanager.request import Request
 from docmanager.layout import template, TEMPLATES
@@ -58,8 +58,6 @@ class EditPassword(FormView):
     action = "edit_pw"
     triggers = Triggers()
 
-
-
     @triggers.register('speichern', 'Speichern')
     def speichern(view, request, data, files):
         form = view.form(data)
@@ -73,9 +71,9 @@ class EditPassword(FormView):
         pass
 
 
-
-
-@application.routes.register("/preferences", methods=['GET'], permissions={'document.view'})
-@template(template=TEMPLATES["preferences.pt"], layout_name='default', raw=False)
+@application.routes.register(
+    "/preferences", methods=['GET'], permissions={'document.view'})
+@template(
+    template=TEMPLATES["preferences.pt"], layout_name='default', raw=False)
 def preferences(request: Request):
     return dict(request=request)
