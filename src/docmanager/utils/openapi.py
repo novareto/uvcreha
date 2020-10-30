@@ -35,8 +35,6 @@ def construct_base_open_api(api: dict) -> OpenAPI:
                     }
             )
         paths[path] = PathItem(**items)
-    print(paths)
-    import pdb; pdb.set_trace()
     return OpenAPI(
         info=Info(
             title="ADHoc API",

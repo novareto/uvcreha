@@ -5,6 +5,7 @@ from docmanager.app import application
 from docmanager.utils.form import FormView, Triggers
 from docmanager.request import Request
 from docmanager.layout import template, TEMPLATES
+from docmanager.utils.flashmessages import Message
 
 
 class Schema(dict):
@@ -41,14 +42,14 @@ class RegistrationForm(FormView):
 
     @triggers.register('speichern', 'Speichern')
     def speichern(view, request, data, files):
-        
-        form = view.form(data)
+        form = view.setupForm(formdata=data)
         if not form.validate():
             return form
         auth = request.app.plugins.get('authentication')
         if (user := auth.from_credentials(
                 data.to_dict())) is not None:
             auth.remember(request.environ, user)
+            request.flash = Message(type='info', body="HHHHHHHHHHH")
             print('The login was successful')
             return horseman.response.Response.create(
                 302, headers={'Location': '/'})
@@ -74,6 +75,7 @@ class EditPassword(FormView):
         form = view.setupForm(formdata=data)
         if not form.validate():
             return dict(form=form, view=view)
+        import pdb; pdb.set_trace()
         return horseman.response.Response.create(
             302, headers={'Location': "/%s" % view.action})
 
