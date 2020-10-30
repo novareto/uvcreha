@@ -1,10 +1,11 @@
 import re
+from http import HTTPStatus
+
 import autoroutes
 import dataclasses
 import roughrider.routing.route
 import roughrider.validation.dispatch
-
-
+from horseman.http import HTTPError
 from docmanager import logger
 
 
