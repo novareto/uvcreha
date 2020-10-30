@@ -54,7 +54,7 @@ class SQLFolder(Base):
     az = Column(String, primary_key=True)
     creation_date = Column(DateTime, default=datetime.datetime.utcnow)
     modification_date = Column(DateTime, default=datetime.datetime.utcnow)
-    username = Column(Integer, ForeignKey("users.username"))
+    username = Column(String, ForeignKey("users.username"))
 
     user = relationship("SQLUser", back_populates="folders")
     documents = relationship(
@@ -81,3 +81,7 @@ class SQLDocument(Base):
 User = sqlalchemy_to_pydantic(SQLUser)
 Folder = sqlalchemy_to_pydantic(SQLFolder)
 Document = sqlalchemy_to_pydantic(SQLDocument)
+
+
+class UserWithFolders(User):
+    folders: List[Folder] = []
