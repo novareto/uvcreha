@@ -1,21 +1,19 @@
 from horseman.prototyping import Environ
+import docmanager.sql
 
 
 class Auth:
 
-    def __init__(self, database, config, models):
+    def __init__(self, database, config):
         self.database = database
         self.config = config
-        self.models = models
 
-    def from_credentials(self, credentials: dict) -> dict:
-        users = self.database.connector.collection('users')
-        if (user := users.get(credentials['username'])):
-            if credentials['password'] == user.get('password'):
-                factory = self.models.get('user')
-                if factory:
-                    return factory(**credentials)
-                return user
+    def from_credentials(self, credentials: dict) -> docmanager.sql.User:
+        session = database.new_session()
+        user = session.query(docmanager.sql.SQLUser).filter_by(
+            **credentials)
+        if user is not None:
+            return user.from_orm(user).dict()
         return None
 
     def identify(self, environ: Environ):

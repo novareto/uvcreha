@@ -25,6 +25,7 @@ install_requires = [
     'roughrider.validation',
     'wrapt',
     'wtforms',
+    'pydantic-sqlalchemy',
 ]
 
 test_requires = [

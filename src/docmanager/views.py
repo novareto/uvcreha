@@ -1,8 +1,9 @@
+import horseman.response
 from roughrider.validation.types import Factory
 from docmanager.app import application
 from docmanager.layout import template, TEMPLATES
 from docmanager.request import Request
-from docmanager.models import User, Document, File
+from docmanager import sql
 
 
 @application.routes.register('/', methods=['GET'], permissions={'document.view'})
@@ -20,36 +21,19 @@ def someview(request: Request):
     return {}
 
 
-@application.routes.register('/doc')
-@template(template=TEMPLATES['swagger.pt'], raw=False)
-def doc_swagger(request: Request):
-    return {'url': '/openapi.json'}
-
-
-@application.routes.register('/openapi.json')
-def openapi(request: Request):
-    open_api = generate_doc(request.app.routes)
-    return horseman.response.reply(
-        200,
-        body=open_api.json(by_alias=True, exclude_none=True, indent=2),
-        headers={'Content-Type': 'application/json'}
-    )
-
-
 @application.routes.register('/user.add', methods=['POST', 'PUT'], ns="api")
-def add_user(request: Request, user: User):
-    users = request.app.db.connector.collection('users')
-    data = user.dict()
-    data['_key'] = user.username
-    metadata = users.insert(data)
+def add_user(request: Request, user: sql.User):
+    request.database_session.add(sql.SQLUser(**user.dict()))
+    request.database_session.commit()
     return horseman.response.json_reply(
-        201, body={'userid': metadata['_key']})
+        201, body={'id': user.username})
 
 
 @application.routes.register('/users/{userid}', methods=['GET'])
-def user_view(user: Factory(User)):
+def user_view(user: Factory(sql.SQLUser)):
+    model = sql.User.from_orm(user)
     return horseman.response.reply(
-        200, body=user.json(),
+        200, body=model.json(),
         headers={'Content-Type': 'application/json'})
 
 
@@ -68,20 +52,22 @@ def user_delete(request: Request, userid: str):
     users.delete(userid)
     return horseman.response.reply(204)
 
+
 @application.routes.register(
-    '/users/{userid}/file.add',
+    '/users/{userid}/folder.add',
     methods=['POST', 'PUT']
 )
-def add_file(request: Request, userid: str, file: File):
-    key = request.app.db.add_file(userid, file.dict())
+def add_folder(request: Request, userid: str, folder: sql.Folder):
+    key = request.app.db.add_folder(userid, folder.dict())
     return horseman.response.json_reply(
         201, body={'docid': key})
 
+
 @application.routes.register(
-    '/users/{userid}/{file_id}/document.add',
+    '/users/{userid}/{folder_id}/document.add',
     methods=['POST', 'PUT']
 )
-def add_document(request: Request, userid: str, file_id:str, document: Document):
-    key = request.app.db.add_document(userid, file_id, document.dict())
+def add_document(request: Request, userid: str, folder_id: str, document: sql.Document):
+    key = request.app.db.add_document(userid, folder_id, document.dict())
     return horseman.response.json_reply(
         201, body={'docid': key})
