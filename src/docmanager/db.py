@@ -1,5 +1,4 @@
 from collections import namedtuple
-from cached_property import cached_property
 from arango import ArangoClient
 from functools import cached_property
 from roughrider.validation.types import Validatable

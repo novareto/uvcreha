@@ -9,7 +9,6 @@ import fanstatic
 
 import cromlech.session
 import cromlech.sessions.file
-from docmanager.db import Database, create_graph
 
 import docmanager
 import docmanager.app
@@ -40,14 +39,20 @@ def run(config):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
-    database = Database(**config.app.db)
-    create_graph(database)
+    # Arango
+    # from docmanager.db import Database, create_graph
+    # database = Database(**config.app.db)
+    # create_graph(database)
+
+    # SQL
+    from docmanager.sql import Database
+    database = Database(**config.app.sql)
 
     app = docmanager.app.application
     app.database = database
     app.config = config.app
     app.request_factory = uvcreha.example.app.CustomRequest
-    auth = docmanager.auth.Auth(database, config.app.env, app.models)
+    auth = docmanager.auth.Auth(database, config.app.env)
     app.plugins.register(name="authentication", plugin=auth)
 
     app.middlewares.register(
@@ -55,8 +60,6 @@ def run(config):
     app.middlewares.register(
         fanstatic_middleware(config.app.assets), order=0)
     app.middlewares.register(auth, order=2)
-
-    app.models.load()
 
     # Serving the app
     logger = logging.getLogger('docmanager')

@@ -39,7 +39,7 @@ def template(template, layout_name=None, raw=False):
                 request.environ["HTTP_HOST"],
                 request.environ["SCRIPT_NAME"],
             )
-            messages = request.flash
+            #messages = request.flash
             #if (fm := getattr(request, "flash", None)) is not None:
             #    messages = fm
             #else:
@@ -53,7 +53,8 @@ def template(template, layout_name=None, raw=False):
                 request=request,
                 context=object(),
                 user=None,
-                messages=messages,
+                #messages=messages,
+                messages=[],
                 view=instance,
             )
             if raw:

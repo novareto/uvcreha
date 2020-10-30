@@ -1,4 +1,5 @@
 import abc
+from typing import Union, Optional
 from datetime import datetime
 from pkg_resources import iter_entry_points
 
@@ -18,68 +19,68 @@ class ProtectedModel(abc.ABC):
         pass
 
 
-class File(BaseModel):
+
+class Model(BaseModel, abc.ABC):
+
+    key_: Optional[str] = Field(alias="_key")
+    rev_: Optional[str] = Field(alias="_rev")
+
+    @property
+    def id_(self) -> Optional[str]:
+        if self.key_ is None:
+            return None
+        return f"{self.__collection__}/{self.key_}"
+
+    def data(self) -> dict:
+        data = self.dict(by_alias=True)
+        data["_id"] = self.id_
+        return data
+
+
+class Relation(Model):
+
+    __edge__: str = None
+
+    from_: Union[str, Model] = Field(alias="_from")
+    to_: Union[str, Model] = Field(alias="_to")
+
+
+class Document(Model):
+
+    __collection__: str = None
+
+    name: str
+    state: str # ENUM
+    content_type: str
+    modification_date: datetime = Field(default_factory=datetime.utcnow)
+
+    @classmethod
+    def instanciate(cls, request: Request, key: str, **bindable):
+        connector = request.app.db.connector
+        documents = connector.collection(cls.__collection__)
+        if (data := documents.get(key)) is not None:
+            return cls(**data)
+        raise LookupError(
+            f'Document {cls.__collection__}/{key} is unknown.')
+
+
+class File(Document):
+
+    __collection__ = 'files'
 
     az: str
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Base(BaseModel):
-    name: str
-    content_type: str
-    mod_date: datetime = Field(default_factory=datetime.utcnow)
-    state: str #ENUM
+class User(Document):
+    __collection__ = 'users'
 
-    @classmethod
-    def instanciate(cls, request: Request, docid: str, **bindable):
-        connector = request.app.db.connector
-        documents = connector.collection('documents')
-        if (docdata := documents.get(docid)) is not None:
-            return cls(**docdata)
-        raise LookupError(f'Document {docid} is unknown.')
-
-
-class User(BaseModel):
     username: str
     password: str
-    _key: str
-    _id: str
-    permissions: dict = {'document.view'}
-
-    @classmethod
-    def instanciate(cls, request: Request, userid: str, **bindable):
-        connector = request.app.database.connector
-        users = connector.collection('users')
-        if (userdata := users.get(userid)) is not None:
-            return cls(**userdata)
-        raise LookupError(f'User {userid} is unknown.')
-
-    @property
-    def title(self):
-        return self.username
-
-    @property
-    def collection(self, request):
-        connector = request.app.database.connector
-        return connector.collection('users')
+    permissions: set = {'document.view'}
 
 
-class Document(BaseModel):
+class Document(Document):
+    __collection__ = 'documents'
+
     body: str
-
-
-class ModelsRegistry(dict):
-    __slots__ = ()
-
-    def register(self, name, model):
-        if name in self:
-            raise KeyError(f'Model {name} already exists.')
-        if not issubclass(model, BaseModel):
-            raise ValueError(f'Model {name} is not a valid pydatic model.')
-        self[name] = model
-
-    def load(self):
-        self.clear()
-        for loader in iter_entry_points('docmanager.models'):
-            logger.info(f'Register Model "{loader.name}"')
-            self.register(loader.name, loader.load())

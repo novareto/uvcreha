@@ -5,7 +5,7 @@ from docmanager.app import application
 from docmanager.utils.form import FormView, Triggers
 from docmanager.request import Request
 from docmanager.layout import template, TEMPLATES
-from docmanager.utils.flashmessages import Message
+#from docmanager.utils.flashmessages import Message
 
 
 class Schema(dict):
@@ -50,7 +50,7 @@ class RegistrationForm(FormView):
         if (user := auth.from_credentials(
                 request.data['form'].to_dict())) is not None:
             auth.remember(request.environ, user)
-            request.flash = Message(type='info', body="Sie sind nun angemeldet!")
+            #request.flash = Message(type='info', body="Sie sind nun angemeldet!")
             return horseman.response.Response.create(
                 302, headers={'Location': '/'})
         return horseman.response.Response.create(
