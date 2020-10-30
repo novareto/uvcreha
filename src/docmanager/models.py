@@ -42,11 +42,13 @@ class Base(BaseModel):
 class User(BaseModel):
     username: str
     password: str
+    _key: str
+    _id: str
     permissions: dict = {'document.view'}
 
     @classmethod
     def instanciate(cls, request: Request, userid: str, **bindable):
-        connector = request.app.db.connector
+        connector = request.app.database.connector
         users = connector.collection('users')
         if (userdata := users.get(userid)) is not None:
             return cls(**userdata)
@@ -55,6 +57,11 @@ class User(BaseModel):
     @property
     def title(self):
         return self.username
+
+    @property
+    def collection(self, request):
+        connector = request.app.database.connector
+        return connector.collection('users')
 
 
 class Document(BaseModel):

@@ -1,5 +1,6 @@
 from horseman.meta import Overhead
 from roughrider.validation.types import Validatable
+from .utils.flashmessages import Message, Messages
 
 
 class Request(Overhead, Validatable):
@@ -30,3 +31,15 @@ class Request(Overhead, Validatable):
     @property
     def user(self):
         return self.environ.get(self.app.config.env.user)
+
+    @property
+    def flash(self):
+        if messages := self.session.get('flashmessages'):
+            return [message for message in Messages.parse_raw(messages).messages]
+        return []
+   
+    @flash.setter
+    def flash(self, message: Message):
+        messages = self.session.get('flashmessages', Messages())
+        messages.messages.append(message)
+        self.session['flashmessages'] = messages.json()

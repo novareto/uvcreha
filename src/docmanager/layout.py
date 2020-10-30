@@ -39,11 +39,11 @@ def template(template, layout_name=None, raw=False):
                 request.environ["HTTP_HOST"],
                 request.environ["SCRIPT_NAME"],
             )
-
-            if (fm := getattr(request, "flash", None)) is not None:
-                messages = fm.hasMessages and fm.exhaustMessages() or None
-            else:
-                messages = None
+            messages = request.flash
+            #if (fm := getattr(request, "flash", None)) is not None:
+            #    messages = fm
+            #else:
+            #    messages = None
 
             content = template.render(macros=layout.macros, **result)
             body = layout.render(
