@@ -57,7 +57,7 @@ class LoginView(APIView):
 
 
 @application.routes.register('/logout')
-def LogoutView(request, environ):
+def LogoutView(request: Request):
     request.session.store.clear(request.session.sid)
     return horseman.response.Response.create(
             302, headers={'Location': '/'})

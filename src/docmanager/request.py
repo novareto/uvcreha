@@ -1,12 +1,11 @@
+import horseman.parsing
 from horseman.meta import Overhead
-from roughrider.validation.types import Validatable
-#from .utils.flashmessages import Message, Messages
 
 
-class Request(Overhead, Validatable):
+class Request(Overhead):
 
     __slots__ = (
-        'app', 'environ', 'route', 'data', 'method',
+        'app', 'environ', 'route', 'data', 'method', '_extracted'
     )
 
     def __init__(self, app, environ, route):
@@ -15,14 +14,12 @@ class Request(Overhead, Validatable):
         self.route = route
         self.method = environ['REQUEST_METHOD']
         self.data = {}
+        self._extracted = False
 
     @property
     def content_type(self):
         if self.method in ('POST', 'PATCH', 'PUT'):
             return self.environ.get('CONTENT_TYPE')
-
-    def set_data(self, data):
-        self.data = data
 
     @property
     def session(self):
@@ -31,6 +28,23 @@ class Request(Overhead, Validatable):
     @property
     def user(self):
         return self.environ.get(self.app.config.env.user)
+
+    def set_data(self, data):
+        self.data = data
+
+    def extract(self):
+        if self._extracted:
+            return self.data
+
+        self._extracted = True
+        if content_type := self.content_type:
+            form, files = horseman.parsing.parse(
+                self.environ['wsgi.input'], content_type)
+            self.set_data({'form': form, 'files': files})
+
+        return self.data
+
+
 
     #@property
     #def flash(self):

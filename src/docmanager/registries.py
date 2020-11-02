@@ -1,20 +1,55 @@
 import reg
+from typing import Callable
+from heapq import heappush
 from pkg_resources import iter_entry_points
 
 
-class ModelsRegistry(dict):
-    __slots__ = ()
+class NamedComponents:
 
-    def register(self, name, model):
-        if name in self:
-            raise KeyError(f'Model {name} already exists.')
-        self[name] = model
+    __slots__ = ('_components',)
 
-    def load(self):
-        self.clear()
-        for loader in iter_entry_points('docmanager.models'):
-            logger.info(f'Register model "{loader.name}"')
-            self.register(loader.name, loader.load())
+    def __init__(self):
+        self._components = {}
+
+    def register(self, component, name):
+        self._components.__setitem__(name, component)
+
+    def get(self, name):
+        return self._components.get(name)
+
+    def __len__(self):
+        return len(self._components)
+
+    def __iter__(self):
+        return iter(self._components)
+
+    def component(self, name):
+        """Component decorator
+        """
+        def register_component(component):
+            self.register(component, name)
+            return component
+        return register_component
+
+
+class PriorityList:
+
+    __slots__ = ('_components',)
+
+    def __init__(self):
+        self._components = []
+
+    def register(self, item: Callable, priority: int):
+        heappush(self._components, (priority, item))
+
+    def __len__(self):
+        return len(self._components)
+
+    def __iter__(self):
+        return iter(self._components)
+
+    def __reversed__(self):
+        return reversed(self._components)
 
 
 class UIRegistry:
@@ -40,42 +75,3 @@ class UIRegistry:
             return self.slot.register(
                 reg.methodify(slot), request=request, name=name)
         return add_slot
-
-
-class PluginsRegistry:
-
-    __slots__ = ('_plugins',)
-
-    def __init__(self):
-        self._plugins = {}
-
-    def register(self, name, plugin):
-        self._plugins.__setitem__(name, plugin)
-
-    def get(self, name):
-        return self._plugins.get(name)
-
-    def __len__(self):
-        return len(self._plugins)
-
-    def __iter__(self):
-        return iter(self._plugins)
-
-
-class MiddlewaresRegistry:
-
-    __slots__ = ('_middlewares',)
-
-    def __init__(self):
-        self._middlewares = []
-
-    def register(self, middleware, order=0):
-        self._middlewares.append((order, middleware))
-
-    def __len__(self):
-        return len(self._middlewares)
-
-    def __iter__(self):
-        def ordered(e):
-            return -e[0], repr(e[1])
-        yield from (m[1] for m in sorted(self._middlewares, key=ordered))

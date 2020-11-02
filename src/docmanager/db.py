@@ -1,96 +1,72 @@
-import datetime
-from typing import List
-
-from pydantic_sqlalchemy import sqlalchemy_to_pydantic
-from sqlalchemy import create_engine
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from collections import namedtuple
+from contextlib import ContextDecorator
+from cached_property import cached_property
+from arango import ArangoClient
+from functools import cached_property
 from roughrider.validation.types import Validatable
 from docmanager.request import Request
+import orjson
 
 
-Base = declarative_base()
+DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
+
+
+class Transaction(ContextDecorator):
+
+    __slots__ = ('session', 'collection', '_txn')
+
+    def __init__(self, session, collection: str):
+        self.session = session
+        self.collection = collection
+        self._txn = None
+
+    def __enter__(self):
+        self._txn = self.session.begin_transaction(
+            read=self.collection, write=self.collection)
+        return self._txn
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type:
+            self._txn.abort_transaction()
+            return False
+        self._txn.commit_transaction()
+        return True
 
 
 class Database:
 
-    __slots__ = ('_session',)
+    __slots__ = ('config', 'client')
 
     def __init__(self, url: str='http://localhost:8529', **config):
-        engine = create_engine(url, **config)
-        Base.metadata.create_all(engine)
-        self._session = sessionmaker(bind=engine)
+        self.config = DB_CONFIG(**config)
+        self.client = ArangoClient(
+            url, serializer=orjson.dumps, deserializer=orjson.loads)
 
-    def new_session(self):
-        return self._session()
+    @property
+    def session(self):
+        return self.client.db(
+            self.config.database,
+            username=self.config.user,
+            password=self.config.password
+        )
 
+    def transaction(self, collection: str):
+        return Transaction(self.session, collection)
 
-class Model(Validatable):
+    @property
+    def system_database(self):
+        return self.client.db(
+            '_system',
+            username=self.config.user,
+            password=self.config.password
+        )
 
-    @classmethod
-    def instanciate(cls, request: Request, **bindable):
-        key = bindable[cls.__route_key__]
-        if (obj := request.database_session.query(cls).get(key)) is not None:
-            return obj
-        raise LookupError()
+    def ensure_database(self):
+        sys_db = self.system_database
+        if not sys_db.has_database(self.config.database):
+            sys_db.create_database(self.config.database)
 
-
-class SQLUser(Base, Model):
-
-    __tablename__ = 'users'
-    __route_key__ = 'username'
-
-    username = Column(String, primary_key=True)
-    password = Column(String)
-
-    folders = relationship(
-        "SQLFolder", back_populates="user",
-        cascade="all, delete, delete-orphan"
-    )
-
-
-class SQLFolder(Base, Model):
-
-    __tablename__ = 'folders'
-    __route_key__ = 'folderid'
-
-    az = Column(String, primary_key=True)
-    creation_date = Column(DateTime, default=datetime.datetime.utcnow)
-    modification_date = Column(DateTime, default=datetime.datetime.utcnow)
-    username = Column(String, ForeignKey("users.username"))
-
-    user = relationship("SQLUser", back_populates="folders")
-    documents = relationship(
-        "SQLDocument", back_populates="folder",
-        cascade="all, delete, delete-orphan"
-    )
-
-
-class SQLDocument(Base, Model):
-
-    __tablename__ = 'documents'
-    __route_key__ = 'docid'
-
-    docid = Column(Integer, primary_key=True, nullable=True)
-    name = Column(String)
-    state = Column(String)
-    content_type = Column(String)
-    creation_date = Column(DateTime, default=datetime.datetime.utcnow)
-    modification_date = Column(DateTime, default=datetime.datetime.utcnow)
-    folderid = Column(String, ForeignKey("folders.az"))
-
-    folder = relationship("SQLFolder", back_populates="documents")
-
-
-User = sqlalchemy_to_pydantic(SQLUser)
-Folder = sqlalchemy_to_pydantic(SQLFolder)
-Document = sqlalchemy_to_pydantic(SQLDocument)
-
-
-class UserWithFolders(User):
-    folders: List[Folder] = []
-
-
-class FolderWithDocuments(Folder):
-    documents: List[Document] = []
+    def delete_database(self):
+        sys_db = self.system_database
+        if not sys_db.has_database(self.config.database):
+            sys_db.delete_database(self.config.database)

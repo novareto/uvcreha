@@ -1,9 +1,6 @@
 import pathlib
-import reg
 import wrapt
 import horseman.response
-
-from horseman.meta import Overhead
 from docmanager.request import Request
 from docmanager.app import application
 from docmanager.browser import TemplateLoader
@@ -120,5 +117,5 @@ def sidebar(request, name):
 
 @application.ui.register_slot(request=Request, name="footer")
 @template(TEMPLATES["footer.pt"], raw=True)
-def sidebar(request, name):
+def footer(request, name):
     return dict(request=request)

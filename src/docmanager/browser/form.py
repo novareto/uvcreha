@@ -2,7 +2,6 @@ import wtforms
 import collections
 from horseman.http import Multidict
 from horseman.meta import APIView
-from horseman.parsing import parse
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
 

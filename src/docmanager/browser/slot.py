@@ -24,16 +24,8 @@ class Slot(ABC):
 def query_slot(econtext, name):
     """Compute the result of a slot expression
     """
-    #context = econtext.get('context')
     request = econtext.get('request')
-    #view = econtext.get('view')
-
-    try:
-        slot = request.app.ui.slot(request, name)
-    except :
-        raise
-    else:
-        return request.app.ui.slot(request, name)
+    return request.app.ui.slot(request, name)
 
 
 class SlotExpr(object):

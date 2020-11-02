@@ -4,7 +4,6 @@ from http import HTTPStatus
 import autoroutes
 import dataclasses
 import roughrider.routing.route
-import roughrider.validation.dispatch
 from horseman.http import HTTPError
 from docmanager import logger
 
@@ -55,27 +54,24 @@ class Routes(autoroutes.Routes):
                             f"Route with name {name} already exists: {ref}.")
                 self._registry[name] = cleaned, view
                 payload = {
-                    method: roughrider.validation.dispatch.Dispatcher(func),
+                    method: func,
                     'extras': extras
                 }
                 self.add(fullpath, **payload)
         return routing
 
     def match(self, method: str, path_info: str) -> Route:
-        try:
-            methods, params = super().match(path_info)
-            if methods is None:
-                return None
-            endpoint = methods.get(method)
-            if endpoint is None:
-                raise LookupError(
-                    f'Method {method} is unvalid for {path_info}')
-            return Route(
-                path=path_info,
-                method=method,
-                endpoint=endpoint,
-                params=params,
-                extras=methods.get('extras', {})
-                )
-        except LookupError:
+        methods, params = super().match(path_info)
+        if methods is None:
+            return None
+        endpoint = methods.get(method)
+        if endpoint is None:
             raise HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
+
+        return Route(
+            path=path_info,
+            method=method,
+            endpoint=endpoint,
+            params=params,
+            extras=methods.get('extras', {})
+        )

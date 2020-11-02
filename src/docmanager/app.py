@@ -13,8 +13,14 @@ from docmanager.request import Request
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     __slots__ = (
-        'config', 'database', 'routes', 'middlewares', 'layout',
-        'request_factory')
+        'config',
+        'database',
+        'layout',
+        'middlewares',
+        'models',
+        'request_factory',
+        'routes',
+    )
 
     def __init__(self, config=None, database=None,
                  routes=None, request_factory=Request):
@@ -24,8 +30,11 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         self.config = config
         self.database = database
         self.request_factory = request_factory
-        self.plugins = registries.PluginsRegistry()
-        self.middlewares = registries.MiddlewaresRegistry()
+
+        # Registries
+        self.models = registries.NamedComponents()
+        self.plugins = registries.NamedComponents()
+        self.middlewares = registries.PriorityList()
         self.ui = registries.UIRegistry()
 
     @property
@@ -68,7 +77,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
     def __call__(self, environ, start_response):
         caller = super().__call__
-        for middleware in self.middlewares:
+        for priority, middleware in reversed(self.middlewares):
             caller = middleware(caller)
         return caller(environ, start_response)
 

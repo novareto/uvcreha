@@ -1,5 +1,4 @@
 from horseman.prototyping import Environ
-import docmanager.db
 
 
 class Auth:
@@ -8,7 +7,7 @@ class Auth:
         self.database = database
         self.config = config
 
-    def from_credentials(self, credentials: dict) -> docmanager.db.User:
+    def from_credentials(self, credentials: dict):
         session = self.database.new_session()
         user = session.query(docmanager.db.SQLUser).filter_by(**credentials)
         if user is not None:
