@@ -1,6 +1,6 @@
 from docmanager.app import application
 from docmanager.request import Request
-from docmanager.layout import template, TEMPLATES
+from docmanager.browser.layout import template, TEMPLATES
 
 
 @application.routes.register('/doc')
