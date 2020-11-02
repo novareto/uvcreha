@@ -15,6 +15,7 @@ TEMPLATES = TemplateLoader(
 
 
 def template(template, layout_name=None, raw=False):
+
     @wrapt.decorator
     def render(endpoint, instance, args, kwargs):
         result = endpoint(*args, **kwargs)
