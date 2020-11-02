@@ -60,13 +60,10 @@ setup(
     },
     entry_points={
         'chameleon.tales': [
-            'slot = docmanager.utils.slot:SlotExpr',
+            'slot = docmanager.browser.slot:SlotExpr',
         ],
         'fanstatic.libraries': [
-            'docmanager = docmanager.resources:library',
-        ],
-        'docmanager.models': [
-            'user = docmanager.models:User',
-        ],
+            'docmanager = docmanager.browser.resources:library',
+        ]
     }
 )

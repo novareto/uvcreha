@@ -12,7 +12,6 @@ import cromlech.sessions.file
 
 import docmanager
 import docmanager.app
-import docmanager.layout
 import docmanager.auth
 
 import uvcreha.example
@@ -39,13 +38,8 @@ def run(config):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
-    # Arango
-    # from docmanager.db import Database, create_graph
-    # database = Database(**config.app.db)
-    # create_graph(database)
-
     # SQL
-    from docmanager.sql import Database
+    from docmanager.db import Database
     database = Database(**config.app.sql)
 
     app = docmanager.app.application

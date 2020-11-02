@@ -1,6 +1,5 @@
 import reg
 from pkg_resources import iter_entry_points
-from docmanager.models import Model
 
 
 class ModelsRegistry(dict):
@@ -9,14 +8,12 @@ class ModelsRegistry(dict):
     def register(self, name, model):
         if name in self:
             raise KeyError(f'Model {name} already exists.')
-        if not issubclass(model, Model):
-            raise ValueError(f'Model {name} is not a valid pydatic model.')
         self[name] = model
 
     def load(self):
         self.clear()
         for loader in iter_entry_points('docmanager.models'):
-            logger.info(f'Register Model "{loader.name}"')
+            logger.info(f'Register model "{loader.name}"')
             self.register(loader.name, loader.load())
 
 

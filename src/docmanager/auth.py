@@ -1,5 +1,5 @@
 from horseman.prototyping import Environ
-import docmanager.sql
+import docmanager.db
 
 
 class Auth:
@@ -8,10 +8,9 @@ class Auth:
         self.database = database
         self.config = config
 
-    def from_credentials(self, credentials: dict) -> docmanager.sql.User:
-        session = database.new_session()
-        user = session.query(docmanager.sql.SQLUser).filter_by(
-            **credentials)
+    def from_credentials(self, credentials: dict) -> docmanager.db.User:
+        session = self.database.new_session()
+        user = session.query(docmanager.db.SQLUser).filter_by(**credentials)
         if user is not None:
             return user.from_orm(user).dict()
         return None

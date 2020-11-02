@@ -2,10 +2,9 @@ import wtforms
 import horseman.response
 
 from docmanager.app import application
-from docmanager.utils.form import FormView, Triggers
 from docmanager.request import Request
-from docmanager.layout import template, TEMPLATES
-#from docmanager.utils.flashmessages import Message
+from docmanager.browser.form import FormView, Triggers
+from docmanager.browser.layout import template, TEMPLATES
 
 
 class Schema(dict):

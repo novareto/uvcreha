@@ -2,13 +2,12 @@ import logging
 from http import HTTPStatus
 
 import horseman.meta
-from horseman.http import HTTPError
+import horseman.http
 
 from docmanager import logger, registries
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.request import Request
-from docmanager.utils.openapi import generate_doc
 
 
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
@@ -33,17 +32,16 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
     def logger(self):
         return logging.getLogger(self.config.logger.name)
 
-    def check_permissions(self, route, environ):
-        #logger.debug("Route %s --> %s" %(route, route.extras.get('permissions')))
+    def route(self, *args, **kwargs):
+        return self.routes.register(*args, **kwargs)
 
+    def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):
             user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
-        #else:
-        #    logger.debug('No Permission for route %s' %route)
 
     def resolve(self, path_info, environ):
         try:
@@ -52,16 +50,17 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             if route is None:
                 return None
             environ['horseman.path.params'] = route.params
-            logger.debug("Resolve User %s" % environ.get(self.config.env.user))
+            logger.debug(
+                "Resolve User %s" % environ.get(self.config.env.user))
             self.check_permissions(route, environ)
             request = self.request_factory(self, environ, route)
             return route.endpoint(request)
         except LookupError:
-            raise HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
+            raise horseman.http.HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
         except SecurityError as error:
             if error.user is None:
-                raise HTTPError(HTTPStatus.UNAUTHORIZED)
-            raise HTTPError(HTTPStatus.FORBIDDEN)
+                raise horseman.http.HTTPError(HTTPStatus.UNAUTHORIZED)
+            raise horseman.http.HTTPError(HTTPStatus.FORBIDDEN)
 
     def handle_exception(self, exc_info, environ):
         exc_type, exc, traceback = exc_info
