@@ -26,18 +26,7 @@ class Database:
         return self._session()
 
 
-class SQLUser(Base, Validatable):
-
-    __tablename__ = 'users'
-    __route_key__ = 'userid'
-
-    username = Column(String, primary_key=True)
-    password = Column(String)
-
-    folders = relationship(
-        "SQLFolder", back_populates="user",
-        cascade="all, delete, delete-orphan"
-    )
+class Model(Validatable):
 
     @classmethod
     def instanciate(cls, request: Request, **bindable):
@@ -47,9 +36,24 @@ class SQLUser(Base, Validatable):
         raise LookupError()
 
 
-class SQLFolder(Base):
+class SQLUser(Base, Model):
+
+    __tablename__ = 'users'
+    __route_key__ = 'username'
+
+    username = Column(String, primary_key=True)
+    password = Column(String)
+
+    folders = relationship(
+        "SQLFolder", back_populates="user",
+        cascade="all, delete, delete-orphan"
+    )
+
+
+class SQLFolder(Base, Model):
 
     __tablename__ = 'folders'
+    __route_key__ = 'folderid'
 
     az = Column(String, primary_key=True)
     creation_date = Column(DateTime, default=datetime.datetime.utcnow)
@@ -63,17 +67,18 @@ class SQLFolder(Base):
     )
 
 
-class SQLDocument(Base):
+class SQLDocument(Base, Model):
 
     __tablename__ = 'documents'
+    __route_key__ = 'docid'
 
-    id = Column(Integer, primary_key=True)
+    docid = Column(Integer, primary_key=True, nullable=True)
     name = Column(String)
     state = Column(String)
     content_type = Column(String)
     creation_date = Column(DateTime, default=datetime.datetime.utcnow)
     modification_date = Column(DateTime, default=datetime.datetime.utcnow)
-    folder_id = Column(Integer, ForeignKey("folders.az"))
+    folderid = Column(String, ForeignKey("folders.az"))
 
     folder = relationship("SQLFolder", back_populates="documents")
 
@@ -85,3 +90,7 @@ Document = sqlalchemy_to_pydantic(SQLDocument)
 
 class UserWithFolders(User):
     folders: List[Folder] = []
+
+
+class FolderWithDocuments(Folder):
+    documents: List[Document] = []

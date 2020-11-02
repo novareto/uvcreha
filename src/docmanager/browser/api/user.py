@@ -1,4 +1,3 @@
-import orjson
 import horseman.response
 from roughrider.validation.types import Factory
 
@@ -15,7 +14,7 @@ def user_add(request: Request, user: db.User):
     return horseman.response.json_reply(201, body={'id': user.username})
 
 
-@application.route('/users/{userid}', methods=['GET'])
+@application.route('/users/{username}', methods=['GET'])
 def user_view(user: Factory(db.SQLUser)):
     model = db.User.from_orm(user)
     return horseman.response.reply(
@@ -23,27 +22,17 @@ def user_view(user: Factory(db.SQLUser)):
         headers={'Content-Type': 'application/json'})
 
 
-@application.route('/users/{userid}', methods=['DELETE'])
-def user_delete(request: Request, userid: str):
+@application.route('/users/{username}', methods=['DELETE'])
+def user_delete(request: Request, username: str):
     session = request.database_session
-    session.query(db.SQLUser).filter(db.SQLUser.username==userid).delete()
+    session.query(db.SQLUser).filter(db.SQLUser.username==username).delete()
     session.commit()
     return horseman.response.reply(202)
 
 
-@application.route('/users/{userid}/details', methods=['GET'])
+@application.route('/users/{username}/details', methods=['GET'])
 def user_details(user: Factory(db.SQLUser)):
     model = db.UserWithFolders.from_orm(user)
     return horseman.response.reply(
         200, body=model.json(),
-        headers={'Content-Type': 'application/json'})
-
-
-@application.route('/users/{userid}/folders', methods=['GET'])
-def user_folders(request: Request, userid: str):
-    folders = request.database_session.query(db.SQLFolder).filter(
-        db.SQLFolder.username == userid)
-    body = orjson.dumps([db.Folder.from_orm(f).dict() for f in folders])
-    return horseman.response.reply(
-        200, body=body,
         headers={'Content-Type': 'application/json'})
