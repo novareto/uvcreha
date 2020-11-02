@@ -1,8 +1,8 @@
 import enum
 import logging
-
 import chameleon.zpt.loader
 from pkg_resources import iter_entry_points
+
 
 logger = logging.getLogger()
 
@@ -27,6 +27,7 @@ def tales_expressions():
 
 
 class TemplateLoader(chameleon.zpt.loader.TemplateLoader):
+
     def load(self, filename, format=None):
         template = super().load(filename, format=format)
         template.expression_types.update(tales_expressions())

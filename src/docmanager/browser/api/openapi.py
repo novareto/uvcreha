@@ -1,6 +1,8 @@
+import horseman.response
 from docmanager.app import application
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.openapi import generate_doc
 
 
 @application.routes.register('/doc')
