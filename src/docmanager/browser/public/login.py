@@ -12,8 +12,8 @@ from horseman.meta import APIView, SentryNode
 from horseman.parsing import parse
 
 from docmanager.request import Request
-from docmanager.layout import template
 from docmanager.app import application
+from docmanager.browser.layout import template
 
 
 TEMPLATES = PageTemplateLoader(

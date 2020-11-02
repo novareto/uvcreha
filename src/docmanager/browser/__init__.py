@@ -13,9 +13,11 @@ def tales_expressions():
     for ept in iter_entry_points(group="chameleon.tales"):
         if ept.name in expressions:
             continue
-            raise KeyError("TALES name %r is defined more than once" % ept.name)
+            raise KeyError(
+                "TALES name %r is defined more than once" % ept.name)
         expressions[ept.name] = ept.load()
-        logger.debug("Register Chameleon Expression Extension %s" % ept.name)
+        logger.debug(
+            "Register Chameleon Expression Extension %s" % ept.name)
     return expressions
 
 

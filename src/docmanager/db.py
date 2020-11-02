@@ -1,112 +1,87 @@
-from collections import namedtuple
-from arango import ArangoClient
-from functools import cached_property
+import datetime
+from typing import List
+
+from pydantic_sqlalchemy import sqlalchemy_to_pydantic
+from sqlalchemy import create_engine
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
 from roughrider.validation.types import Validatable
 from docmanager.request import Request
-import orjson
 
 
-DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
+Base = declarative_base()
 
 
-class Database(Validatable):
+class Database:
+
+    __slots__ = ('_session',)
 
     def __init__(self, url: str='http://localhost:8529', **config):
-        self.config = DB_CONFIG(**config)
-        self.client = ArangoClient(
-            url, serializer=orjson.dumps, deserializer=orjson.loads)
+        engine = create_engine(url, **config)
+        Base.metadata.create_all(engine)
+        self._session = sessionmaker(bind=engine)
 
-    @cached_property
-    def connector(self):
-        return self.client.db(
-            self.config.database,
-            username=self.config.user,
-            password=self.config.password
-        )
+    def new_session(self):
+        return self._session()
 
-    @cached_property
-    def system_database(self):
-        return self.client.db(
-            '_system',
-            username=self.config.user,
-            password=self.config.password
-        )
 
-    def ensure_database(self):
-        sys_db = self.system_database
-        if not sys_db.has_database(self.config.database):
-            sys_db.create_database(self.config.database)
+class SQLUser(Base, Validatable):
 
-    def delete_database(self):
-        sys_db = self.system_database
-        if not sys_db.has_database(self.config.database):
-            sys_db.delete_database(self.config.database)
+    __tablename__ = 'users'
+    __route_key__ = 'userid'
 
-    def query(self, aql: str, *args, **kwargs):
-        return self.connector.AQLQuery(aql, *args, **kwargs)
+    username = Column(String, primary_key=True)
+    password = Column(String)
+
+    folders = relationship(
+        "SQLFolder", back_populates="user",
+        cascade="all, delete, delete-orphan"
+    )
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not isinstance(v, cls):
-            raise TypeError('Database required')
-        return v
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update({
-            'title': 'Database'
-        })
-
-    def add_file(self, userid, data):
-        files = self.connector.collection('files')
-        ownership = self.connector.graph('ownership')
-        metadata = files.insert(data)
-        own = ownership.edge_collection('own')
-        own.insert({
-            '_key': f"{userid}-{metadata['_key']}",
-            '_from': f"users/{userid}",
-            '_to': metadata['_id'],
-        })
-        return metadata['_key']
-
-    def add_document(self, userid, file_id, data):
-        documents = self.connector.collection('documents')
-        ownership = self.connector.graph('ownership')
-        metadata = documents.insert(data)
-        own = ownership.edge_collection('own')
-        own.insert({
-            '_key': f"{userid}-{metadata['_key']}",
-            '_from': f"users/{userid}",
-            '_to': metadata['_id'],
-        })
-        return metadata['_key']
+    def instanciate(cls, request: Request, **bindable):
+        key = bindable[cls.__route_key__]
+        if (obj := request.database_session.query(cls).get(key)) is not None:
+            return obj
+        raise LookupError()
 
 
-def create_graph(db: Database):
-    db.delete_database()
-    db.ensure_database()
+class SQLFolder(Base):
 
-    if db.connector.has_graph('ownership'):
-        ownership = db.connector.graph('ownership')
-    else:
-        ownership = db.connector.create_graph('ownership')
+    __tablename__ = 'folders'
 
-    # Vertices
-    if not ownership.has_vertex_collection('users'):
-        ownership.create_vertex_collcetion('users')
-    if not ownership.has_vertex_collection('files'):
-        ownership.create_vertex_collection('files')
-    if not ownership.has_vertex_collection('documents'):
-        ownership.create_vertex_collection('documents')
+    az = Column(String, primary_key=True)
+    creation_date = Column(DateTime, default=datetime.datetime.utcnow)
+    modification_date = Column(DateTime, default=datetime.datetime.utcnow)
+    username = Column(String, ForeignKey("users.username"))
 
-    # Edges
-    if not ownership.has_edge_definition('own'):
-        ownership.create_edge_definition(
-            edge_collection='own',
-            from_vertex_collections=['users'],
-            to_vertex_collections=['files', 'documents']
-        )
+    user = relationship("SQLUser", back_populates="folders")
+    documents = relationship(
+        "SQLDocument", back_populates="folder",
+        cascade="all, delete, delete-orphan"
+    )
+
+
+class SQLDocument(Base):
+
+    __tablename__ = 'documents'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    state = Column(String)
+    content_type = Column(String)
+    creation_date = Column(DateTime, default=datetime.datetime.utcnow)
+    modification_date = Column(DateTime, default=datetime.datetime.utcnow)
+    folder_id = Column(Integer, ForeignKey("folders.az"))
+
+    folder = relationship("SQLFolder", back_populates="documents")
+
+
+User = sqlalchemy_to_pydantic(SQLUser)
+Folder = sqlalchemy_to_pydantic(SQLFolder)
+Document = sqlalchemy_to_pydantic(SQLDocument)
+
+
+class UserWithFolders(User):
+    folders: List[Folder] = []
