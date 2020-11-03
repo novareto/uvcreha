@@ -19,19 +19,14 @@ class ProtectedModel(abc.ABC):
         pass
 
 
-class Model(BaseModel):
-    creation_date: datetime = Field(default_factory=datetime.utcnow)
-    modification_date: datetime = Field(default_factory=datetime.utcnow)
+class ArangoModel:
 
-
-class RootModel(Model):
+    id: Optional[str]
+    key: Optional[str]
+    rev: Optional[str]
 
     __collection__: ClassVar[str]
     __primarykey__: ClassVar[str] = ''
-
-    id_: Optional[str] = Field(alias="_id")
-    key_: Optional[str] = Field(alias="_key")
-    rev_: Optional[str] = Field(alias="_rev")
 
     @classmethod
     def create(cls, database, **data):
@@ -39,16 +34,16 @@ class RootModel(Model):
         data = item.dict(by_alias=True)
         if not data['_key']:
             if cls.__primarykey__:
-                item.key_ = data['_key'] = data[cls.__primarykey__]
+                item.key = data['_key'] = data[cls.__primarykey__]
             else:
-                item.key_ = data['_key'] = str(uuid.uuid4())
+                item.key = data['_key'] = str(uuid.uuid4())
         try:
             with database.transaction(cls.__collection__) as txn:
                 collection = txn.collection(cls.__collection__)
                 response = collection.insert(data)
-                item.id_ = response["_id"]
-                item.key_ = response["_key"]
-                item.rev_ = response["_rev"]
+                item.id = response["_id"]
+                item.key = response["_key"]
+                item.rev = response["_rev"]
 
         except arango.exceptions.DocumentInsertError:
             return None
@@ -96,12 +91,24 @@ class RootModel(Model):
                 data = self.dict(by_alias=True)
                 data['_id'] = self.id_
                 response = collection.replace(data)
-                self.key_ = response["_key"]
-                self.rev_ = response["_rev"]
+                self.key = response["_key"]
+                self.rev = response["_rev"]
         except arango.exceptions.DocumentUpdateError:
             return False
         else:
             return True
+
+
+class Model(BaseModel):
+    creation_date: datetime = Field(default_factory=datetime.utcnow)
+    modification_date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class RootModel(ArangoModel, Model):
+
+    id: Optional[str] = Field(alias="_id")
+    key: Optional[str] = Field(alias="_key")
+    rev: Optional[str] = Field(alias="_rev")
 
 
 @application.models.document(Request)
