@@ -57,7 +57,8 @@ class FormView(APIView):
     @template(
         TEMPLATES['registration_form.pt'], layout_name='default', raw=False)
     def POST(self, request: Request):
+
         for trigger_id in self.triggers.keys():
-            if trigger_id in request.data['form']:
+            if trigger_id in request.extract().get('form', []):
                 return self.triggers[trigger_id]['method'](self, request)
         raise KeyError('No action found')

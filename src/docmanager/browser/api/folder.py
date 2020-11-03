@@ -14,7 +14,7 @@ def folder_add(request: Request):
 
     data = request.extract()
     model = request.app.models.get('file')
-    folder = model(**data['form'].dict())
+    folder = model(**data['form'].to_dict())
     user.files[folder.key] = folder
     user.update(request.app.database)
     return horseman.response.reply(

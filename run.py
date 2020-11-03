@@ -45,7 +45,7 @@ def run(config):
     app.config = config.app
     app.database = database
     app.request_factory = uvcreha.example.app.CustomRequest
-    auth = docmanager.auth.Auth(database, config.app.env)
+    auth = docmanager.auth.Auth(database, app.models, config.app.env)
     app.plugins.register(auth, name="authentication")
 
     app.middlewares.register(

@@ -80,6 +80,10 @@ class RootModel(BaseModel):
         else:
             return True
 
+    @property
+    def title(self):
+        return self.username
+
 
 class Content(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)

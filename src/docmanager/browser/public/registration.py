@@ -41,13 +41,14 @@ class RegistrationForm(FormView):
     @triggers.register(
         'speichern', 'Speichern')
     def speichern(view, request):
-        form = view.setupForm(formdata=request.data['form'])
+        data = request.extract()['form']
+        form = view.setupForm(formdata=data)
         if not form.validate():
             return form
 
         auth = request.app.plugins.get('authentication')
         if (user := auth.from_credentials(
-                request.data['form'].to_dict())) is not None:
+                data.to_dict())) is not None:
             auth.remember(request.environ, user)
             #request.flash = Message(type='info', body="Sie sind nun angemeldet!")
             return horseman.response.Response.create(
