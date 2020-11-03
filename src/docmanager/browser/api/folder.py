@@ -3,49 +3,42 @@ from docmanager.app import application
 from docmanager.request import Request
 
 
-@application.route(
-    '/users/{username}/folder.add',
-    methods=['POST', 'PUT'])
-def folder_add(request: Request):
-    model = request.app.models.get('user')
-    user = model.fetch(request.app.database, request.route.params['username'])
-    if user is None:
+@application.route('/users/{username}/folder.add', methods=['POST', 'PUT'])
+def folder_add(request: Request, username: str):
+    model = request.app.models.user_model(request)
+    if not model.exists(request.app.database, username):
         return horseman.response.reply(404)
 
+    model = request.app.models.file_model(request)
     data = request.extract()
-    model = request.app.models.get('file')
-    folder = model(**data['form'].to_dict())
-    user.files[folder.key] = folder
-    user.update(request.app.database)
+    folder = model.create(
+        request.app.database, username=username, **data['form'].dict())
+
     return horseman.response.reply(
-        200, body=folder.json(),
+        200, body=folder.json(by_alias),
         headers={'Content-Type': 'application/json'})
 
 
-@application.route(
-    '/users/{username}/folders/{folderid}',
-    methods=['GET'])
-def folder_view(request: Request):
-    model = request.app.models.get('user')
-    user = model.fetch(request.app.database, request.route.params['username'])
-    if user is None:
+@application.route('/users/{username}/folders/{folderid}', methods=['GET'])
+def folder_view(request: Request, username: str, folderid: str):
+    model = request.app.models.file_model(request)
+    folder = model.find_one(
+        request.app.database, _key=folderid, username=username)
+    if not folder:
         return horseman.response.reply(404)
 
-    folder = user.files[request.route.params['folderid']]
     return horseman.response.reply(
-        200, body=folder.json(),
+        200, body=folder.json(by_alias=True),
         headers={'Content-Type': 'application/json'})
 
 
-@application.route(
-    '/users/{username}/folders/{folderid}',
-    methods=['DELETE'])
-def folder_delete(request: Request):
-    model = request.app.models.get('user')
-    user = model.fetch(request.app.database, request.route.params['username'])
-    if user is None:
+@application.route('/users/{username}/folders/{folderid}', methods=['DELETE'])
+def folder_delete(request: Request, username: str, folderid: str):
+    model = request.app.models.file_model(request)
+    folder = model.find_one(
+        request.app.database, _key=folderid, username=username)
+    if not folder:
         return horseman.response.reply(404)
 
-    del user.files[request.route.params['folderid']]
-    user.update(request.app.database)
+    model.delete(request.app.database, folderid)
     return horseman.response.reply(202)

@@ -3,7 +3,7 @@ import uuid
 import arango.exceptions
 
 from datetime import datetime
-from typing import Dict, List, Optional, ClassVar
+from typing import Dict, Literal, List, Optional, ClassVar
 from roughrider.validation.types import Validatable
 from pydantic import BaseModel, Field, ValidationError
 from docmanager.app import application
@@ -19,7 +19,12 @@ class ProtectedModel(abc.ABC):
         pass
 
 
-class RootModel(BaseModel):
+class Model(BaseModel):
+    creation_date: datetime = Field(default_factory=datetime.utcnow)
+    modification_date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class RootModel(Model):
 
     __collection__: ClassVar[str]
     __primarykey__: ClassVar[str] = ''
@@ -29,7 +34,7 @@ class RootModel(BaseModel):
     rev_: Optional[str] = Field(alias="_rev")
 
     @classmethod
-    def create(cls, database, data: dict):
+    def create(cls, database, **data):
         item = cls(**data)
         data = item.dict(by_alias=True)
         if not data['_key']:
@@ -48,6 +53,24 @@ class RootModel(BaseModel):
         except arango.exceptions.DocumentInsertError:
             return None
         return item
+
+    @classmethod
+    def find(cls, database, **filters):
+        collection = database.session.collection(cls.__collection__)
+        return collection.find(filters)
+
+    @classmethod
+    def find_one(cls, database, **filters):
+        collection = database.session.collection(cls.__collection__)
+        found = collection.find(filters, limit=1)
+        if not found.count():
+            return None
+        return found.next()
+
+    @classmethod
+    def exists(cls, database, key):
+        collection = database.session.collection(cls.__collection__)
+        return collection.has({"_key": key})
 
     @classmethod
     def fetch(cls, database, key):
@@ -80,39 +103,31 @@ class RootModel(BaseModel):
         else:
             return True
 
-    @property
-    def title(self):
-        return self.username
 
+@application.models.document(Request)
+class Document(RootModel):
 
-class Content(BaseModel):
-    creation_date: datetime = Field(default_factory=datetime.utcnow)
-    modification_date: datetime = Field(default_factory=datetime.utcnow)
+    __collection__: str = 'documents'
+    __primarykey__: str = ''
+    content_type: Literal['default'] = 'default'
 
-
-@application.models.component('document')
-class Document(Content):
-    id: Optional[str] = Field(default_factory=uuid.uuid4)
+    az: str
+    username: str
     state: str
-    content_type: str
     body: str
 
-    @property
-    def key(self):
-        return self.id
 
+@application.models.file(Request)
+class File(RootModel):
 
-@application.models.component('file')
-class File(Content):
+    __collection__ = 'files'
+    __primarykey__ = 'az'
+
     az: str
-    documents: Dict[str, Dict] = Field(default_factory=dict)
-
-    @property
-    def key(self):
-        return self.az
+    username: str
 
 
-@application.models.component('user')
+@application.models.user(Request)
 class User(RootModel):
 
     __collection__ = 'users'
@@ -121,4 +136,7 @@ class User(RootModel):
     username: str
     password: str
     permissions: Optional[List]
-    files: Dict[str, File] = Field(default_factory=dict)
+
+    @property
+    def title(self):
+        return self.username

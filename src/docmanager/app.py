@@ -32,7 +32,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         self.request_factory = request_factory
 
         # Registries
-        self.models = registries.NamedComponents()
+        self.models = registries.ModelsRegistry()
         self.plugins = registries.NamedComponents()
         self.middlewares = registries.PriorityList()
         self.ui = registries.UIRegistry()
@@ -63,7 +63,7 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
                 "Resolve User %s" % environ.get(self.config.env.user))
             self.check_permissions(route, environ)
             request = self.request_factory(self, environ, route)
-            return route.endpoint(request)
+            return route.endpoint(request, **route.params)
         except LookupError:
             raise horseman.http.HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
         except SecurityError as error:

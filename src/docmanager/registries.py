@@ -52,6 +52,52 @@ class PriorityList:
         return reversed(self._components)
 
 
+class ModelsRegistry:
+
+    @reg.dispatch_method(
+        reg.match_instance('request'), reg.match_key('content_type'))
+    def document_model(self, request, content_type="default"):
+        raise RuntimeError("Unknown document type.")
+
+    def document(self, request):
+        def add_document_model(model):
+            def dispatcher(request, content_type):
+                return model
+
+            schema = model.schema()
+            content_type = schema['properties']['content_type']['const']
+            return self.document_model.register(
+                reg.methodify(dispatcher),
+                request=request, content_type=content_type)
+        return add_document_model
+
+    @reg.dispatch_method(reg.match_instance('request'))
+    def file_model(self, request):
+        raise RuntimeError("Unknown file type.")
+
+    def file(self, request):
+        def add_file_model(model):
+            def dispatcher(request):
+                return model
+
+            return self.file_model.register(
+                reg.methodify(dispatcher), request=request)
+        return add_file_model
+
+    @reg.dispatch_method(reg.match_instance('request'))
+    def user_model(self, request):
+        raise RuntimeError("Unknown user type.")
+
+    def user(self, request):
+        def add_user_model(model):
+            def dispatcher(request):
+                return model
+
+            return self.user_model.register(
+                reg.methodify(dispatcher), request=request)
+        return add_user_model
+
+
 class UIRegistry:
 
     @reg.dispatch_method(

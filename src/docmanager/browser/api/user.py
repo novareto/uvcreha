@@ -15,8 +15,7 @@ def user_add(request: Request):
 
 
 @application.route('/users/{username}', methods=['GET'])
-def user_view(request: Request):
-    username = request.route.params['username']
+def user_view(request: Request, username: str):
     model = request.app.models.get('user')
     item = model.fetch(request.app.database, username)
     if item is None:
@@ -27,8 +26,7 @@ def user_view(request: Request):
 
 
 @application.route('/users/{username}', methods=['DELETE'])
-def user_delete(request: Request):
-    username = request.route.params['username']
+def user_delete(request: Request, username: str):
     model = request.app.models.get('user')
     if model.delete(request.app.database, username):
         return horseman.response.reply(202)
