@@ -28,6 +28,7 @@ class Transaction(ContextDecorator):
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type:
             self._txn.abort_transaction()
+            print(exc_type, exc_value, traceback)
             return False
         self._txn.commit_transaction()
         return True

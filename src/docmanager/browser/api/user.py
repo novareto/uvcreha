@@ -6,10 +6,9 @@ from docmanager.browser import Namespace as NS
 
 @application.route('/user.add', methods=['POST', 'PUT'], ns=NS.API)
 def user_add(request: Request):
-    request.extract()
+    data = request.extract()
     model = request.app.models.get('user')
-    user = model.save(
-        request.app.database, **request.data['form'].to_dict())
+    user = model.create(request.app.database, data['form'].dict())
     if user is None:
         return horseman.response.reply(400)
     return horseman.response.json_reply(201, body={'id': user.username})

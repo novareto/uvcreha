@@ -13,7 +13,7 @@ class Request(Overhead):
         self.environ = environ
         self.route = route
         self.method = environ['REQUEST_METHOD']
-        self.data = {}
+        self._data = {}
         self._extracted = False
 
     @property
@@ -30,11 +30,14 @@ class Request(Overhead):
         return self.environ.get(self.app.config.env.user)
 
     def set_data(self, data):
-        self.data = data
+        self._data = data
+
+    def get_data(self):
+        return self._data
 
     def extract(self):
         if self._extracted:
-            return self.data
+            return self.get_data()
 
         self._extracted = True
         if content_type := self.content_type:
@@ -42,7 +45,7 @@ class Request(Overhead):
                 self.environ['wsgi.input'], content_type)
             self.set_data({'form': form, 'files': files})
 
-        return self.data
+        return self.get_data()
 
 
 
