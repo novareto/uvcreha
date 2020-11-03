@@ -28,12 +28,6 @@ class RootModel(BaseModel):
     key_: Optional[str] = Field(alias="_key")
     rev_: Optional[str] = Field(alias="_rev")
 
-    @property
-    def id_(self) -> Optional[str]:
-        if self.key_ is None:
-            return None
-        return f"{self.__collection__}/{self.key_}"
-
     @classmethod
     def create(cls, database, data: dict):
         item = cls(**data)
@@ -47,6 +41,7 @@ class RootModel(BaseModel):
             with database.transaction(cls.__collection__) as txn:
                 collection = txn.collection(cls.__collection__)
                 response = collection.insert(data)
+                item.id_ = response["_id"]
                 item.key_ = response["_key"]
                 item.rev_ = response["_rev"]
 
@@ -77,7 +72,7 @@ class RootModel(BaseModel):
                 collection = txn.collection(self.__collection__)
                 data = self.dict(by_alias=True)
                 data['_id'] = self.id_
-                response = collection.update(data)
+                response = collection.replace(data)
                 self.key_ = response["_key"]
                 self.rev_ = response["_rev"]
         except arango.exceptions.DocumentUpdateError:

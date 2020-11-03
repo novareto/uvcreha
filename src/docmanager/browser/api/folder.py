@@ -47,7 +47,5 @@ def folder_delete(request: Request):
         return horseman.response.reply(404)
 
     del user.files[request.route.params['folderid']]
-    import pdb
-    pdb.set_trace()
     user.update(request.app.database)
     return horseman.response.reply(202)
