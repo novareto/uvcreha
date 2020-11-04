@@ -8,19 +8,10 @@ from docmanager import logger, registries
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.request import Request
+from docmanager.validation import ValidationError
 
 
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
-
-    __slots__ = (
-        'config',
-        'database',
-        'layout',
-        'middlewares',
-        'models',
-        'request_factory',
-        'routes',
-    )
 
     def __init__(self, config=None, database=None,
                  routes=None, request_factory=Request):
@@ -70,6 +61,8 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             if error.user is None:
                 raise horseman.http.HTTPError(HTTPStatus.UNAUTHORIZED)
             raise horseman.http.HTTPError(HTTPStatus.FORBIDDEN)
+        except ValidationError as error:
+            return error
 
     def handle_exception(self, exc_info, environ):
         exc_type, exc, traceback = exc_info

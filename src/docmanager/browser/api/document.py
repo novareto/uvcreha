@@ -25,6 +25,7 @@ def doc_add(request: Request, username: str, folderid: str):
         201, body=document.json(by_alias=True),
         headers={'Content-Type': 'application/json'})
 
+
 @application.route(
     '/users/{username}/folders/{folderid}/docs/{docid}',
     methods=['GET'])
