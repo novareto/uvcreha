@@ -7,7 +7,6 @@ version = "0.1"
 install_requires = [
     'bjoern',
     'blinker',
-    'cached-property',
     'chameleon',
     'cromlech.jwt',
     'cromlech.session',
@@ -19,17 +18,19 @@ install_requires = [
     'python-arango',
     'pydantic',
     'reg',
-    'rutter',
     'roughrider.auth',
     'roughrider.routing',
     'roughrider.validation',
     'wrapt',
     'wtforms',
-    'pydantic-sqlalchemy',
 ]
 
 test_requires = [
     'WebTest',
+    'pytest',
+    'pyyaml',
+    'omegaconf',
+    'docker',
 ]
 
 

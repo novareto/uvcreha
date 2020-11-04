@@ -8,8 +8,8 @@ from docmanager.browser import Namespace as NS
 def user_add(request: Request):
     data = request.extract()
     model = request.app.models.user_model(request)
-    #model = request.app.models.get('user')
-    user = model.create(database=request.app.database, **data['form'].to_dict())
+    user = model.create(
+        database=request.app.database, **data['form'].dict())
     if user is None:
         return horseman.response.reply(400)
     return horseman.response.json_reply(201, body={'id': user.username})
@@ -18,7 +18,6 @@ def user_add(request: Request):
 @application.route('/users/{username}', methods=['GET'])
 def user_view(request: Request, username: str):
     model = request.app.models.user_model(request)
-    #model = request.app.models.get('user')
     item = model.fetch(request.app.database, username)
     if item is None:
         return horseman.response.reply(404)
@@ -30,7 +29,6 @@ def user_view(request: Request, username: str):
 @application.route('/users/{username}', methods=['DELETE'])
 def user_delete(request: Request, username: str):
     model = request.app.models.user_model(request)
-    #model = request.app.models.get('user')
     if model.delete(request.app.database, username):
         return horseman.response.reply(202)
     return horseman.response.reply(404)

@@ -21,12 +21,12 @@ class ProtectedModel(abc.ABC):
 
 class ArangoModel:
 
+    __collection__: ClassVar[str]
+    __primarykey__: ClassVar[str]
+
     id: Optional[str]
     key: Optional[str]
     rev: Optional[str]
-
-    __collection__: ClassVar[str]
-    __primarykey__: ClassVar[str] = ''
 
     @classmethod
     def create(cls, database, **data):
@@ -84,7 +84,7 @@ class ArangoModel:
         else:
             return True
 
-    def update(self, database):
+    def update(self, database) -> bool:
         try:
             with database.transaction(self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
@@ -116,19 +116,19 @@ class Document(RootModel):
 
     __collection__: str = 'documents'
     __primarykey__: str = ''
-    content_type: Literal['default'] = 'default'
 
     az: str
     username: str
     state: str
     body: str
+    content_type: Literal['default'] = 'default'
 
 
 @application.models.file(Request)
 class File(RootModel):
 
-    __collection__ = 'files'
-    __primarykey__ = 'az'
+    __collection__: str = 'files'
+    __primarykey__: str = 'az'
 
     az: str
     username: str
@@ -137,13 +137,13 @@ class File(RootModel):
 @application.models.user(Request)
 class User(RootModel):
 
-    __collection__ = 'users'
-    __primarykey__ = 'username'
+    __collection__: str = 'users'
+    __primarykey__: str = 'username'
 
     username: str
     password: str
     permissions: Optional[List]
 
     @property
-    def title(self):
+    def title(self) -> str:
         return self.username
