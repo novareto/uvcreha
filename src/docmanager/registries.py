@@ -61,7 +61,9 @@ class ModelsRegistry:
 
     def document(self, request):
         def add_document_model(model):
+
             def dispatcher(request, content_type):
+                print(content_type)
                 return model
 
             schema = model.schema()

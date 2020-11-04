@@ -12,10 +12,10 @@ def folder_add(request: Request, username: str):
     model = request.app.models.file_model(request)
     data = request.extract()
     folder = model.create(
-        request.app.database, username=username, **data['form'].dict())
+        request.app.database, username=username, **data['form'].to_dict())
 
     return horseman.response.reply(
-        200, body=folder.json(by_alias),
+        200, body=folder.json(by_alias=True),
         headers={'Content-Type': 'application/json'})
 
 
