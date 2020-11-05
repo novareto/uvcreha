@@ -1,59 +1,37 @@
 import horseman.response
 from docmanager.app import application
 from docmanager.request import Request
+from docmanager.db import Document
 
 
 @application.route(
-    '/users/{username}/folders/{folderid}/doc.add',
+    '/users/{username}/files/{fileid}/doc.add',
     methods=['POST', 'PUT'])
-def doc_add(request: Request, username: str, folderid: str):
-    model = request.app.models.file_model(request)
-    folder = model.find_one(
-        request.app.database, _key=folderid, username=username)
-    if not folder:
-        return horseman.response.reply(404)
-
+def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
     form = data['form'].dict()
-
-    model = request.app.models.document_model(
-        request, content_type=form.get('content_type', 'default'))
-    document = model.create(
-        request.app.database, username=username, az=folderid, **form)
-
-    return horseman.response.reply(
-        201, body=document.json(by_alias=True),
-        headers={'Content-Type': 'application/json'})
+    model = Document(request.app.database)
+    document = model.create(username=username, az=fileid, **form)
+    return horseman.response.Response.from_json(201, body=document.json())
 
 
 @application.route(
-    '/users/{username}/folders/{folderid}/docs/{docid}',
+    '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['GET'])
-def doc_view(request: Request, username: str, folderid: str, docid: str):
-    model = request.app.models.document_model(request)
-    data = model.find_one(
-        request.app.database, _key=docid, az=folderid, username=username)
-    if not data:
+def doc_view(request: Request, username: str, fileid: str, docid: str):
+    model = Document(request.app.database)
+    document = model.find_one(_key=docid, az=fileid, username=username)
+    if document is None:
         return horseman.response.reply(404)
-
-    model = request.app.models.document_model(
-        request, content_type=data['content_type'])
-
-    document = model(**data)
-    return horseman.response.reply(
-        200, body=document.json(),
-        headers={'Content-Type': 'application/json'})
+    return horseman.response.Response.from_json(200, body=document.json())
 
 
 @application.route(
-    '/users/{username}/folders/{folderid}/docs/{docid}',
+    '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['DELETE'])
-def doc_delete(request: Request, username: str, folderid: str, docid: str):
-    model.delete(request.app.database, folderid)
-    document = model.find_one(
-        request.app.database, _key=docid, az=folderid, username=username)
-    if not document:
+def doc_delete(request: Request, username: str, fileid: str, docid: str):
+    model = Document(request.app.database)
+    if model.find_one( _key=docid, az=fileid, username=username) is None:
         return horseman.response.reply(404)
-
-    model.delete(request.app.database, docid)
+    model.delete(docid)
     return horseman.response.reply(202)

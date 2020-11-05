@@ -1,43 +1,32 @@
 import horseman.response
 from docmanager.app import application
 from docmanager.request import Request
+from docmanager.db import File
 
 
-@application.route('/users/{username}/folder.add', methods=['POST', 'PUT'])
-def folder_add(request: Request, username: str):
-    model = request.app.models.user_model(request)
-    if not model.exists(request.app.database, username):
-        return horseman.response.reply(404)
-
-    model = request.app.models.file_model(request)
+@application.route('/users/{username}/file.add', methods=['POST', 'PUT'])
+def file_add(request: Request, username: str):
     data = request.extract()
-    folder = model.create(
-        request.app.database, username=username, **data['form'].dict())
-
-    return horseman.response.reply(
-        201, body=folder.json(by_alias=True),
-        headers={'Content-Type': 'application/json'})
+    model = File(request.app.database)
+    file = model.create(username=username, **data['form'].dict())
+    return horseman.response.Response.from_json(201, body=file.json())
 
 
-@application.route('/users/{username}/folders/{folderid}', methods=['GET'])
-def folder_view(request: Request, username: str, folderid: str):
-    model = request.app.models.file_model(request)
-    folder = model.find_one(
-        request.app.database, _key=folderid, username=username)
-    if not folder:
+@application.route('/users/{username}/files/{fileid}', methods=['GET'])
+def file_view(request: Request, username: str, fileid: str):
+    model = File(request.app.database)
+    file = model.find_one(_key=fileid, username=username)
+    if file is None:
         return horseman.response.reply(404)
-    return horseman.response.reply(
-        200, body=folder.json(by_alias=True),
-        headers={'Content-Type': 'application/json'})
+    return horseman.response.Response.from_json(200, body=file.json())
 
 
-@application.route('/users/{username}/folders/{folderid}', methods=['DELETE'])
-def folder_delete(request: Request, username: str, folderid: str):
-    model = request.app.models.file_model(request)
-    folder = model.find_one(
-        request.app.database, _key=folderid, username=username)
-    if not folder:
+@application.route('/users/{username}/files/{fileid}', methods=['DELETE'])
+def file_delete(request: Request, username: str, fileid: str):
+    model = File(request.app.database)
+    file = model.find_one(_key=fileid, username=username)
+    if file is None:
         return horseman.response.reply(404)
 
-    model.delete(request.app.database, folderid)
+    model.delete(fileid)
     return horseman.response.reply(202)

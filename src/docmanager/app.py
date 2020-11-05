@@ -23,7 +23,6 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
         self.request_factory = request_factory
 
         # Registries
-        self.models = registries.ModelsRegistry()
         self.plugins = registries.NamedComponents()
         self.middlewares = registries.PriorityList()
         self.ui = registries.UIRegistry()

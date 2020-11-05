@@ -3,18 +3,13 @@ from horseman.prototyping import Environ
 
 class Auth:
 
-    def __init__(self, database, models, config):
-        self.database = database
-        self.models = models
+    def __init__(self, model, config):
+        self.model = model
         self.config = config
 
     def from_credentials(self, credentials: dict):
-        model = self.models.get('user')
-        user = model.fetch(self.database, key=credentials['username'])
-        if user is not None:
-            if user.password == credentials['password']:
-                return user
-        return None
+        return self.model.find_one(
+            key=credentials['username'], password=credentials['password'])
 
     def identify(self, environ: Environ):
         if (user := environ.get(self.config.user)) is not None:
