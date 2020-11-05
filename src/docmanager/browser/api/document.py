@@ -14,7 +14,7 @@ def doc_add(request: Request, username: str, folderid: str):
         return horseman.response.reply(404)
 
     data = request.extract()
-    form = data['form'].to_dict()
+    form = data['form'].dict()
 
     model = request.app.models.document_model(
         request, content_type=form.get('content_type', 'default'))

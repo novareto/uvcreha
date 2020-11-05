@@ -60,7 +60,7 @@ class ArangoModel:
         found = collection.find(filters, limit=1)
         if not found.count():
             return None
-        return found.next()
+        return found.next()  ### Should we Instanciate it?
 
     @classmethod
     def exists(cls, database, key):
