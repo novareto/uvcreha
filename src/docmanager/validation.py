@@ -1,8 +1,6 @@
 import pydantic
-import orjson
 from functools import wraps
 from horseman.response import Response
-from horseman.http import HTTPError
 
 
 class ValidationError(Response, Exception):

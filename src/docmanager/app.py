@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-import logging
 import horseman.meta
 import horseman.http
 

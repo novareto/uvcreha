@@ -1,7 +1,6 @@
 import reg
 from typing import Callable
 from heapq import heappush
-from pkg_resources import iter_entry_points
 
 
 class NamedComponents:

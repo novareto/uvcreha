@@ -1,14 +1,11 @@
 from collections import namedtuple
 from contextlib import ContextDecorator
-from typing import Dict, Literal, List, Optional, ClassVar
-from functools import cached_property
+from typing import List, Optional, ClassVar
 
 import orjson
 import arango
 
 import horseman.http
-from roughrider.validation.types import Validatable
-from docmanager.request import Request
 from docmanager import models, registries
 from docmanager.validation import catch_pydantic_exception
 
@@ -130,7 +127,7 @@ class ArangoModel:
             with Transaction(self.session, self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
                 collection.delete(key)
-        except arango.exceptions.DocumentDeleteError:
+        except arango.exceptions.DocumentDeleteError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
         return True
 
@@ -141,7 +138,7 @@ class ArangoModel:
                 data = item.dict()
                 response = collection.replace(data)
                 item.rev = response["_rev"]
-        except arango.exceptions.DocumentUpdateError:
+        except arango.exceptions.DocumentUpdateError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
         return True
 
