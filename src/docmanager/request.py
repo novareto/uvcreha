@@ -28,7 +28,7 @@ class Request(Overhead):
     @property
     def db_session(self):
         # Returns the session
-        return self.app.database.new_session()
+        return self.app.database.session
 
     @property
     def user(self):

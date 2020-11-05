@@ -5,7 +5,7 @@ from horseman.http import Multidict
 from horseman.meta import APIView
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
-from wtforms_pydantic import model_form
+from wtforms_pydantic.wtforms_pydantic import model_form
 
 
 class Triggers(collections.OrderedDict):
