@@ -23,6 +23,7 @@ install_requires = [
     'roughrider.validation',
     'wrapt',
     'wtforms',
+    'wtforms_pydantic'
 ]
 
 test_requires = [
