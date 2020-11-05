@@ -10,7 +10,7 @@ from docmanager.db import Document
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
     form = data['form'].dict()
-    model = Document(request.app.database)
+    model = Document(request.db_session)
     document = model.create(username=username, az=fileid, **form)
     return horseman.response.Response.from_json(201, body=document.json())
 
@@ -19,7 +19,7 @@ def doc_add(request: Request, username: str, fileid: str):
     '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['GET'])
 def doc_view(request: Request, username: str, fileid: str, docid: str):
-    model = Document(request.app.database)
+    model = Document(request.db_session)
     document = model.find_one(_key=docid, az=fileid, username=username)
     if document is None:
         return horseman.response.reply(404)
@@ -30,7 +30,7 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
     '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['DELETE'])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):
-    model = Document(request.app.database)
+    model = Document(request.db_session)
     if model.find_one( _key=docid, az=fileid, username=username) is None:
         return horseman.response.reply(404)
     model.delete(docid)

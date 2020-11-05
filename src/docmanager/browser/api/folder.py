@@ -7,14 +7,14 @@ from docmanager.db import File
 @application.route('/users/{username}/file.add', methods=['POST', 'PUT'])
 def file_add(request: Request, username: str):
     data = request.extract()
-    model = File(request.app.database)
+    model = File(request.db_session)
     file = model.create(username=username, **data['form'].dict())
     return horseman.response.Response.from_json(201, body=file.json())
 
 
 @application.route('/users/{username}/files/{fileid}', methods=['GET'])
 def file_view(request: Request, username: str, fileid: str):
-    model = File(request.app.database)
+    model = File(request.db_session)
     file = model.find_one(_key=fileid, username=username)
     if file is None:
         return horseman.response.reply(404)
@@ -23,7 +23,7 @@ def file_view(request: Request, username: str, fileid: str):
 
 @application.route('/users/{username}/files/{fileid}', methods=['DELETE'])
 def file_delete(request: Request, username: str, fileid: str):
-    model = File(request.app.database)
+    model = File(request.db_session)
     file = model.find_one(_key=fileid, username=username)
     if file is None:
         return horseman.response.reply(404)

@@ -8,7 +8,7 @@ from docmanager.db import User
 @application.route('/user.add', methods=['POST', 'PUT'], ns=NS.API)
 def user_add(request: Request):
     data = request.extract()
-    model = User(request.app.database)
+    model = User(request.db_session)
     user = model.create(**data['form'].dict())
     if user is None:
         return horseman.response.Response.create(400)
@@ -18,7 +18,7 @@ def user_add(request: Request):
 
 @application.route('/users/{username}', methods=['GET'])
 def user_view(request: Request, username: str):
-    model = User(request.app.database)
+    model = User(request.db_session)
     item = model.fetch(username)
     if item is None:
         return horseman.response.Response.create(404)
@@ -27,7 +27,7 @@ def user_view(request: Request, username: str):
 
 @application.route('/users/{username}', methods=['DELETE'])
 def user_delete(request: Request, username: str):
-    model = User(request.app.database)
+    model = User(request.db_session)
     if model.delete(username):
         return horseman.response.Response.create(202)
     return horseman.response.Response.create(404)

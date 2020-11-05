@@ -26,6 +26,11 @@ class Request(Overhead):
         return self.environ.get(self.app.config.env.session)
 
     @property
+    def db_session(self):
+        # Returns the session
+        return self.app.database.new_session()
+
+    @property
     def user(self):
         return self.environ.get(self.app.config.env.user)
 

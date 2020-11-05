@@ -56,9 +56,6 @@ class Database:
             password=self.config.password
         )
 
-    def transaction(self, collection: str):
-        return Transaction(self.session, collection)
-
     @property
     def system_database(self):
         return self.client.db(
@@ -84,7 +81,7 @@ class ArangoModel:
     __primarykey__: ClassVar[str]
 
     def __init__(self, database: Database):
-        self.database = database
+        self.session = database
 
     def model(self, **kwargs):
         return None
@@ -94,7 +91,7 @@ class ArangoModel:
         item = self.model(**data)
         data = item.dict()
         try:
-            with self.database.transaction(self.__collection__) as txn:
+            with Transaction(self.session, self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
                 response = collection.insert(data)
                 item.id = response["_id"]
@@ -106,12 +103,12 @@ class ArangoModel:
 
     @catch_pydantic_exception
     def find(self, **filters) -> List[models.Model]:
-        collection = self.database.session.collection(self.__collection__)
+        collection = self.session.collection(self.__collection__)
         return [self.model(**data) for data in collection.find(filters)]
 
     @catch_pydantic_exception
     def find_one(self, **filters) -> Optional[models.Model]:
-        collection = self.database.session.collection(self.__collection__)
+        collection = self.session.collection(self.__collection__)
         found = collection.find(filters, limit=1)
         if not found.count():
             return None
@@ -120,17 +117,17 @@ class ArangoModel:
 
     @catch_pydantic_exception
     def fetch(self, key) -> Optional[models.Model]:
-        collection = self.database.session.collection(self.__collection__)
+        collection = self.session.collection(self.__collection__)
         if (data := collection.get(key)) is not None:
             return self.model(**data)
 
     def exists(self, key) -> bool:
-        collection = self.database.session.collection(self.__collection__)
+        collection = self.session.collection(self.__collection__)
         return collection.has({"_key": key})
 
     def delete(self, key) -> bool:
         try:
-            with self.database.transaction(self.__collection__) as txn:
+            with Transaction(self.session, self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
                 collection.delete(key)
         except arango.exceptions.DocumentDeleteError:
@@ -139,7 +136,7 @@ class ArangoModel:
 
     def update(self, item) -> bool:
         try:
-            with self.database.transaction(self.__collection__) as txn:
+            with Transaction(self.session, self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
                 data = item.dict()
                 response = collection.replace(data)
@@ -165,33 +162,31 @@ class Document(ArangoModel):
 
     def create(self, **data):
         # The user needs to exist
-        collection = self.database.session.collection(User.__collection__)
+        collection = self.session.collection(User.__collection__)
         if not collection.has({"_key": data[User.__primarykey__]}):
             raise horseman.http.HTTPError(404)
-        collection = self.database.session.collection(File.__collection__)
+        collection = self.session.collection(File.__collection__)
         if not collection.has({"_key": data[File.__primarykey__]}):
             raise horseman.http.HTTPError(404)
         return super().create(**data)
 
 
 class File(ArangoModel):
+    model = models.File
 
     __collection__: str = 'files'
     __primarykey__: str = 'az'
 
     def create(self, **data):
         # The user needs to exist
-        collection = self.database.session.collection(User.__collection__)
+        collection = self.session.collection(User.__collection__)
         if not collection.has({"_key": data[User.__primarykey__]}):
             raise horseman.http.HTTPError(404)
         return super().create(**data)
 
-    model = models.File
-
 
 class User(ArangoModel):
+    model = models.User
 
     __collection__: str = 'users'
     __primarykey__: str = 'username'
-
-    model = models.User
