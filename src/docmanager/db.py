@@ -10,6 +10,7 @@ import horseman.http
 from roughrider.validation.types import Validatable
 from docmanager.request import Request
 from docmanager import models, registries
+from docmanager.validation import catch_pydantic_exception
 
 
 DB_CONFIG = namedtuple('DB', ['user', 'password', 'database'])
@@ -88,6 +89,7 @@ class ArangoModel:
     def model(self, **kwargs):
         return None
 
+    @catch_pydantic_exception
     def create(self, **data):
         item = self.model(**data)
         data = item.dict()
@@ -102,10 +104,12 @@ class ArangoModel:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
         return item
 
+    @catch_pydantic_exception
     def find(self, **filters) -> List[models.Model]:
         collection = self.database.session.collection(self.__collection__)
         return [self.model(**data) for data in collection.find(filters)]
 
+    @catch_pydantic_exception
     def find_one(self, **filters) -> Optional[models.Model]:
         collection = self.database.session.collection(self.__collection__)
         found = collection.find(filters, limit=1)
@@ -114,14 +118,15 @@ class ArangoModel:
         data = found.next()
         return self.model(**data)
 
-    def exists(self, key) -> bool:
-        collection = self.database.session.collection(self.__collection__)
-        return collection.has({"_key": key})
-
+    @catch_pydantic_exception
     def fetch(self, key) -> Optional[models.Model]:
         collection = self.database.session.collection(self.__collection__)
         if (data := collection.get(key)) is not None:
             return self.model(**data)
+
+    def exists(self, key) -> bool:
+        collection = self.database.session.collection(self.__collection__)
+        return collection.has({"_key": key})
 
     def delete(self, key) -> bool:
         try:
