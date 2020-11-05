@@ -11,7 +11,7 @@ from docmanager.request import Request
 from docmanager.validation import ValidationError
 
 
-class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
+class Application(horseman.meta.SentryNode, horseman.meta.APINode):
 
     def __init__(self, routes=None, **kwargs):
         self.setup(**kwargs)
