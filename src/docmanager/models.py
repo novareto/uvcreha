@@ -134,6 +134,12 @@ class File(RootModel):
     az: str
     username: str
 
+    def documents(cls, database, target_model: ArangoModel=Document):
+        return target_model.find(database, {
+            'username': self.username,
+            'az': self.az
+        })
+
 
 @application.models.user(Request)
 class User(RootModel):
@@ -148,3 +154,8 @@ class User(RootModel):
     @property
     def title(self) -> str:
         return self.username
+
+    def files(cls, database, target_model: ArangoModel=File):
+        return target_model.find(database, {
+            'username': self.username,
+        })
