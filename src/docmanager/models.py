@@ -19,6 +19,11 @@ class ProtectedModel(abc.ABC):
         pass
 
 
+class Model(BaseModel):
+    creation_date: datetime = Field(default_factory=datetime.utcnow)
+    modification_date: datetime = Field(default_factory=datetime.utcnow)
+
+
 class ArangoModel:
 
     __collection__: ClassVar[str]
@@ -50,31 +55,32 @@ class ArangoModel:
         return item
 
     @classmethod
-    def find(cls, database, **filters):
+    def find(cls, database, **filters) -> List[Model]:
         collection = database.session.collection(cls.__collection__)
-        return collection.find(filters)
+        return [cls(**data) for data in collection.find(filters)]
 
     @classmethod
-    def find_one(cls, database, **filters):
+    def find_one(cls, database, **filters) -> Optional[Model]:
         collection = database.session.collection(cls.__collection__)
         found = collection.find(filters, limit=1)
         if not found.count():
             return None
-        return found.next()  ### Should we Instanciate it?
+        data = found.next()
+        return cls(**data)  ### Should we Instanciate it?
 
     @classmethod
-    def exists(cls, database, key):
+    def exists(cls, database, key) -> bool:
         collection = database.session.collection(cls.__collection__)
         return collection.has({"_key": key})
 
     @classmethod
-    def fetch(cls, database, key):
+    def fetch(cls, database, key) -> Optional[Model]:
         collection = database.session.collection(cls.__collection__)
         if (data := collection.get(key)) is not None:
             return cls(**data)
 
     @classmethod
-    def delete(cls, database, key: str):
+    def delete(cls, database, key: str) -> bool:
         try:
             with database.transaction(cls.__collection__) as txn:
                 collection = txn.collection(cls.__collection__)
@@ -97,11 +103,6 @@ class ArangoModel:
             return False
         else:
             return True
-
-
-class Model(BaseModel):
-    creation_date: datetime = Field(default_factory=datetime.utcnow)
-    modification_date: datetime = Field(default_factory=datetime.utcnow)
 
 
 class RootModel(ArangoModel, Model):
@@ -133,6 +134,12 @@ class File(RootModel):
     az: str
     username: str
 
+    def documents(cls, database, target_model: ArangoModel=Document):
+        return target_model.find(database, {
+            'username': self.username,
+            'az': self.az
+        })
+
 
 @application.models.user(Request)
 class User(RootModel):
@@ -147,3 +154,8 @@ class User(RootModel):
     @property
     def title(self) -> str:
         return self.username
+
+    def files(cls, database, target_model: ArangoModel=File):
+        return target_model.find(database, {
+            'username': self.username,
+        })
