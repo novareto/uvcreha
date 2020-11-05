@@ -1,14 +1,17 @@
 import hydra
+import logging
+import colorlog
+from horseman.prototyping import WSGICallable
 
 
-def fanstatic_middleware(config):
+def fanstatic_middleware(config) -> WSGICallable:
     from fanstatic import Fanstatic
     from functools import partial
 
     return partial(Fanstatic, **config)
 
 
-def session_middleware(config):
+def session_middleware(config) -> WSGICallable:
     from pathlib import Path
     import cromlech.session
     import cromlech.sessions.file
@@ -22,10 +25,7 @@ def session_middleware(config):
         manager, environ_key=config.session)
 
 
-def make_logger(config):
-    import logging
-    import colorlog
-
+def make_logger(config) -> logging.Logger:
     logger = colorlog.getLogger(config.name)
     logger.setLevel(logging.DEBUG)
     return logger
