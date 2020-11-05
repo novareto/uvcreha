@@ -1,10 +1,10 @@
-import logging
 from http import HTTPStatus
 
+import logging
 import horseman.meta
 import horseman.http
 
-from docmanager import logger, registries
+from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.request import Request
@@ -13,23 +13,29 @@ from docmanager.validation import ValidationError
 
 class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
 
-    def __init__(self, config=None, database=None,
-                 routes=None, request_factory=Request):
+    def __init__(self, routes=None, **kwargs):
+        self.setup(**kwargs)
         if routes is None:
             routes = Routes()
         self.routes = routes
-        self.config = config
-        self.database = database
-        self.request_factory = request_factory
-
-        # Registries
         self.plugins = registries.NamedComponents()
         self.middlewares = registries.PriorityList()
         self.ui = registries.UIRegistry()
 
-    @property
-    def logger(self):
-        return logging.getLogger(self.config.logger.name)
+    def setup(self, config=..., database=..., logger=...,
+              request_factory=Request):
+
+        if config is not ...:
+            self.config = config
+
+        if logger is not ...:
+            self.logger = logger
+
+        if database is not ...:
+            self.database = database
+
+        if request_factory is not ...:
+            self.request_factory = request_factory
 
     def route(self, *args, **kwargs):
         return self.routes.register(*args, **kwargs)
@@ -49,8 +55,6 @@ class Application(dict, horseman.meta.SentryNode, horseman.meta.APINode):
             if route is None:
                 return None
             environ['horseman.path.params'] = route.params
-            logger.debug(
-                "Resolve User %s" % environ.get(self.config.env.user))
             self.check_permissions(route, environ)
             request = self.request_factory(self, environ, route)
             return route.endpoint(request, **route.params)

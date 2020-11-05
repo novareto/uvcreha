@@ -5,7 +5,6 @@ import autoroutes
 import dataclasses
 import roughrider.routing.route
 from horseman.http import HTTPError
-from docmanager import logger
 
 
 @dataclasses.dataclass
@@ -38,7 +37,6 @@ class Routes(autoroutes.Routes):
 
     def register(self, path: str, methods: list=None, **extras):
         def routing(view):
-            logger.debug(f'Register Route -> Path: {path} Methods: {methods} View: {view}')
             for fullpath, method, func in \
                 roughrider.routing.route.route_payload(
                     path, view, methods):

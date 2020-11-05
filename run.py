@@ -1,31 +1,19 @@
 import hydra
-import bjoern
-import logging
-import fanstatic
-import functools
-import pathlib
-import importscan
-import fanstatic
-
-import cromlech.session
-import cromlech.sessions.file
-
-import docmanager
-import docmanager.app
-import docmanager.db
-import docmanager.auth
-
-import uvcreha.example
-import uvcreha.example.app
 
 
 def fanstatic_middleware(config):
-    return functools.partial(fanstatic.Fanstatic, **config)
+    from fanstatic import Fanstatic
+    from functools import partial
+
+    return partial(Fanstatic, **config)
 
 
 def session_middleware(config):
-    # Session middleware
-    current = pathlib.Path(__file__).parent
+    from pathlib import Path
+    import cromlech.session
+    import cromlech.sessions.file
+
+    current = Path(__file__).parent
     folder = current / "sessions"
     handler = cromlech.sessions.file.FileStore(folder, 3000)
     manager = cromlech.session.SignedCookieManager(
@@ -34,21 +22,47 @@ def session_middleware(config):
         manager, environ_key=config.session)
 
 
-@hydra.main(config_path="config.yaml")
+def make_logger(config):
+    import logging
+    import colorlog
+
+    logger = colorlog.getLogger(config.name)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+@hydra.main(config_name="config.yaml")
 def run(config):
+    import bjoern
+    import importscan
+
+    import docmanager
+    import docmanager.app
+    import docmanager.db
+    import docmanager.auth
+
+    import uvcreha.example
+    import uvcreha.example.app
+
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
     database = docmanager.db.Database(**config.app.arango)
-
-    app = docmanager.app.application
-    app.config = config.app
-    app.database = database
-    app.request_factory = uvcreha.example.app.CustomRequest
     auth = docmanager.auth.Auth(
         docmanager.db.User(database), config.app.env)
+
+    app = docmanager.app.application
+    app.setup(
+        config=config.app,
+        database=database,
+        logger=make_logger(config.app.logger),
+        request_factory=uvcreha.example.app.CustomRequest
+    )
+
+    # Plugins
     app.plugins.register(auth, name="authentication")
 
+    # Middlewares
     app.middlewares.register(
         session_middleware(config.app.env), priority=1)
     app.middlewares.register(
@@ -56,8 +70,7 @@ def run(config):
     app.middlewares.register(auth, priority=2)
 
     # Serving the app
-    logger = logging.getLogger('docmanager')
-    logger.info(
+    app.logger.info(
         f"Server started on http://{config.server.host}:{config.server.port}")
     bjoern.run(
         app, config.server.host, int(config.server.port), reuse_port=True)
