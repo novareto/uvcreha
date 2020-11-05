@@ -1,0 +1,27 @@
+app:
+
+  arango:
+    user:
+    password:
+    database:
+    url: http://127.0.0.1:8529
+
+  env:
+    session: docmanager.session
+    user: docmanager.user
+
+  logger:
+    name: docmanager.logger
+
+  assets:
+    compile: True
+    recompute_hashes: True
+    bottom: True
+
+server:
+  host: 0.0.0.0
+  port: 8080
+
+defaults:
+  - hydra/job_logging: colorlog
+  - hydra/hydra_logging: colorlog
