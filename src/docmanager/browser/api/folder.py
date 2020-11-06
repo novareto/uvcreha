@@ -30,3 +30,12 @@ def file_delete(request: Request, username: str, fileid: str):
 
     model.delete(fileid)
     return horseman.response.reply(202)
+
+
+@application.route('/users/{username}/files/{fileid}/docs', methods=['GET'])
+def file_documents(request: Request, username: str, fileid: str):
+    docs = "[{}]".format(','.join([
+        doc.json() for doc in
+        File(request.db_session).documents(
+            username=username, az=fileid)]))
+    return horseman.response.Response.from_json(200, body=docs)

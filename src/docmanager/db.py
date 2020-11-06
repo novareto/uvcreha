@@ -1,6 +1,7 @@
+import abc
 from collections import namedtuple
 from contextlib import ContextDecorator
-from typing import List, Optional, ClassVar
+from typing import Iterable, List, Optional, ClassVar
 
 import orjson
 import arango
@@ -72,10 +73,48 @@ class Database:
             sys_db.delete_database(self.config.database)
 
 
-class ArangoModel:
+class DBModel(abc.ABC):
+
+    parents: Iterable['DBModel']
+
+    @abc.abstractmethod
+    def model(self, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def create(self, **data):
+        pass
+
+    @abc.abstractmethod
+    def find(self, **filters) -> List[models.Model]:
+        pass
+
+    @abc.abstractmethod
+    def find_one(self, **filters) -> Optional[models.Model]:
+        pass
+
+    @abc.abstractmethod
+    def fetch(self, key) -> Optional[models.Model]:
+        pass
+
+    @abc.abstractmethod
+    def exists(self, key) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def delete(self, key) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def update(self, item) -> bool:
+        pass
+
+
+class ArangoModel(DBModel):
 
     __collection__: ClassVar[str]
     __primarykey__: ClassVar[str]
+    __parents__: ClassVar[List[DBModel]]
 
     def __init__(self, database: Database):
         self.session = database
@@ -83,8 +122,19 @@ class ArangoModel:
     def model(self, **kwargs):
         return None
 
+    def parents(self, **kwargs):
+        for parent in self.__parents__:
+            yield parent.find_one(**kwargs)
+
     @catch_pydantic_exception
     def create(self, **data):
+
+        # check parents existance.
+        for parent in self.__parents__:
+            collection = self.session.collection(parent.__collection__)
+            if not collection.has({"_key": data[parent.__primarykey__]}):
+                raise horseman.http.HTTPError(404)
+
         item = self.model(**data)
         data = item.dict()
         try:
@@ -143,10 +193,33 @@ class ArangoModel:
         return True
 
 
+class User(ArangoModel):
+    model = models.User
+
+    __collection__: str = 'users'
+    __primarykey__: str = 'username'
+    __parents__: List = []
+
+    def files(self, **filters):
+        return File(self.session).find(**filters)
+
+
+class File(ArangoModel):
+    model = models.File
+
+    __collection__: str = 'files'
+    __primarykey__: str = 'az'
+    __parents__: List = [User]
+
+    def documents(self, **filters):
+        return Document(self.session).find(**filters)
+
+
 class Document(ArangoModel):
 
     __collection__: str = 'documents'
     __primarykey__: str = ''
+    __parents__: List = [File, User]
 
     alternatives = registries.NamedComponents()
 
@@ -156,34 +229,3 @@ class Document(ArangoModel):
             raise horseman.http.HTTPError(
                 400, f'Unknown content_type: {content_type}')
         return model_class(content_type=content_type, **kwargs)
-
-    def create(self, **data):
-        # The user needs to exist
-        collection = self.session.collection(User.__collection__)
-        if not collection.has({"_key": data[User.__primarykey__]}):
-            raise horseman.http.HTTPError(404)
-        collection = self.session.collection(File.__collection__)
-        if not collection.has({"_key": data[File.__primarykey__]}):
-            raise horseman.http.HTTPError(404)
-        return super().create(**data)
-
-
-class File(ArangoModel):
-    model = models.File
-
-    __collection__: str = 'files'
-    __primarykey__: str = 'az'
-
-    def create(self, **data):
-        # The user needs to exist
-        collection = self.session.collection(User.__collection__)
-        if not collection.has({"_key": data[User.__primarykey__]}):
-            raise horseman.http.HTTPError(404)
-        return super().create(**data)
-
-
-class User(ArangoModel):
-    model = models.User
-
-    __collection__: str = 'users'
-    __primarykey__: str = 'username'

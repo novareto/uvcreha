@@ -31,3 +31,11 @@ def user_delete(request: Request, username: str):
     if model.delete(username):
         return horseman.response.Response.create(202)
     return horseman.response.Response.create(404)
+
+
+@application.route('/users/{username}/files', methods=['GET'])
+def user_files(request: Request, username: str):
+    files = "[{}]".format(','.join([
+        file.json() for file in
+        User(request.db_session).files(username=username)]))
+    return horseman.response.Response.from_json(200, body=files)
