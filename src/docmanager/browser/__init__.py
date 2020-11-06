@@ -28,9 +28,13 @@ def tales_expressions():
 
 class TemplateLoader(chameleon.zpt.loader.TemplateLoader):
 
+    def __init__(self, *args, **kwargs):
+        self.tales = tales_expressions()
+        super().__init__(*args, **kwargs)
+
     def load(self, filename, format=None):
         template = super().load(filename, format=format)
-        template.expression_types.update(tales_expressions())
+        template.expression_types.update(self.tales)
         return template
 
     __getitem__ = load

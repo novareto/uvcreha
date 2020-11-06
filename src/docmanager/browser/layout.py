@@ -93,7 +93,7 @@ class Layout:
 
 
 @application.ui.register_slot(request=Request, name="sitecap")
-@template(template=TEMPLATES["sitecap.pt"])
+@template(TEMPLATES["sitecap.pt"])
 def sitecap(request, name):
     return dict(request=request)
 

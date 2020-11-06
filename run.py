@@ -1,7 +1,47 @@
+import os
 import hydra
 import logging
+import functools
+from pathlib import Path
+import contextlib
 import colorlog
 from horseman.prototyping import WSGICallable
+
+
+current_path = Path(__file__).parent
+
+
+@contextlib.contextmanager
+def environment(**environ):
+    """Temporarily set the process environment variables.
+    """
+    def cast_items(mapping):
+        for k, v in mapping.items():
+            v = str(v)
+            if v.startswith('path:'):
+                path = Path(v[5:]).resolve()
+                path.mkdir(parents=True, exist_ok=True)
+                yield k, str(path)
+            else:
+                yield k, v
+
+    old_environ = dict(os.environ)
+    os.environ.update(dict(cast_items(environ)))
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_environ)
+
+
+def temporary_environ(func):
+
+    @functools.wraps(func)
+    def hydra_conf_environ_wrapper(config):
+        with environment(**config.environ):
+            return func(config)
+
+    return hydra_conf_environ_wrapper
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -12,12 +52,10 @@ def fanstatic_middleware(config) -> WSGICallable:
 
 
 def session_middleware(config) -> WSGICallable:
-    from pathlib import Path
     import cromlech.session
     import cromlech.sessions.file
 
-    current = Path(__file__).parent
-    folder = current / "sessions"
+    folder = Path("sessions")
     handler = cromlech.sessions.file.FileStore(folder, 3000)
     manager = cromlech.session.SignedCookieManager(
         "secret", handler, cookie="my_sid")
@@ -32,6 +70,7 @@ def make_logger(config) -> logging.Logger:
 
 
 @hydra.main(config_name="config.yaml")
+@temporary_environ
 def run(config):
     import bjoern
     import importscan
@@ -71,9 +110,12 @@ def run(config):
 
     # Serving the app
     app.logger.info(
-        f"Server started on http://{config.server.host}:{config.server.port}")
+        "Server started on "
+        f"http://{config.server.host}:{config.server.port}")
+
     bjoern.run(
-        app, config.server.host, int(config.server.port), reuse_port=True)
+        app, config.server.host,
+        int(config.server.port), reuse_port=True)
 
 if __name__ == "__main__":
     run()

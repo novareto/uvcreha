@@ -18,9 +18,15 @@ app:
     recompute_hashes: True
     bottom: True
 
+
+environ:
+  CHAMELEON_CACHE: /tmp/templates_cache
+
+
 server:
   host: 0.0.0.0
   port: 8080
+
 
 defaults:
   - hydra/job_logging: colorlog
