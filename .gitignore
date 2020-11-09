@@ -143,3 +143,16 @@ cython_debug/
 .python-version
 bin/
 outputs/
+
+config.yaml
+pytest.ini
+src/cromlech.marshallers/
+src/cromlech.session/
+src/cromlech.sessions.file/
+src/horseman/
+src/roughrider.auth/
+src/roughrider.routing/
+src/roughrider.traversing/
+src/roughrider.validation/
+src/uvcreha.example/
+src/wtforms_pydantic/
