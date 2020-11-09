@@ -33,6 +33,9 @@ class NamedComponents:
             return component
         return register_component
 
+    def unregister(self, name):
+        del self._components[name]
+
 
 class PriorityList:
 

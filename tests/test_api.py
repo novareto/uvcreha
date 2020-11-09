@@ -70,10 +70,27 @@ def test_get_folder(application):
 
 
 def test_add_file(application):
+    from docmanager.models import Document as BaseDoc
+    from docmanager.db import Document
+    from typing import Literal
+
+
+    @Document.alternatives.component('event')
+    class Event(BaseDoc):
+        content_type: Literal['event']
+        myfield: str
+
+
     app = TestApp(application)
     resp = app.put(
-        "/users/cklinger/files/4711/doc.add",
-        dict(body="Some Doc", myfield=u"", state="Submitted", content_type="event"),
+        "/users/cklinger/files/4711/doc.add", {
+            'body': "Some Doc",
+            'myfield': "",
+            'state': "Submitted",
+            'content_type': "event"
+        }
     )
     assert resp.status == "201 Created"
     assert resp.json['az'] == "4711"
+
+    Document.alternatives.unregister('event')
