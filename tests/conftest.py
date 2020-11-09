@@ -129,12 +129,9 @@ def application(request, config, arangodb):
     import tempfile
     import docmanager
     import docmanager.auth
-    import uvcreha.example
-    import uvcreha.example.app
     from docmanager.app import application as app
 
     importscan.scan(docmanager)
-    importscan.scan(uvcreha.example)
 
     folder = tempfile.TemporaryDirectory()
 
@@ -163,8 +160,7 @@ def application(request, config, arangodb):
     app.setup(
         config=config.app,
         database=arangodb,
-        logger=make_logger(config.app.logger),
-        request_factory=uvcreha.example.app.CustomRequest
+        logger=make_logger(config.app.logger)
     )
 
     # Create the needed collections
