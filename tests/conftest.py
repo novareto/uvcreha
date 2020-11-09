@@ -40,7 +40,7 @@ def config(request):
 
 
 @pytest.fixture(scope="session")
-def arangodb(request, config):
+def arangodb(request):
     """Create a intermediary docker container a arangodb instance
     """
     import omegaconf
