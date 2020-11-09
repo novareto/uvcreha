@@ -123,28 +123,11 @@ def arangodb(request):
 
 
 @pytest.fixture(scope="session")
-def session_middleware(request, config):
-    import tempfile
-    from pathlib import Path
-    import cromlech.session
-    import cromlech.sessions.file
-
-    folder = tempfile.TemporaryDirectory()
-    handler = cromlech.sessions.file.FileStore(Path(folder.name), 3000)
-    manager = cromlech.session.SignedCookieManager(
-        "secret", handler, cookie="my_sid")
-
-    yield cromlech.session.WSGISessionManager(
-        manager, environ_key=config.app.env.session)
-
-    folder.cleanup()
-
-
-@pytest.fixture(scope="session")
-def application(request, config, arangodb, session_middleware):
+def application(request, config, arangodb):
     import logging
     import colorlog
     import importscan
+    import tempfile
     import docmanager
     import docmanager.auth
     import uvcreha.example
@@ -154,6 +137,18 @@ def application(request, config, arangodb, session_middleware):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
+    folder = tempfile.TemporaryDirectory()
+
+    def session_middleware(config):
+        from pathlib import Path
+        import cromlech.session
+        import cromlech.sessions.file
+
+        handler = cromlech.sessions.file.FileStore(Path(folder.name), 3000)
+        manager = cromlech.session.SignedCookieManager(
+            "secret", handler, cookie="my_sid")
+        return cromlech.session.WSGISessionManager(
+            manager, environ_key=config.session)
 
     def fanstatic_middleware(config):
         from fanstatic import Fanstatic
@@ -173,17 +168,21 @@ def application(request, config, arangodb, session_middleware):
         request_factory=uvcreha.example.app.CustomRequest
     )
 
-    # Session
-
     # Auth
     auth = docmanager.auth.Auth(app.database, config.app.env)
     app.plugins.register(auth, name="authentication")
+
+    # Middlewares
     app.middlewares.register(
         fanstatic_middleware(config.app.assets), priority=0)
-    app.middlewares.register(session_middleware, priority=1)
+    app.middlewares.register(
+        session_middleware(config.app.env), priority=1)
     app.middlewares.register(auth, priority=2)
 
-    return app
+    yield app
+
+    # cleanup
+    folder.cleanup()
 
 
 def pytest_addoption(parser):
