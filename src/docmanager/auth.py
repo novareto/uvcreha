@@ -9,7 +9,7 @@ class Auth:
 
     def from_credentials(self, credentials: dict):
         return self.model.find_one(
-            key=credentials['username'], password=credentials['password'])
+            username=credentials['username'], password=credentials['password'])
 
     def identify(self, environ: Environ):
         if (user := environ.get(self.config.user)) is not None:

@@ -177,7 +177,8 @@ def application(request, config, arangodb):
         docmanager.db.Document.__collection__)
 
     # Auth
-    auth = docmanager.auth.Auth(app.database, config.app.env)
+    auth = docmanager.auth.Auth(
+        docmanager.db.User(arangodb.session), config.app.env)
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
