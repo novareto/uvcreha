@@ -6,6 +6,11 @@ from io import StringIO
 import pytest
 
 
+READY_PHRASE = (
+    b"ArangoDB (version 3.7.3 [linux]) is ready for business. Have fun!\n"
+    )
+
+
 ARANGO_CONFIG = '''
 arango:
   user: {arango_user}
@@ -59,18 +64,11 @@ def arangodb(request):
             arango_database=arango_database,
             arango_url=arango_url,
         ))
-        db = docmanager.db.Database(**config.arango)
-        db.ensure_database()
-        db.session.create_collection(docmanager.db.User.__collection__)
-        db.session.create_collection(docmanager.db.File.__collection__)
-        db.session.create_collection(docmanager.db.Document.__collection__)
-        yield db
-        db.session.delete_collection(docmanager.db.Document.__collection__)
-        db.session.delete_collection(docmanager.db.File.__collection__)
-        db.session.delete_collection(docmanager.db.User.__collection__)
-    elif arango_type == 'docker':
-        import socket
+        cleanup = None
+
+    else:
         import docker
+        import time
 
         client = docker.from_env()
         arango_url = 'http://192.168.52.2:8529'
@@ -107,19 +105,20 @@ def arangodb(request):
         mynet.connect(container, ipv4_address="192.168.52.2")
 
         while True:
-            sock = socket.socket()
-            try:
-                sock.connect(("192.168.52.2", 8529))
+            logs = container.logs()
+            if logs.endswith(READY_PHRASE):
                 break
-            except socket.error:
-                pass
+            time.sleep(0.1)
 
-        yield docmanager.db.Database(**config.arango)
+        def cleanup():
+            mynet.disconnect(container)
+            mynet.remove()
+            container.stop()
+            container.remove()
 
-        mynet.disconnect(container)
-        mynet.remove()
-        container.stop()
-        container.remove()
+        request.addfinalizer(cleanup)
+
+    return docmanager.db.Database(**config.arango)
 
 
 @pytest.fixture(scope="session")
@@ -168,6 +167,15 @@ def application(request, config, arangodb):
         request_factory=uvcreha.example.app.CustomRequest
     )
 
+    # Create the needed collections
+    arangodb.ensure_database()
+    arangodb.session.create_collection(
+        docmanager.db.User.__collection__)
+    arangodb.session.create_collection(
+        docmanager.db.File.__collection__)
+    arangodb.session.create_collection(
+        docmanager.db.Document.__collection__)
+
     # Auth
     auth = docmanager.auth.Auth(app.database, config.app.env)
     app.plugins.register(auth, name="authentication")
@@ -183,6 +191,12 @@ def application(request, config, arangodb):
 
     # cleanup
     folder.cleanup()
+    arangodb.session.delete_collection(
+        docmanager.db.Document.__collection__)
+    arangodb.session.delete_collection(
+        docmanager.db.File.__collection__)
+    arangodb.session.delete_collection(
+        docmanager.db.User.__collection__)
 
 
 def pytest_addoption(parser):
