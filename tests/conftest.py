@@ -61,9 +61,13 @@ def arangodb(request):
         ))
         db = docmanager.db.Database(**config.arango)
         db.ensure_database()
-        db.session.create_collection(docmanager.db.User)
+        db.session.create_collection(docmanager.db.User.__collection__)
+        db.session.create_collection(docmanager.db.File.__collection__)
+        db.session.create_collection(docmanager.db.Document.__collection__)
         yield db
-        db.session.drop_collection(docmanager.db.User)
+        db.session.delete_collection(docmanager.db.Document.__collection__)
+        db.session.delete_collection(docmanager.db.File.__collection__)
+        db.session.delete_collection(docmanager.db.User.__collection__)
     elif arango_type == 'docker':
         import socket
         import docker
@@ -94,7 +98,7 @@ def arangodb(request):
             pool_configs=[ipam_pool]
         )
 
-        mynet= client.networks.create(
+        mynet = client.networks.create(
             "network1",
             driver="bridge",
             ipam=ipam_config
@@ -138,7 +142,8 @@ def session_middleware(request, config):
 
 @pytest.fixture(scope="session")
 def application(request, config, arangodb, session_middleware):
-
+    import logging
+    import colorlog
     import importscan
     import docmanager
     import docmanager.auth
@@ -149,16 +154,33 @@ def application(request, config, arangodb, session_middleware):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
-    app.config = config.app
-    app.database = arangodb
-    app.request_factory = uvcreha.example.app.CustomRequest
+
+    def fanstatic_middleware(config):
+        from fanstatic import Fanstatic
+        from functools import partial
+
+        return partial(Fanstatic, **config)
+
+    def make_logger(config) -> logging.Logger:
+        logger = colorlog.getLogger(config.name)
+        logger.setLevel(logging.DEBUG)
+        return logger
+
+    app.setup(
+        config=config.app,
+        database=arangodb,
+        logger=make_logger(config.app.logger),
+        request_factory=uvcreha.example.app.CustomRequest
+    )
 
     # Session
-    app.middlewares.register(session_middleware, priority=1)
 
     # Auth
-    auth = docmanager.auth.Auth(app.database, app.models, config.app.env)
+    auth = docmanager.auth.Auth(app.database, config.app.env)
     app.plugins.register(auth, name="authentication")
+    app.middlewares.register(
+        fanstatic_middleware(config.app.assets), priority=0)
+    app.middlewares.register(session_middleware, priority=1)
     app.middlewares.register(auth, priority=2)
 
     return app
