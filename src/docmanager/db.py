@@ -64,6 +64,8 @@ class Database:
 
     def ensure_database(self):
         sys_db = self.system_database
+        #import pdb
+        #pdb.set_trace()
         if not sys_db.has_database(self.config.database):
             sys_db.create_database(self.config.database)
 
