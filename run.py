@@ -88,7 +88,7 @@ def run(config):
 
     database = docmanager.db.Database(**config.app.arango)
     auth = docmanager.auth.Auth(
-        docmanager.db.User(database), config.app.env)
+        docmanager.db.User(database.session), config.app.env)
 
     app = docmanager.app.application
     app.setup(

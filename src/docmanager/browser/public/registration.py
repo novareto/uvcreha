@@ -4,11 +4,13 @@ import horseman.response
 from docmanager.app import application
 from docmanager.models import User
 from docmanager.request import Request
-from docmanager.browser.form import FormView, Triggers
+from docmanager.browser.form import CustomBaseForm, FormView, Triggers
 from docmanager.browser.layout import template, TEMPLATES
+from horseman.http import Multidict
+from wtforms_pydantic.wtforms_pydantic import model_form
 
 
-@application.routes.register("/reg")
+@application.routes.register("/reg", methods=('GET', 'POST'))
 class RegistrationForm(FormView):
 
     title: str = "Registration Form"
@@ -16,6 +18,13 @@ class RegistrationForm(FormView):
     action: str = "reg"
     model: pydantic.BaseModel = User
     triggers: Triggers = Triggers()
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = model_form(
+            self.model, base_class=CustomBaseForm, only=("username", "password")
+        )()
+        form.process(data=data, formdata=formdata)
+        return form
 
     @triggers.register("speichern", "Speichern")
     def speichern(view, request):
@@ -45,12 +54,21 @@ class EditPassword(FormView):
     triggers = Triggers()
     model: pydantic.BaseModel = User
 
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = model_form(
+            self.model, base_class=CustomBaseForm, only=( "password")
+        )()
+        form.process(data=data, formdata=formdata)
+        return form
+
     @triggers.register("speichern", "Speichern")
-    def speichern(view, request, data, files):
+    def speichern(view, request):
+        data = request.extract()["form"]
         form = view.setupForm(formdata=data)
         if not form.validate():
-            return dict(form=form, view=view)
+            return form
         print('DO SOME REAL STUFF HERE')
+        import pdb; pdb.set_trace()
         return horseman.response.Response.create(
             302, headers={"Location": "/%s" % view.action}
         )

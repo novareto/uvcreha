@@ -22,3 +22,10 @@ def test_add_user_ok(application):
     ud['password'] = u"wrong"
     user = auth.from_credentials(ud)
     assert user is None
+
+    assert resp.request.environ.get('test.principal', None) is None
+    ud = dict(username="ck", password="klinger")
+    ud['trigger.speichern'] = "trigger.speichern"
+    resp = app.post("/reg", ud)
+    assert resp.status == "302 Found"
+    assert resp.request.environ['test.principal'] is not None

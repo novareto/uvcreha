@@ -196,6 +196,8 @@ def application(request, config, arangodb):
         docmanager.db.User.__collection__)
 
 
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--arango", action="store", default="local",

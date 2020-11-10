@@ -1,11 +1,9 @@
 import wtforms
 import collections
 import pydantic
-from horseman.http import Multidict
 from horseman.meta import APIView
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
-from wtforms_pydantic.wtforms_pydantic import model_form
 
 
 class Triggers(collections.OrderedDict):
@@ -43,13 +41,6 @@ class FormView(APIView):
     schema: dict
     model: pydantic.BaseModel
 
-    def setupForm(self, data={}, formdata=Multidict()):
-        us = self.model(request=object)
-        form = model_form(
-            us, base_class=CustomBaseForm, only=("username", "password")
-        )()
-        form.process(data=data, formdata=formdata)
-        return form
 
     @template(TEMPLATES["registration_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
