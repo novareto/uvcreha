@@ -76,7 +76,3 @@ class User(Model):
 class Message(BaseModel):
     type: str
     body: str
-
-
-class Messages(BaseModel):
-    messages: Optional[List[Message]] = []

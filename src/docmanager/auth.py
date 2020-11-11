@@ -1,7 +1,10 @@
 from horseman.prototyping import Environ
+from horseman.response import Response
 
 
 class Auth:
+
+    unprotected = ('/login',)
 
     def __init__(self, model, config):
         self.model = model
@@ -9,7 +12,9 @@ class Auth:
 
     def from_credentials(self, credentials: dict):
         return self.model.find_one(
-            username=credentials['username'], password=credentials['password'])
+            username=credentials['username'],
+            password=credentials['password']
+        )
 
     def identify(self, environ: Environ):
         if (user := environ.get(self.config.user)) is not None:
@@ -27,6 +32,10 @@ class Auth:
 
     def __call__(self, app):
         def auth_application_wrapper(environ, start_response):
-            self.identify(environ)
-            return app(environ, start_response)
+            user = self.identify(environ)
+            if user is not None or environ['PATH_INFO'] in self.unprotected:
+                return app(environ, start_response)
+            return Response.create(
+                302, headers={'Location': '/login' }
+            )(environ, start_response)
         return auth_application_wrapper

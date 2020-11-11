@@ -52,20 +52,5 @@ class Request(Overhead):
 
         return self.get_data()
 
-    def get_flash_messages(self):
-        from .models import Messages
-        mes = []
-        if messages := self.session.get('flashmessages'):
-            mes = [message for message in Messages.parse_raw(messages).messages]
-            self.session['flashmessages'] = []
-        return mes
-
-    def flash(self, message):
-        from .models import Messages
-        messages = self.session.get('flashmessages', None)
-        if messages:
-            messages = Messages.parse_raw(messages)
-        else:
-            messages = Messages()
-        messages.messages.append(message)
-        self.session['flashmessages'] = messages.json()
+    def flash(self):
+        return self.app.plugins['flash'](self)
