@@ -46,7 +46,6 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
             user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
-            import pdb; pdb.set_trace()
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
 
