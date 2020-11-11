@@ -41,13 +41,12 @@ class FormView(APIView):
     schema: dict
     model: pydantic.BaseModel
 
-
-    @template(TEMPLATES["registration_form.pt"], layout_name="default", raw=False)
+    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         form = self.setupForm()
         return {"form": form, "view": self, "error": None, "path": request.route.path}
 
-    @template(TEMPLATES["registration_form.pt"], layout_name="default", raw=False)
+    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request):
 
         for trigger_id in self.triggers.keys():

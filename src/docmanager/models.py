@@ -51,8 +51,8 @@ class File(Model):
 
 class User(Model):
 
-    username: str
-    password: str  # SecretStr
+    username: str = Field(title="Loginname", description="Bitte geb hier was ein.")
+    password: SecretStr = Field(title="Passwort", description="Bitte geb das PW ein.")
     permissions: Optional[List] = ['document.view']
 
     class Config:

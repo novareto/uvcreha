@@ -3,8 +3,9 @@
   <p class="lead" tal:content="view.description"> </p>
   <form method="POST" tal:attributes="action view.action">
     <div class="form-group" tal:repeat="field form">
-      <label tal:content="field.label" />
+      <label tal:replace="field.label" />
       <div tal:content="structure field()" tal:attributes="class field.errors and 'is-invalid' or 'is-valid' "/>
+      <small id="emailHelp" class="form-text text-muted" tal:content="field.description" tal:condition="field.description"> </small>
       <div class="invalid-feedback" tal:condition="field.errors">
 	<div tal:repeat="error field.errors">
 	  <span tal:content="error" />
