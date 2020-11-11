@@ -1,59 +1,89 @@
-#from pathlib import Path
-#
-#import wtforms.form
-#import wtforms.fields
-#import wtforms.validators
-#from chameleon import PageTemplateLoader
-#
-#import horseman.response
-#from horseman.meta import APIView
-#from docmanager.request import Request
-#from docmanager.app import application
-#from docmanager.browser.layout import template
-#
-#
-#TEMPLATES = PageTemplateLoader(
-#    str((Path(__file__).parent / 'templates').resolve()), ".pt")
-#
-#
-#class LoginForm(wtforms.form.Form):
-#
-#    username = wtforms.fields.StringField(
-##        'Username',
-#        validators=(wtforms.validators.InputRequired(),)
-#    )
-#
-#    password = wtforms.fields.PasswordField(
-#        'Password',
-#        validators=(wtforms.validators.InputRequired(),)
-#    )
-#
-#
-#@application.routes.register('/login')
-#class LoginView(APIView):
-#
-#    @template(TEMPLATES['login.pt'], raw=False)
-#    def GET(self, request: Request):
-#        form = LoginForm()
-#        return {'form': form, 'error': None, 'path': request.route.path}
-#
-#    @template(TEMPLATES['login.pt'], raw=False)
-#    def POST(self, request: Request):
-#        form = LoginForm(request.data['form'])
-#        if not form.validate():
-#            return {'form': form, 'error': 'form'}
-#        if (userdata := request.app['auth'].from_credentials(
-#                request.data['form'].to_dict())) is not None:
-#            user = request.app.models['user'](**userdata)
-#            request.app['auth'].remember(request.environ, user)
-#            print('The login was successful')
-#            return horseman.response.Response.create(
-#                302, headers={'Location': '/'})
-#        return {'form': form, 'error': 'auth', 'path': request.route.path}
-#
-#
-#@application.routes.register('/logout')
-#def LogoutView(request: Request):
-#    request.session.store.clear(request.session.sid)
-#    return horseman.response.Response.create(
-##            302, headers={'Location': '/'})
+import pydantic
+import horseman.response
+
+from docmanager.app import application
+from docmanager.models import User
+from docmanager.request import Request
+from docmanager.browser.form import CustomBaseForm, FormView, Triggers
+from docmanager.browser.layout import template, TEMPLATES
+from horseman.http import Multidict
+from wtforms_pydantic.wtforms_pydantic import model_form
+
+
+@application.routes.register("/login", methods=("GET", "POST"))
+class RegistrationForm(FormView):
+
+    title: str = "Registration Form"
+    description: str = "Please fill out all details"
+    action: str = "login"
+    model: pydantic.BaseModel = User
+    triggers: Triggers = Triggers()
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = model_form(
+            self.model, base_class=CustomBaseForm, only=("username", "password")
+        )()
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @triggers.register("speichern", "Speichern")
+    def speichern(view, request):
+        data = request.extract()["form"]
+        form = view.setupForm(formdata=data)
+        if not form.validate():
+            return form
+
+        auth = request.app.plugins.get("authentication")
+        if (user := auth.from_credentials(data.dict())) is not None:
+            auth.remember(request.environ, user)
+            return horseman.response.Response.create(302, headers={"Location": "/"})
+        return horseman.response.Response.create(302, headers={"Location": "/login"})
+
+    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    def abbrechen(form, *args):
+        pass
+
+
+@application.routes.register("/edit_pw")
+class EditPassword(FormView):
+
+    title = "Passwort ändern"
+    description = "Hier können Sie Ihr Passwort ändern"
+    action = "edit_pw"
+    triggers = Triggers()
+    model: pydantic.BaseModel = User
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = model_form(self.model, base_class=CustomBaseForm, only=("password"))()
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @triggers.register("speichern", "Speichern")
+    def speichern(view, request):
+        data = request.extract()["form"]
+        form = view.setupForm(formdata=data)
+        if not form.validate():
+            return form
+        print("DO SOME REAL STUFF HERE")
+        return horseman.response.Response.create(
+            302, headers={"Location": "/%s" % view.action}
+        )
+
+    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    def abbrechen(form, *args):
+        pass
+
+
+@application.routes.register(
+    "/preferences", methods=["GET"], permissions={"document.view"}
+)
+@template(template=TEMPLATES["preferences.pt"], layout_name="default", raw=False)
+def preferences(request: Request):
+    return dict(request=request)
+
+
+@application.routes.register('/logout')
+def LogoutView(request: Request):
+    request.session.store.clear(request.session.sid)
+    return horseman.response.Response.create(
+            302, headers={'Location': '/'})
