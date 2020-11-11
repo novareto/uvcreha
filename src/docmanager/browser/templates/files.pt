@@ -1,0 +1,22 @@
+<h1> FILES </h1>
+
+<span tal:content="myfile.documents()"> </span>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Datum</th>
+      <th scope="col">State</th>
+      <th scope="col">Typ</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr tal:repeat="doc myfile.documents()">
+          <td> <span tal:content="repeat.doc.number"/> </td>
+          <td> <a href="" tal:attributes="href string:/users/${doc.username}/files/${doc.az}/docs/${doc.key}"> <span tal:content="doc.key"/> </a></td>
+          <td> <span tal:content="doc.creation_date"/></td>
+          <td> <span tal:content="doc.content_type"/></td>
+      </tr>
+  </tbody>
+</table>
+

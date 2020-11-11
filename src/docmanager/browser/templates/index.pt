@@ -45,3 +45,22 @@
     </div>
   </div>
 </div>
+<hr>
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Aktenzeichen</th>
+                <th scope="col">Datum</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr tal:repeat="file user.files()">
+                <td tal:content="repeat.file.number"> <span tal:content="file"/> </td>
+                <td> <span tal:content="file"/>  <a href="" tal:attributes="href string:/users/${file.username}/files/${file.az}" tal:content="file.az"> </a> </td>
+                <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
