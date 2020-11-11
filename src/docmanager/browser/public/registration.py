@@ -10,12 +10,12 @@ from horseman.http import Multidict
 from wtforms_pydantic.wtforms_pydantic import model_form
 
 
-@application.routes.register("/reg", methods=('GET', 'POST'))
+@application.routes.register("/login", methods=("GET", "POST"))
 class RegistrationForm(FormView):
 
     title: str = "Registration Form"
     description: str = "Please fill out all details"
-    action: str = "reg"
+    action: str = "login"
     model: pydantic.BaseModel = User
     triggers: Triggers = Triggers()
 
@@ -36,9 +36,8 @@ class RegistrationForm(FormView):
         auth = request.app.plugins.get("authentication")
         if (user := auth.from_credentials(data.dict())) is not None:
             auth.remember(request.environ, user)
-            # request.flash = Message(type='info', body="Sie sind nun angemeldet!")
             return horseman.response.Response.create(302, headers={"Location": "/"})
-        return horseman.response.Response.create(302, headers={"Location": "/reg"})
+        return horseman.response.Response.create(302, headers={"Location": "/login"})
 
     @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
     def abbrechen(form, *args):
@@ -55,9 +54,7 @@ class EditPassword(FormView):
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = model_form(
-            self.model, base_class=CustomBaseForm, only=( "password")
-        )()
+        form = model_form(self.model, base_class=CustomBaseForm, only=("password"))()
         form.process(data=data, formdata=formdata)
         return form
 
@@ -67,8 +64,7 @@ class EditPassword(FormView):
         form = view.setupForm(formdata=data)
         if not form.validate():
             return form
-        print('DO SOME REAL STUFF HERE')
-        import pdb; pdb.set_trace()
+        print("DO SOME REAL STUFF HERE")
         return horseman.response.Response.create(
             302, headers={"Location": "/%s" % view.action}
         )
@@ -84,3 +80,10 @@ class EditPassword(FormView):
 @template(template=TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
     return dict(request=request)
+
+
+@application.routes.register('/logout')
+def LogoutView(request: Request):
+    request.session.store.clear(request.session.sid)
+    return horseman.response.Response.create(
+            302, headers={'Location': '/'})

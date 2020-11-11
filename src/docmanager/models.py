@@ -2,7 +2,7 @@ import abc
 import uuid
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 from docmanager.request import Request
 
 
@@ -52,8 +52,13 @@ class File(Model):
 class User(Model):
 
     username: str
-    password: str
-    permissions: Optional[List]
+    password: str  # SecretStr
+    permissions: Optional[List] = ['document.view']
+
+    class Config:
+        json_encoders = {
+            SecretStr: lambda v: v.get_secret_value() if v else None,
+        }
 
     @property
     def title(self) -> str:
@@ -66,3 +71,12 @@ class User(Model):
 
     def json(self, by_alias=True, **kwargs):
         return super().json(by_alias=by_alias, **kwargs)
+
+
+class Message(BaseModel):
+    type: str
+    body: str
+
+
+class Messages(BaseModel):
+    messages: Optional[List[Message]] = []

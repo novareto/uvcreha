@@ -40,10 +40,13 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
         return self.routes.register(*args, **kwargs)
 
     def check_permissions(self, route, environ):
+        # default_permission = {'app.view'}
         if permissions := route.extras.get('permissions'):
+            # permissions.update(default_permission)
             user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
+            import pdb; pdb.set_trace()
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
 
@@ -61,7 +64,9 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
             raise horseman.http.HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
         except SecurityError as error:
             if error.user is None:
+                return horseman.response.Response.create(302, headers={'Location': '/login' })
                 raise horseman.http.HTTPError(HTTPStatus.UNAUTHORIZED)
+            return horseman.response.Response.create(302, headers={'Location': '/login' })
             raise horseman.http.HTTPError(HTTPStatus.FORBIDDEN)
         except ValidationError as error:
             return error

@@ -35,7 +35,7 @@ class Routes(autoroutes.Routes):
             raise ValueError(
                 f"No route found with name {name} and params {kwargs}")
 
-    def register(self, path: str, methods: list=None, **extras):
+    def register(self, path: str, methods: list = None, **extras):
         def routing(view):
             for fullpath, method, func in \
                 roughrider.routing.route.route_payload(

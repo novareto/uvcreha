@@ -52,16 +52,20 @@ class Request(Overhead):
 
         return self.get_data()
 
+    def get_flash_messages(self):
+        from .models import Messages
+        mes = []
+        if messages := self.session.get('flashmessages'):
+            mes = [message for message in Messages.parse_raw(messages).messages]
+            self.session['flashmessages'] = []
+        return mes
 
-
-    #@property
-    #def flash(self):
-    #    if messages := self.session.get('flashmessages'):
-    #        return [message for message in Messages.parse_raw(messages).messages]
-    #    return []
-
-    #@flash.setter
-    #def flash(self, message: Message):
-    #    messages = self.session.get('flashmessages', Messages())
-    #    messages.messages.append(message)
-    #    self.session['flashmessages'] = messages.json()
+    def flash(self, message):
+        from .models import Messages
+        messages = self.session.get('flashmessages', None)
+        if messages:
+            messages = Messages.parse_raw(messages)
+        else:
+            messages = Messages()
+        messages.messages.append(message)
+        self.session['flashmessages'] = messages.json()
