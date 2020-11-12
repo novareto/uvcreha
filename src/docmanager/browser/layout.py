@@ -37,8 +37,7 @@ def template(template, layout_name=None, raw=False):
                 request.environ["HTTP_HOST"],
                 request.environ["SCRIPT_NAME"],
             )
-            messages = request.get_flash_messages()
-
+            flash_messages = request.flash()
             content = template.render(macros=layout.macros, **result)
             body = layout.render(
                 content,
@@ -47,7 +46,7 @@ def template(template, layout_name=None, raw=False):
                 request=request,
                 context=object(),
                 user=None,
-                messages=messages,
+                messages=flash_messages,
                 view=instance,
             )
             if raw:

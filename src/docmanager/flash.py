@@ -9,13 +9,18 @@ class SessionMessages:
         self.request = request
 
     def __iter__(self):
-        if self.key in self.session:
-            messages = deque(self.session[self.key])
-            while self.session[self.key]:
-                yield Message(self.session[self.key].pop(0))
+        if self.key in self.request.session:
+            messages = deque(self.request.session[self.key])
+            while self.request.session[self.key]:
+                yield Message(**self.request.session[self.key].pop(0))
 
-    def add(self, message: Message):
-        messages = self.session.get('flashmessages', [])
+    def add(self, body: str, type: str="info"):
+        if self.key in self.request.session:
+            messages = self.request.session['flashmessages']
+        else:
+            messages = self.request.session['flashmessages'] = []
+
+        message = Message(type=type, body=body)
         messages.append(message.dict())
 
 
@@ -24,5 +29,5 @@ class Flash:
     def __init__(self, source=SessionMessages):
         self.source = source
 
-    def messages(self, request):
+    def __call__(self, request):
         return self.source(request)
