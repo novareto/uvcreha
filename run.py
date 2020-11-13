@@ -81,6 +81,7 @@ def run(config):
     import docmanager.db
     import docmanager.auth
     import docmanager.flash
+    import docmanager.messaging
 
     import uvcreha.example
     import uvcreha.example.app
@@ -117,9 +118,14 @@ def run(config):
         "Server started on "
         f"http://{config.server.host}:{config.server.port}")
 
-    bjoern.run(
-        app, config.server.host,
-        int(config.server.port), reuse_port=True)
+    receiver = docmanager.messaging.Receiver(config.app.arango)
+    try:
+        receiver.start()
+        bjoern.run(
+            app, config.server.host,
+            int(config.server.port), reuse_port=True)
+    finally:
+        receiver.stop()
 
 if __name__ == "__main__":
     run()

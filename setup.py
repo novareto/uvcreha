@@ -23,7 +23,12 @@ install_requires = [
     'roughrider.validation',
     'wrapt',
     'wtforms',
-    'wtforms_pydantic'
+    'wtforms_pydantic',
+]
+
+messager_requires = [
+    'aioamqp',
+    'aioarangodb'
 ]
 
 test_requires = [
@@ -59,6 +64,7 @@ setup(
     install_requires=install_requires,
     extras_require={
         'test': test_requires,
+        'messager': messager_requires,
     },
     entry_points={
         'chameleon.tales': [
