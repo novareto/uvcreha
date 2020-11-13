@@ -61,7 +61,7 @@ class User(Model):
 
     username: str = Field(
         title="Loginname", description="Bitte geb hier was ein.")
-    password: str = Field(
+    password: SecretStr = Field(
         title="Passwort", description="Bitte geb das PW ein.")
     permissions: Optional[List] = ['document.view']
 

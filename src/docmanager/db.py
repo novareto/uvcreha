@@ -37,6 +37,14 @@ class Transaction(ContextDecorator):
         return True
 
 
+
+def mydump(v, *args, **kwargs):
+    if 'password' in v:
+        v['password'] = v['password'].get_secret_value()
+    return orjson.dumps(v)
+
+
+
 class Database:
 
     __slots__ = ('config', 'client')
@@ -44,7 +52,7 @@ class Database:
     def __init__(self, url: str='http://localhost:8529', **config):
         self.config = DB_CONFIG(**config)
         self.client = arango.ArangoClient(
-            url, serializer=orjson.dumps, deserializer=orjson.loads)
+            url, serializer=mydump, deserializer=orjson.loads)
 
     @property
     def session(self):
