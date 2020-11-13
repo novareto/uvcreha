@@ -21,13 +21,15 @@ class RegistrationForm(FormView):
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = model_form(
-            self.model, base_class=CustomBaseForm, only=("username", "password")
+            self.model,
+            base_class=CustomBaseForm,
+            only=("username", "password")
         )()
         form.process(data=data, formdata=formdata)
         return form
 
     @triggers.register("speichern", "Speichern")
-    def speichern(view, request):
+    def login(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
         if not form.validate():
@@ -36,11 +38,17 @@ class RegistrationForm(FormView):
         auth = request.app.plugins.get("authentication")
         if (user := auth.from_credentials(data.dict())) is not None:
             auth.remember(request.environ, user)
-            return horseman.response.Response.create(302, headers={"Location": "/"})
-        return horseman.response.Response.create(302, headers={"Location": "/login"})
+            return horseman.response.Response.create(
+                302, headers={"Location": "/"}
+            )
+        flash_messages = request.flash()
+        flash_messages.add(body='Failed login.')
+        return horseman.response.Response.create(
+            302, headers={"Location": "/login"}
+        )
 
     @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
-    def abbrechen(form, *args):
+    def cancel(form, *args):
         pass
 
 

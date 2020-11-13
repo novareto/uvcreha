@@ -79,6 +79,7 @@ def run(config):
     import docmanager.app
     import docmanager.db
     import docmanager.auth
+    import docmanager.flash
 
     import uvcreha.example
     import uvcreha.example.app
@@ -87,9 +88,6 @@ def run(config):
     importscan.scan(uvcreha.example)
 
     database = docmanager.db.Database(**config.app.arango)
-    auth = docmanager.auth.Auth(
-        docmanager.db.User(database.session), config.app.env)
-
     app = docmanager.app.application
     app.setup(
         config=config.app,
@@ -99,7 +97,12 @@ def run(config):
     )
 
     # Plugins
+    flash = docmanager.flash.Flash()
+    auth = docmanager.auth.Auth(
+        docmanager.db.User(database.session), config.app.env)
+
     app.plugins.register(auth, name="authentication")
+    app.plugins.register(flash, name="flash")
 
     # Middlewares
     app.middlewares.register(

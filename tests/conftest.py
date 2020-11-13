@@ -129,6 +129,7 @@ def application(request, config, arangodb):
     import tempfile
     import docmanager
     import docmanager.auth
+    import docmanager.flash
     from docmanager.app import application as app
 
     importscan.scan(docmanager)
@@ -171,6 +172,10 @@ def application(request, config, arangodb):
         docmanager.db.File.__collection__)
     arangodb.session.create_collection(
         docmanager.db.Document.__collection__)
+
+    # Flash
+    flash = docmanager.flash.Flash()
+    app.plugins.register(flash, name="flash")
 
     # Auth
     auth = docmanager.auth.Auth(
