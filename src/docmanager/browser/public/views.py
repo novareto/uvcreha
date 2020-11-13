@@ -10,10 +10,3 @@ def index(request: Request):
     request.flash().add(body="BLA BLUB")
     user = User(request.app.database.session)
     return dict(request=request, user=user)
-
-
-@application.routes.register("/users/{username}/files/{fileid}", permissions={"document.view"},)
-@template(TEMPLATES["files.pt"], layout_name="default", raw=False,)
-def index_files(request: Request, username: str, fileid: str):
-    model = File(request.db_session)
-    return dict(request=request, myfile=model)

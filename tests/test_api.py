@@ -1,16 +1,18 @@
 from webtest import TestApp
 
 
-def test_index(application):
-
+def test_index(application, user):
     app = TestApp(application)
+    user.login(app)
     resp = app.get("/")
     assert resp.status == "200 OK"
 
 
-def test_add_user(application):
+def test_add_user(application, user):
 
     app = TestApp(application)
+    user.login(app)
+
     resp = app.post(
         "/user.add",
         {"nothing": "at_all"},
@@ -36,8 +38,9 @@ def test_add_user(application):
     }
 
 
-def test_add_user_ok(application):
+def test_add_user_ok(application, user):
     app = TestApp(application)
+    user.login(app)
     resp = app.post(
         "/user.add",
         dict(username="cklinger", password="klinger"),
@@ -47,29 +50,29 @@ def test_add_user_ok(application):
     assert resp.status == "201 Created"
     assert resp.json == {"id": "cklinger"}
 
-
-def test_get_user(application):
-    app = TestApp(application)
     resp = app.get("/users/cklinger")
     assert resp.status == "200 OK"
     assert resp.json["_key"] == "cklinger"
 
 
-def test_add_folder(application):
+def test_add_folder(application, user):
     app = TestApp(application)
-    resp = app.put("/users/cklinger/file.add", dict(az="4711"))
+    user.login(app)
+
+    resp = app.put(
+        f"/users/{user.user.username}/file.add", {
+            'az': "4711"
+        }
+    )
     assert resp.status == "201 Created"
     assert resp.json["az"] == "4711"
 
-
-def test_get_folder(application):
-    app = TestApp(application)
-    resp = app.get("/users/cklinger/files/4711")
+    resp = app.get(f"/users/{user.user.username}/files/4711")
     assert resp.status == "200 OK"
     assert resp.json["az"] == "4711"
 
 
-def test_add_file(application):
+def test_add_file(application, user):
     from docmanager.models import Document as BaseDoc
     from docmanager.db import Document
     from typing import Literal
@@ -82,8 +85,17 @@ def test_add_file(application):
 
 
     app = TestApp(application)
+    user.login(app)
+
+
     resp = app.put(
-        "/users/cklinger/files/4711/doc.add", {
+        f"/users/{user.user.username}/file.add", {
+            'az': "1234"
+        }
+    )
+
+    resp = app.put(
+        f"/users/{user.user.username}/files/1234/doc.add", {
             'body': "Some Doc",
             'myfield': "",
             'state': "Submitted",
@@ -91,6 +103,6 @@ def test_add_file(application):
         }
     )
     assert resp.status == "201 Created"
-    assert resp.json['az'] == "4711"
+    assert resp.json['az'] == "1234"
 
     Document.alternatives.unregister('event')

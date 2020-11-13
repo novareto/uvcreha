@@ -63,9 +63,7 @@ class Application(horseman.meta.SentryNode, horseman.meta.APINode):
             raise horseman.http.HTTPError(HTTPStatus.METHOD_NOT_ALLOWED)
         except SecurityError as error:
             if error.user is None:
-                return horseman.response.Response.create(302, headers={'Location': '/login' })
                 raise horseman.http.HTTPError(HTTPStatus.UNAUTHORIZED)
-            return horseman.response.Response.create(302, headers={'Location': '/login' })
             raise horseman.http.HTTPError(HTTPStatus.FORBIDDEN)
         except ValidationError as error:
             return error

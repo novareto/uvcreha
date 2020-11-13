@@ -20,15 +20,14 @@ class Auth:
         if (user := environ.get(self.config.user)) is not None:
             return user
         session = environ.get(self.config.session)
-        if (user := session.get('user', None)) is not None:
+        if (user := session.get(self.config.user, None)) is not None:
             environ[self.config.user] = user
             return user
         return None
 
     def remember(self, environ: Environ, user):
         session = environ.get(self.config.session)
-        environ[self.config.user] = user
-        session['user'] = user
+        session[self.config.user] = environ[self.config.user] = user
 
     def __call__(self, app):
         def auth_application_wrapper(environ, start_response):

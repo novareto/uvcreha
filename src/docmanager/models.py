@@ -59,14 +59,11 @@ class File(Model):
 
 class User(Model):
 
-    username: str = Field(title="Loginname", description="Bitte geb hier was ein.")
-    password: SecretStr = Field(title="Passwort", description="Bitte geb das PW ein.")
+    username: str = Field(
+        title="Loginname", description="Bitte geb hier was ein.")
+    password: str = Field(
+        title="Passwort", description="Bitte geb das PW ein.")
     permissions: Optional[List] = ['document.view']
-
-    class Config:
-        json_encoders = {
-            SecretStr: lambda v: v.get_secret_value() if v else None,
-        }
 
     @property
     def title(self) -> str:

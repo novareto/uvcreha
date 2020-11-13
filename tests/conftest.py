@@ -6,9 +6,10 @@ from io import StringIO
 import pytest
 
 
+
 READY_PHRASE = (
     b"ArangoDB (version 3.7.3 [linux]) is ready for business. Have fun!\n"
-    )
+)
 
 
 ARANGO_CONFIG = '''
@@ -201,6 +202,30 @@ def application(request, config, arangodb):
         docmanager.db.User.__collection__)
 
 
+@pytest.fixture(scope="session")
+def user(arangodb):
+    import docmanager.db
+    from functools import partial
+    from collections import namedtuple
+
+    testuser = namedtuple('TestUser', ['user', 'login'])
+
+    # Add the User
+    user = docmanager.db.User(arangodb.session).create(
+        username='test',
+        password='test',
+        permissions=['document.view', 'document.add']
+    )
+
+    def login(app):
+        response = app.post("/login", {
+            'username': 'test',
+            'password': 'test',
+            'trigger.speichern': '1',
+        })
+        return response
+
+    yield testuser(user=user, login=login)
 
 
 def pytest_addoption(parser):
