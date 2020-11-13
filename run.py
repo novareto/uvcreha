@@ -55,7 +55,8 @@ def session_middleware(config) -> WSGICallable:
     import cromlech.session
     import cromlech.sessions.file
 
-    folder = Path("sessions")
+    folder = Path("/tmp/sessions")
+    print(folder.absolute())
     handler = cromlech.sessions.file.FileStore(folder, 3000)
     manager = cromlech.session.SignedCookieManager(
         "secret", handler, cookie="my_sid")

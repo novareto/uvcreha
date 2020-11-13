@@ -37,6 +37,10 @@ class Document(Model):
             self.key = str(uuid.uuid4())
         return super().dict(by_alias=by_alias, **kwargs)
 
+    @property
+    def url(self):
+        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"
+
 
 class File(Model):
 
@@ -47,6 +51,10 @@ class File(Model):
         if not self.key:
             self.key = self.az
         return super().dict(by_alias=by_alias, **kwargs)
+
+    @property
+    def url(self):
+        return f"/users/{self.username}/files/{self.az}"
 
 
 class User(Model):
@@ -63,6 +71,10 @@ class User(Model):
     @property
     def title(self) -> str:
         return self.username
+
+    @property
+    def url(self):
+        return f"/users/{self.username}"
 
     def dict(self, by_alias=True, **kwargs):
         if not self.key:
