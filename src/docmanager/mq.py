@@ -1,17 +1,6 @@
-import hydra
-import colorlog
-import logging
 import threading
-from pathlib import Path
-from functools import partial
 from kombu.mixins import ConsumerMixin
-from kombu import Exchange, Queue, Consumer, Connection as AMQPConnection
-
-
-class MyConsumer(Consumer):
-
-    def receive(self, body, message):
-        print('I AM CALLED')
+from kombu import Exchange, Queue, Connection as AMQPConnection
 
 
 class Worker(ConsumerMixin):
@@ -32,23 +21,24 @@ class Worker(ConsumerMixin):
         )
 
     def get_consumers(self, Consumer, channel):
-        Consumer = partial(
-            MyConsumer, channel, on_decode_error=self.on_decode_error)
-        return [
-            Consumer(
-                queues=(self.queues['add_q'], self.queues['upd_q']),
-                accept=['pickle', 'json'])
-        ]
+        return [Consumer(
+            (self.queues['add_q'], self.queues['upd_q']),
+            accept=['pickle', 'json'],
+            callbacks=[self.on_message]
+        )]
 
-    def process_task(self, body, message):
+    def on_message(self, body, message):
         self.logger.info("Got task body: %s", body)
         self.logger.info("Got task Message: %s", message)
         message.ack()
 
     def runner(self):
         with AMQPConnection(self.config.url) as conn:
-            self.connection = conn
-            self.run()
+            try:
+                self.connection = conn
+                self.run()
+            except:
+                self.logger.info('Quitting the AMQP listener')
         self.connection = None
 
     @classmethod
