@@ -5,7 +5,7 @@ import threading
 from pathlib import Path
 from functools import partial
 from kombu.mixins import ConsumerMixin
-from kombu import Exchange, Queue, Consumer
+from kombu import Exchange, Queue, Consumer, Connection as AMQPConnection
 
 
 class MyConsumer(Consumer):
@@ -16,8 +16,9 @@ class MyConsumer(Consumer):
 
 class Worker(ConsumerMixin):
 
-    def __init__(self, connection, app, logger):
-        self.connection = connection
+    def __init__(self, app, config, logger):
+        self.config = config
+        self.connection = None
         self.app = app
         self.logger = logger
         self.exchange = Exchange('object_events', type='topic')
@@ -45,11 +46,14 @@ class Worker(ConsumerMixin):
         message.ack()
 
     def runner(self):
-        with Connection(config.amqp.url) as conn:
+        with AMQPConnection(self.config.url) as conn:
+            self.connection = conn
             self.run()
+        self.connection = None
 
+    @classmethod
     def start(cls, app, config, logger):
-        worker = cls(conn, app, logger)
+        worker = cls(app, config, logger)
         thread = threading.Thread(target=worker.runner)
         thread.start()
         return thread

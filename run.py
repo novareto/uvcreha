@@ -81,7 +81,7 @@ def run(config):
     import docmanager.db
     import docmanager.auth
     import docmanager.flash
-    import docmanager.messaging
+    import docmanager.mq
 
     import uvcreha.example
     import uvcreha.example.app
@@ -89,7 +89,7 @@ def run(config):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
-    database = docmanager.db.Database(**config.app.arango)
+    database = docmanager.db.Database(**config.arango)
     app = docmanager.app.application
     app.setup(
         config=config.app,
@@ -118,14 +118,14 @@ def run(config):
         "Server started on "
         f"http://{config.server.host}:{config.server.port}")
 
-    receiver = docmanager.messaging.Receiver(config.app.arango)
+
     try:
-        receiver.start()
+        receiver = docmanager.mq.Worker.start(app, config.amqp, app.logger)
         bjoern.run(
             app, config.server.host,
             int(config.server.port), reuse_port=True)
     finally:
-        receiver.stop()
+        receiver.join()
 
 if __name__ == "__main__":
     run()
