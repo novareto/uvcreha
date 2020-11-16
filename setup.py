@@ -22,6 +22,7 @@ install_requires = [
     'roughrider.routing',
     'roughrider.validation',
     'wrapt',
+    'kombu',
     'wtforms',
     'wtforms_pydantic',
 ]
