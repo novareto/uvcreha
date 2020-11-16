@@ -6,6 +6,7 @@ from kombu import Exchange, Queue, Connection as AMQPConnection
 class Worker(ConsumerMixin):
 
     def __init__(self, app, config, logger):
+        self.thread = threading.Thread(target=self.runner)
         self.config = config
         self.connection = None
         self.app = app
@@ -33,17 +34,19 @@ class Worker(ConsumerMixin):
         message.ack()
 
     def runner(self):
-        with AMQPConnection(self.config.url) as conn:
-            try:
+        try:
+            with AMQPConnection(self.config.url) as conn:
                 self.connection = conn
                 self.run()
-            except:
-                self.logger.info('Quitting the AMQP listener')
-        self.connection = None
+        except:
+            pass
+        finally:
+            self.connection = None
 
-    @classmethod
-    def start(cls, app, config, logger):
-        worker = cls(app, config, logger)
-        thread = threading.Thread(target=worker.runner)
-        thread.start()
-        return thread
+    def start(self):
+        self.thread.start()
+
+    def stop(self):
+        self.should_stop = True
+        self.logger.info("Quitting MQ thread.")
+        self.thread.join()

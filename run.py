@@ -120,12 +120,13 @@ def run(config):
 
 
     try:
-        receiver = docmanager.mq.Worker.start(app, config.amqp, app.logger)
+        receiver = docmanager.mq.Worker(app, config.amqp, app.logger)
+        receiver.start()
         bjoern.run(
             app, config.server.host,
             int(config.server.port), reuse_port=True)
     finally:
-        receiver.join()
+        receiver.stop()
 
 if __name__ == "__main__":
     run()
