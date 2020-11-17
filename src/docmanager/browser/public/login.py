@@ -62,7 +62,8 @@ class EditPassword(FormView):
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = model_form(self.model, base_class=CustomBaseForm, only=("password"))()
+        form = model_form(
+            self.model, base_class=CustomBaseForm, only=("password"))()
         form.process(data=data, formdata=formdata)
         return form
 
@@ -85,7 +86,7 @@ class EditPassword(FormView):
 @application.routes.register(
     "/preferences", methods=["GET"], permissions={"document.view"}
 )
-@template(template=TEMPLATES["preferences.pt"], layout_name="default", raw=False)
+@template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
     return dict(request=request)
 

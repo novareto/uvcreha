@@ -109,6 +109,7 @@ def navbar(request, name):
 def sidebar(request, name):
     return dict(request=request)
 
+
 @application.ui.register_slot(request=Request, name="footer")
 @template(TEMPLATES["footer.pt"], raw=True)
 def footer(request, name):

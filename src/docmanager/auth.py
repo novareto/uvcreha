@@ -35,6 +35,6 @@ class Auth:
             if user is not None or environ['PATH_INFO'] in self.unprotected:
                 return app(environ, start_response)
             return Response.create(
-                302, headers={'Location': '/login' }
+                302, headers={'Location': '/login'}
             )(environ, start_response)
         return auth_application_wrapper

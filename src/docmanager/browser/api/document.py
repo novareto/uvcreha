@@ -31,7 +31,7 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
     methods=['DELETE'])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):
     model = Document(request.db_session)
-    if model.find_one( _key=docid, az=fileid, username=username) is None:
+    if model.find_one(_key=docid, az=fileid, username=username) is None:
         return horseman.response.reply(404)
     model.delete(docid)
     return horseman.response.reply(202)
