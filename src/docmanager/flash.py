@@ -1,4 +1,3 @@
-from collections import deque
 from docmanager.models import Message
 
 
@@ -10,7 +9,6 @@ class SessionMessages:
 
     def __iter__(self):
         if self.key in self.request.session:
-            messages = deque(self.request.session[self.key])
             while self.request.session[self.key]:
                 yield Message(**self.request.session[self.key].pop(0))
 

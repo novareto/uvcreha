@@ -34,14 +34,17 @@ def environment(**environ):
         os.environ.update(old_environ)
 
 
-def temporary_environ(func):
+def hydra_environ(*args, **kwargs):
 
-    @functools.wraps(func)
-    def hydra_conf_environ_wrapper(config):
-        with environment(**config.environ):
-            return func(config)
+    def temporary_environ(func):
+        @functools.wraps(func)
+        @hydra.main(*args, **kwargs)
+        def hydra_conf_environ_wrapper(config):
+            with environment(**config.environ):
+                return func(config)
 
-    return hydra_conf_environ_wrapper
+        return hydra_conf_environ_wrapper
+    return temporary_environ
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -70,8 +73,7 @@ def make_logger(config) -> logging.Logger:
     return logger
 
 
-@hydra.main(config_name="config.yaml")
-@temporary_environ
+@hydra_environ(config_name="config.yaml")
 def run(config):
     import bjoern
     import importscan
@@ -116,17 +118,19 @@ def run(config):
     app.middlewares.register(auth, priority=2)
 
     # Serving the app
-    app.logger.info(
-        "Server started on "
-        f"http://{config.server.host}:{config.server.port}")
-
-
     AMQPworker = docmanager.mq.Worker(app, config.amqp)
     try:
         AMQPworker.start()
+
+        app.logger.info(
+            "Server started on "
+            f"http://{config.server.host}:{config.server.port}")
+
         bjoern.run(
             app, config.server.host,
             int(config.server.port), reuse_port=True)
+    except KeyboardInterrupt:
+        pass
     finally:
         AMQPworker.stop()
 

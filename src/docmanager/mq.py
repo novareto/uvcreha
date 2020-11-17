@@ -1,7 +1,7 @@
 import threading
 import abc
 import logging
-from typing import Dict, List, Callable, ClassVar, Optional
+from typing import Dict, List, ClassVar, Optional
 
 from kombu import Exchange, Queue, Connection as Connection
 from kombu.mixins import ConsumerMixin
