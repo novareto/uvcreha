@@ -102,9 +102,11 @@ def run(config):
     flash = docmanager.flash.Flash()
     auth = docmanager.auth.Auth(
         docmanager.db.User(database.session), config.app.env)
+    amqp_sender = docmanager.mq.AMQPEmitter(config.amqp)
 
     app.plugins.register(auth, name="authentication")
     app.plugins.register(flash, name="flash")
+    app.plugins.register(amqp_sender, name="amqp")
 
     # Middlewares
     app.middlewares.register(

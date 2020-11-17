@@ -4,7 +4,7 @@ from horseman.response import Response
 
 class Auth:
 
-    unprotected = ('/login',)
+    unprotected = ('/login', '/')
 
     def __init__(self, model, config):
         self.model = model

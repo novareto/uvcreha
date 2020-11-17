@@ -3,6 +3,7 @@ from docmanager.models import Message
 
 
 class SessionMessages:
+
     def __init__(self, request, key="flashmessages"):
         self.key = key
         self.request = request
@@ -24,6 +25,7 @@ class SessionMessages:
 
 
 class Flash:
+
     def __init__(self, source=SessionMessages):
         self.source = source
 

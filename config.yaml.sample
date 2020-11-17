@@ -1,11 +1,5 @@
 app:
 
-  arango:
-    user:
-    password:
-    database:
-    url: http://127.0.0.1:8529
-
   env:
     session: docmanager.session
     user: docmanager.user
@@ -17,6 +11,18 @@ app:
     compile: True
     recompute_hashes: True
     bottom: True
+
+
+arango:
+  user:
+  password:
+  database:
+  url: http://127.0.0.1:8529
+
+
+amqp:
+  url: amqp://guest:guest@localhost:5672//
+  serializer: json
 
 
 environ:

@@ -2,8 +2,10 @@ import threading
 import abc
 import logging
 from typing import Dict, List, Callable, ClassVar, Optional
+
+from kombu import Exchange, Queue, Connection as Connection
 from kombu.mixins import ConsumerMixin
-from kombu import Exchange, Queue, Connection as AMQPConnection
+from kombu.pools import producers
 
 
 class CustomConsumer(abc.ABC):
@@ -64,22 +66,22 @@ class TestConsumer(CustomConsumer):
 
 class Worker(ConsumerMixin):
 
-    connection: Optional[AMQPConnection] = None
+    connection: Optional[Connection] = None
 
     def __init__(self, app, config, amqpcenter: AMQPCenter = AMQP):
         self.app = app
         self.config = config
         self.amqpcenter = amqpcenter
-        self.thread = threading.Thread(target=self.runner)
+        self.thread = threading.Thread(target=self.__call__)
 
     def get_consumers(self, Consumer, channel):
         consumers = list(
             self.amqpcenter.consumers(self.app, Consumer, channel))
         return consumers
 
-    def runner(self):
+    def __call__(self):
         try:
-            with AMQPConnection(self.config.url) as conn:
+            with Connection(self.config.url) as conn:
                 self.connection = conn
                 self.run()
         finally:
@@ -92,3 +94,21 @@ class Worker(ConsumerMixin):
         self.should_stop = True
         logging.info("Quitting MQ thread.")
         self.thread.join()
+
+
+class AMQPEmitter:
+
+    def __init__(self, config):
+        self.config = config
+        self.exchange = Exchange("object_events", type="topic")
+
+    def send(self, payload, key):
+        with Connection(self.config.url) as conn:
+            with producers[conn].acquire(block=True) as producer:
+                producer.publish(
+                    payload,
+                    serializer=self.config.serializer,
+                    exchange=self.exchange,
+                    declare=[self.exchange],
+                    routing_key=key,
+                )
