@@ -119,14 +119,14 @@ def run(config):
         f"http://{config.server.host}:{config.server.port}")
 
 
+    AMQPworker = docmanager.mq.Worker(app, config.amqp)
     try:
-        receiver = docmanager.mq.Worker(app, config.amqp, app.logger)
-        receiver.start()
+        AMQPworker.start()
         bjoern.run(
             app, config.server.host,
             int(config.server.port), reuse_port=True)
     finally:
-        receiver.stop()
+        AMQPworker.stop()
 
 if __name__ == "__main__":
     run()

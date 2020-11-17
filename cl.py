@@ -24,8 +24,10 @@ if __name__ == "__main__":
 
     connection = Connection("amqp://guest:guest@localhost:5672//")
     send_as_task(
-        connection, fun="hello_task", args=("Kombu",), kwargs={}, rk="object.add"
+        connection, fun="hello_task",
+        args=("Kombu",), kwargs={}, rk="object.add"
     )
     send_as_task(
-        connection, fun="hello_task", args=("Kombu",), kwargs={}, rk="object.update"
+        connection, fun="hello_task",
+        args=("Kombu",), kwargs={}, rk="object.update"
     )

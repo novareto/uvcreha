@@ -1,45 +1,87 @@
 import threading
+import abc
+import logging
+from typing import Dict, List, Callable, ClassVar, Optional
 from kombu.mixins import ConsumerMixin
 from kombu import Exchange, Queue, Connection as AMQPConnection
 
 
+class CustomConsumer(abc.ABC):
+    queues: ClassVar[List[str]]
+    accept: ClassVar[List[str]]
+
+    def __init__(self, app):
+        self.app = app
+
+    @abc.abstractmethod
+    def __call__(self, body, message):
+        pass
+
+
+class AMQPCenter:
+
+    exchange: Exchange = Exchange('object_events', type='topic')
+    consumers: List[CustomConsumer]
+    queues: Dict[str, Queue] = {
+        'add': Queue(
+            'add', exchange, routing_key='object.add'),
+        'delete': Queue(
+            'delete', exchange, routing_key='object.delete'),
+        'update': Queue(
+            'update', exchange, routing_key='object.update'),
+    }
+
+    def __init__(self, *consumers):
+        self._consumers = list(consumers)
+
+    def consumer(self, consumer: CustomConsumer):
+        self._consumers.append(consumer)
+        return consumer
+
+    def consumers(self, app, cls, channel):
+        for consumer in self._consumers:
+            yield cls(
+                [self.queues[q] for q in consumer.queues],
+                accept=consumer.accept,
+                callbacks=[consumer(app)]
+            )
+
+
+AMQP = AMQPCenter()
+
+
+@AMQP.consumer
+class TestConsumer(CustomConsumer):
+
+    queues = ['add', 'update']
+    accept = ['pickle', 'json']
+
+    def __call__(self, body, message):
+        logging.info("Got task body: %s", body)
+        logging.info("Got task Message: %s", message)
+        message.ack()
+
+
 class Worker(ConsumerMixin):
 
-    def __init__(self, app, config, logger):
-        self.thread = threading.Thread(target=self.runner)
-        self.config = config
-        self.connection = None
+    connection: Optional[AMQPConnection] = None
+
+    def __init__(self, app, config, amqpcenter: AMQPCenter = AMQP):
         self.app = app
-        self.logger = logger
-        self.exchange = Exchange('object_events', type='topic')
-        self.queues = dict(
-            add_q=Queue(
-                'add', self.exchange, routing_key='object.add'),
-            del_q=Queue(
-                'delete', self.exchange, routing_key='object.delete'),
-            upd_q=Queue(
-                'update', self.exchange, routing_key='object.update'),
-        )
+        self.config = config
+        self.amqpcenter = amqpcenter
+        self.thread = threading.Thread(target=self.runner)
 
     def get_consumers(self, Consumer, channel):
-        return [Consumer(
-            (self.queues['add_q'], self.queues['upd_q']),
-            accept=['pickle', 'json'],
-            callbacks=[self.on_message]
-        )]
-
-    def on_message(self, body, message):
-        self.logger.info("Got task body: %s", body)
-        self.logger.info("Got task Message: %s", message)
-        message.ack()
+        consumers = list(
+            self.amqpcenter.consumers(self.app, Consumer, channel))
+        return consumers
 
     def runner(self):
         try:
             with AMQPConnection(self.config.url) as conn:
                 self.connection = conn
                 self.run()
-        except:
-            pass
         finally:
             self.connection = None
 
@@ -48,5 +90,5 @@ class Worker(ConsumerMixin):
 
     def stop(self):
         self.should_stop = True
-        self.logger.info("Quitting MQ thread.")
+        logging.info("Quitting MQ thread.")
         self.thread.join()
