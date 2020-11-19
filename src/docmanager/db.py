@@ -1,4 +1,5 @@
 import abc
+import pydantic.types
 from collections import namedtuple
 from contextlib import ContextDecorator
 from typing import Iterable, List, Optional, ClassVar
@@ -39,7 +40,8 @@ class Transaction(ContextDecorator):
 
 def mydump(v, *args, **kwargs):
     if 'password' in v:
-        v['password'] = v['password'].get_secret_value()
+        if isinstance(v['password'], pydantic.types.SecretStr):
+            v['password'] = v['password'].get_secret_value()
     return orjson.dumps(v)
 
 
