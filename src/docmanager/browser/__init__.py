@@ -7,10 +7,6 @@ from pkg_resources import iter_entry_points
 logger = logging.getLogger()
 
 
-class Namespace(enum.Enum):
-    API = 'api'
-
-
 def tales_expressions():
     """Tales registry
     """

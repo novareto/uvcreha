@@ -5,7 +5,7 @@ from horseman.meta import Overhead
 class Request(Overhead):
 
     __slots__ = (
-        'app', 'environ', 'route', 'data', 'method', '_extracted'
+        'app', 'environ', 'route', 'method', '_extracted', '_data'
     )
 
     def __init__(self, app, environ, route):

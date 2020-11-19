@@ -112,3 +112,9 @@ class AMQPEmitter:
                     declare=[self.exchange],
                     routing_key=key,
                 )
+
+
+def plugin(app, config, name="amqp"):
+    component = AMQPEmitter(config)
+    app.plugins.register(auth, name=name)
+    return app

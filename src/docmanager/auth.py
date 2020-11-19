@@ -38,3 +38,10 @@ class Auth:
                 302, headers={'Location': '/login'}
             )(environ, start_response)
         return auth_application_wrapper
+
+
+def plugin(app, user_model, config, name="flash"):
+    auth = Auth(user_model, config.env)
+    app.plugins.register(auth, name="authentication")
+    app.middlewares.register(auth, order=0)  # very first.
+    return app

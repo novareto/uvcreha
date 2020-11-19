@@ -1,7 +1,7 @@
 import pydantic
 import horseman.response
 
-from docmanager.app import application
+from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
 from docmanager.browser.form import CustomBaseForm, FormView, Triggers
@@ -10,7 +10,7 @@ from horseman.http import Multidict
 from wtforms_pydantic.wtforms_pydantic import model_form
 
 
-@application.routes.register("/login", methods=("GET", "POST"))
+@browser.route("/login", methods=("GET", "POST"))
 class RegistrationForm(FormView):
 
     title: str = "Registration Form"
@@ -52,7 +52,7 @@ class RegistrationForm(FormView):
         pass
 
 
-@application.routes.register("/edit_pw")
+@browser.route("/edit_pw")
 class EditPassword(FormView):
 
     title = "Passwort ändern"
@@ -83,7 +83,7 @@ class EditPassword(FormView):
         pass
 
 
-@application.routes.register(
+@browser.route(
     "/preferences", methods=["GET"], permissions={"document.view"}
 )
 @template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
@@ -91,7 +91,7 @@ def preferences(request: Request):
     return dict(request=request)
 
 
-@application.routes.register('/logout')
+@browser.route('/logout')
 def LogoutView(request: Request):
     request.session.store.clear(request.session.sid)
     return horseman.response.Response.create(

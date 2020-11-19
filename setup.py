@@ -18,6 +18,7 @@ install_requires = [
     'python-arango',
     'pydantic',
     'reg',
+    'rutter',
     'roughrider.auth',
     'roughrider.routing',
     'roughrider.validation',

@@ -1,11 +1,10 @@
 import horseman.response
-from docmanager.app import application
-from docmanager.browser import Namespace as NS
+from docmanager.app import api
 from docmanager.request import Request
 from docmanager.db import User
 
 
-@application.route('/user.add', methods=['POST', 'PUT'], ns=NS.API)
+@api.route('/user.add', methods=['POST', 'PUT'])
 def user_add(request: Request):
     data = request.extract()
     model = User(request.db_session)
@@ -16,7 +15,7 @@ def user_add(request: Request):
         201, body={'id': user.username})
 
 
-@application.route('/users/{username}', methods=['GET'])
+@api.route('/users/{username}', methods=['GET'])
 def user_view(request: Request, username: str):
     model = User(request.db_session)
     item = model.fetch(username)
@@ -25,7 +24,7 @@ def user_view(request: Request, username: str):
     return horseman.response.Response.from_json(200, body=item.json())
 
 
-@application.route('/users/{username}', methods=['DELETE'])
+@api.route('/users/{username}', methods=['DELETE'])
 def user_delete(request: Request, username: str):
     model = User(request.db_session)
     if model.delete(username):
@@ -33,7 +32,7 @@ def user_delete(request: Request, username: str):
     return horseman.response.Response.create(404)
 
 
-@application.route('/users/{username}/files', methods=['GET'])
+@api.route('/users/{username}/files', methods=['GET'])
 def user_files(request: Request, username: str):
     files = "[{}]".format(','.join([
         file.json() for file in

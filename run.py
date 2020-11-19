@@ -7,7 +7,6 @@ import contextlib
 import colorlog
 from horseman.prototyping import WSGICallable
 
-
 current_path = Path(__file__).parent
 
 
@@ -47,30 +46,62 @@ def hydra_environ(*args, **kwargs):
     return temporary_environ
 
 
-def fanstatic_middleware(config) -> WSGICallable:
-    from fanstatic import Fanstatic
-    from functools import partial
-
-    return partial(Fanstatic, **config)
-
-
-def session_middleware(config) -> WSGICallable:
-    import cromlech.session
-    import cromlech.sessions.file
-
-    folder = Path("/tmp/sessions")
-    print(folder.absolute())
-    handler = cromlech.sessions.file.FileStore(folder, 3000)
-    manager = cromlech.session.SignedCookieManager(
-        "secret", handler, cookie="my_sid")
-    return cromlech.session.WSGISessionManager(
-        manager, environ_key=config.session)
-
-
 def make_logger(config) -> logging.Logger:
     logger = colorlog.getLogger(config.name)
     logger.setLevel(logging.DEBUG)
     return logger
+
+
+def api(config, database):
+    from docmanager.app import api as app
+    app.database = database
+    app.config.update(config)
+    return app
+
+
+def browser(config, database):
+    from docmanager.db import User
+    from docmanager.mq import AMQPEmitter
+    from docmanager.auth import Auth
+    from docmanager.app import browser as app
+    from docmanager.flash import Flash
+
+    def fanstatic_middleware(config) -> WSGICallable:
+        from fanstatic import Fanstatic
+        return functools.partial(Fanstatic, **config)
+
+
+    def session_middleware(config) -> WSGICallable:
+        import cromlech.session
+        import cromlech.sessions.file
+
+        folder = Path("/tmp/sessions")
+        handler = cromlech.sessions.file.FileStore(folder, 3000)
+        manager = cromlech.session.SignedCookieManager(
+            "secret", handler, cookie="my_sid")
+        return cromlech.session.WSGISessionManager(
+            manager, environ_key=config.session)
+
+    app.database = database
+    app.config.update(config.app)
+
+    flash = Flash()
+    app.plugins.register(flash, name="flash")
+
+    auth = Auth(User(database.session), config.app.env)
+    app.plugins.register(auth, name="authentication")
+    app.middlewares.register(auth, order=0)  # very first.
+
+    amqp = AMQPEmitter(config.amqp)
+    app.plugins.register(amqp, name="amqp")
+
+    app.middlewares.register(
+        session_middleware(config.app.env), order=1)
+
+    app.middlewares.register(
+        fanstatic_middleware(config.app.assets), order=2)
+
+    return app
 
 
 @hydra_environ(config_name="config.yaml")
@@ -79,50 +110,26 @@ def run(config):
     import importscan
 
     import docmanager
-    import docmanager.app
     import docmanager.db
-    import docmanager.auth
-    import docmanager.flash
     import docmanager.mq
-
     import uvcreha.example
     import uvcreha.example.app
+    from rutter.urlmap import URLMap
 
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
     database = docmanager.db.Database(**config.arango)
-    app = docmanager.app.application
-    app.setup(
-        config=config.app,
-        database=database,
-        logger=make_logger(config.app.logger),
-        request_factory=uvcreha.example.app.CustomRequest
-    )
-
-    # Plugins
-    flash = docmanager.flash.Flash()
-    auth = docmanager.auth.Auth(
-        docmanager.db.User(database.session), config.app.env)
-    amqp_sender = docmanager.mq.AMQPEmitter(config.amqp)
-
-    app.plugins.register(auth, name="authentication")
-    app.plugins.register(flash, name="flash")
-    app.plugins.register(amqp_sender, name="amqp")
-
-    # Middlewares
-    app.middlewares.register(
-        session_middleware(config.app.env), priority=1)
-    app.middlewares.register(
-        fanstatic_middleware(config.app.assets), priority=0)
-    app.middlewares.register(auth, priority=2)
+    app = URLMap()
+    app['/'] = browser(config, database)
+    app['/api'] = api(config, database)
 
     # Serving the app
     AMQPworker = docmanager.mq.Worker(app, config.amqp)
     try:
         AMQPworker.start()
 
-        app.logger.info(
+        logging.info(
             "Server started on "
             f"http://{config.server.host}:{config.server.port}")
 

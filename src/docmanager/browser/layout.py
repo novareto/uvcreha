@@ -2,7 +2,7 @@ import pathlib
 import wrapt
 import horseman.response
 from docmanager.request import Request
-from docmanager.app import application
+from docmanager.app import browser
 from docmanager.browser import TemplateLoader
 from docmanager.browser.resources import siguvtheme
 
@@ -65,7 +65,7 @@ def template(template, layout_name=None, raw=False):
     return render
 
 
-@application.ui.register_layout(Request)
+@browser.ui.register_layout(Request)
 class Layout:
 
     def __init__(self, request, name):
@@ -86,31 +86,31 @@ class Layout:
         return self._template.render(content=content, **ns)
 
 
-@application.ui.register_slot(request=Request, name="sitecap")
+@browser.ui.register_slot(request=Request, name="sitecap")
 @template(TEMPLATES["sitecap.pt"])
 def sitecap(request, name):
     return dict(request=request)
 
 
-@application.ui.register_slot(request=Request, name="globalmenu")
+@browser.ui.register_slot(request=Request, name="globalmenu")
 @template(TEMPLATES["globalmenu.pt"], raw=True)
 def globalmenu(request, name):
     return dict(request=request)
 
 
-@application.ui.register_slot(request=Request, name="navbar")
+@browser.ui.register_slot(request=Request, name="navbar")
 @template(TEMPLATES["navbar.pt"], raw=True)
 def navbar(request, name):
     return dict(request=request)
 
 
-@application.ui.register_slot(request=Request, name="sidebar")
+@browser.ui.register_slot(request=Request, name="sidebar")
 @template(TEMPLATES["sidebar.pt"], raw=True)
 def sidebar(request, name):
     return dict(request=request)
 
 
-@application.ui.register_slot(request=Request, name="footer")
+@browser.ui.register_slot(request=Request, name="footer")
 @template(TEMPLATES["footer.pt"], raw=True)
 def footer(request, name):
     return dict(request=request)

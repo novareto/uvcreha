@@ -1,10 +1,10 @@
 import horseman.response
-from docmanager.app import application
+from docmanager.app import api
 from docmanager.request import Request
 from docmanager.db import Document
 
 
-@application.route(
+@api.route(
     '/users/{username}/files/{fileid}/doc.add',
     methods=['POST', 'PUT'])
 def doc_add(request: Request, username: str, fileid: str):
@@ -15,7 +15,7 @@ def doc_add(request: Request, username: str, fileid: str):
     return horseman.response.Response.from_json(201, body=document.json())
 
 
-@application.route(
+@api.route(
     '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['GET'])
 def doc_view(request: Request, username: str, fileid: str, docid: str):
@@ -26,7 +26,7 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
     return horseman.response.Response.from_json(200, body=document.json())
 
 
-@application.route(
+@api.route(
     '/users/{username}/files/{fileid}/docs/{docid}',
     methods=['DELETE'])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):

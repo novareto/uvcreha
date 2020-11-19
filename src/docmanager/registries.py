@@ -44,8 +44,8 @@ class PriorityList:
     def __init__(self):
         self._components = []
 
-    def register(self, item: Callable, priority: int):
-        heappush(self._components, (priority, item))
+    def register(self, item: Callable, order: int):
+        heappush(self._components, (order, item))
 
     def __len__(self):
         return len(self._components)
