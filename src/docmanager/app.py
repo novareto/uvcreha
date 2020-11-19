@@ -1,10 +1,12 @@
 import re
+import enum
 import logging
-from http import HTTPStatus
+
+from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Callable, Mapping, Optional
 from functools import partial, wraps
-from omegaconf.dictconfig import DictConfig
+from http import HTTPStatus
+from typing import Callable, Mapping, Optional
 
 import horseman.meta
 import horseman.http
@@ -14,6 +16,7 @@ from docmanager.security import SecurityError
 from docmanager.routing import Routes
 from docmanager.request import Request
 from docmanager.validation import ValidationError
+from omegaconf.dictconfig import DictConfig
 
 
 @dataclass
@@ -21,10 +24,11 @@ class Router(horseman.meta.APINode):
 
     config: Mapping = field(default_factory=partial(DictConfig, {}))
     database: Optional[db.Database] = None
+    middlewares: list = field(default_factory=registries.PriorityList)
+    plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request
     routes: Routes = field(default_factory=Routes)
-    plugins: Mapping = field(default_factory=registries.NamedComponents)
-    middlewares: list = field(default_factory=registries.PriorityList)
+    subscribers: dict = field(default_factory=partial(defaultdict, list))
 
     def route(self, *args, **kwargs):
         return self.routes.register(*args, **kwargs)
@@ -32,21 +36,35 @@ class Router(horseman.meta.APINode):
     def check_permissions(self, route, environ):
         pass
 
+    def notify(self, event_name: str, *args, **kwargs):
+        for subscriber in self.subscribers[event_name]:
+            if (result := subscriber(*args, **kwargs)):
+                return result
+
+    def subscribe(self, event_name: str):
+        def wrapper(func):
+            self.subscribers[event_name].append(func)
+        return wrapper
+
     def resolve(self, path, environ):
         route = self.routes.match(
             environ['REQUEST_METHOD'], path)
         if route is not None:
+            self.notify('route_found', self, route, environ)
             self.check_permissions(route, environ)
             environ['horseman.path.params'] = route.params
             request = self.request_factory(self, environ, route)
+            self.notify('request_created', self, request)
             return route.endpoint(request, **route.params)
         return None
 
     def __call__(self, environ, start_response):
-        caller = super().__call__
-        for order, middleware in self.middlewares:
-            caller = middleware(caller)
-        return caller(environ, start_response)
+        if self.middlewares:
+            caller = super().__call__
+            for order, middleware in self.middlewares:
+                caller = middleware(caller)
+            return caller(environ, start_response)
+        return super().__call__(environ, start_response)
 
 
 @dataclass
@@ -64,8 +82,6 @@ class Browser(Router):
                 raise SecurityError(None, permissions)
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
-
-
 
 
 browser = Browser()
