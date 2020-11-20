@@ -1,4 +1,3 @@
-from webtest import TestApp
 from docmanager.models import Document as BaseDoc, User as BaseUser
 from docmanager.db import Document, User
 from typing import Literal

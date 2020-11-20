@@ -1,7 +1,6 @@
-from webtest import TestApp
-
 
 def test_add_user_ok(api_app, web_app, user):
+    from webtest import TestApp
     import docmanager.auth
 
     browser = TestApp(web_app)

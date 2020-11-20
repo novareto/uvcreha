@@ -1,7 +1,7 @@
-from webtest import TestApp
-
 
 def test_add_user(api_app):
+    from webtest import TestApp
+
     app = TestApp(api_app)
     resp = app.post(
         "/user.add",
@@ -9,6 +9,7 @@ def test_add_user(api_app):
         content_type="application/x-www-form-urlencoded",
         expect_errors=True,
     )
+
     assert resp.json == {
         "errors": [
             {
@@ -28,6 +29,8 @@ def test_add_user(api_app):
 
 
 def test_add_user_ok(api_app):
+    from webtest import TestApp
+
     app = TestApp(api_app)
     resp = app.post(
         "/user.add",
@@ -44,6 +47,8 @@ def test_add_user_ok(api_app):
 
 
 def test_add_folder(api_app, user):
+    from webtest import TestApp
+
     app = TestApp(api_app)
     resp = app.put(
         f"/users/{user.user.username}/file.add", {
@@ -59,6 +64,7 @@ def test_add_folder(api_app, user):
 
 
 def test_add_file(api_app, user):
+    from webtest import TestApp
     from docmanager.models import Document as BaseDoc
     from docmanager.db import Document
     from typing import Literal
