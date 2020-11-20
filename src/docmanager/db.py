@@ -189,13 +189,13 @@ class ArangoModel(DBModel):
             raise horseman.http.HTTPError(exc.http_code, exc.message)
         return True
 
-    def update(self, key, **data) -> bool:
+    def update(self, key, **data) -> str:
         try:
             with Transaction(self.session, self.__collection__) as txn:
                 collection = txn.collection(self.__collection__)
                 data = {'_key': key, **data}
                 response = collection.update(data)
-                item.rev = response["_rev"]
+                return response["_rev"]
         except arango.exceptions.DocumentUpdateError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
         return True

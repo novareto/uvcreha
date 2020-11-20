@@ -1,12 +1,7 @@
-import re
-import enum
-import logging
-
 from collections import defaultdict
 from dataclasses import dataclass, field
-from functools import partial, wraps
-from http import HTTPStatus
-from typing import Callable, Mapping, Optional
+from functools import partial
+from typing import Mapping, Optional
 
 import horseman.meta
 import horseman.response

@@ -3,7 +3,7 @@
 # # cklinger@novareto.de
 
 
-from fanstatic import Fanstatic, Library, Resource, Group
+from fanstatic import Library, Resource, Group
 
 
 library = Library('adhoc', 'static')

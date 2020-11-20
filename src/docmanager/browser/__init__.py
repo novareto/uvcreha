@@ -1,4 +1,3 @@
-import enum
 import logging
 import chameleon.zpt.loader
 from pkg_resources import iter_entry_points

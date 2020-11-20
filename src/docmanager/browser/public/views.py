@@ -1,4 +1,3 @@
-from horseman.response import Response
 from docmanager.app import browser
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
