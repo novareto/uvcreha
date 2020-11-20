@@ -60,47 +60,21 @@ def api(config, database):
 
 
 def browser(config, database):
-    from docmanager.db import User
-    from docmanager.mq import AMQPEmitter
-    from docmanager.auth import Auth
+    import docmanager.auth
+    import docmanager.mq
+    import docmanager.flash
+    import docmanager.session
+    import docmanager.browser.resources
     from docmanager.app import browser as app
-    from docmanager.flash import Flash
-
-    def fanstatic_middleware(config) -> WSGICallable:
-        from fanstatic import Fanstatic
-        return functools.partial(Fanstatic, **config)
-
-
-    def session_middleware(config) -> WSGICallable:
-        import cromlech.session
-        import cromlech.sessions.file
-
-        folder = Path("/tmp/sessions")
-        handler = cromlech.sessions.file.FileStore(folder, 3000)
-        manager = cromlech.session.SignedCookieManager(
-            "secret", handler, cookie="my_sid")
-        return cromlech.session.WSGISessionManager(
-            manager, environ_key=config.session)
 
     app.database = database
     app.config.update(config.app)
 
-    flash = Flash()
-    app.plugins.register(flash, name="flash")
-
-    auth = Auth(User(database.session), config.app.env)
-    app.plugins.register(auth, name="authentication")
-    app.middlewares.register(auth, order=0)  # very first.
-
-    amqp = AMQPEmitter(config.amqp)
-    app.plugins.register(amqp, name="amqp")
-
-    app.middlewares.register(
-        session_middleware(config.app.env), order=1)
-
-    app.middlewares.register(
-        fanstatic_middleware(config.app.assets), order=2)
-
+    app = docmanager.flash.plugin(app, config.app)
+    app = docmanager.auth.plugin(app, config.app)
+    app = docmanager.session.plugin(app, config.app)
+    app = docmanager.browser.resources.plugin(app, config.app)
+    app = docmanager.mq.plugin(app, config.amqp)
     return app
 
 

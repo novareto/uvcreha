@@ -1,5 +1,6 @@
 from horseman.prototyping import Environ
 from horseman.response import Response
+from docmanager.db import User
 
 
 class Auth:
@@ -40,8 +41,9 @@ class Auth:
         return auth_application_wrapper
 
 
-def plugin(app, user_model, config, name="flash"):
-    auth = Auth(user_model, config.env)
-    app.plugins.register(auth, name="authentication")
+def plugin(app, config, user_model=User, name="authentication"):
+    user = user_model(app.database.session)
+    auth = Auth(user, config.env)
+    app.plugins.register(auth, name=name)
     app.middlewares.register(auth, order=0)  # very first.
     return app

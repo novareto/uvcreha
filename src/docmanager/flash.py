@@ -29,3 +29,9 @@ class Flash:
 
     def __call__(self, request):
         return self.source(request)
+
+
+def plugin(app, config):
+    flash = Flash()
+    app.plugins.register(flash, name="flash")
+    return app

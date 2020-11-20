@@ -3,7 +3,7 @@
 # # cklinger@novareto.de
 
 
-from fanstatic import Library, Resource, Group
+from fanstatic import Fanstatic, Library, Resource, Group
 
 
 library = Library('adhoc', 'static')
@@ -41,3 +41,11 @@ siguvtheme = Group([
     bootstrap_css,
     bootstrap_js
 ])
+
+
+def plugin(app, config):
+    from functools import partial
+
+    middleware = partial(Fanstatic, **config.assets)
+    app.middlewares.register(middleware, order=2)
+    return app

@@ -115,6 +115,6 @@ class AMQPEmitter:
 
 
 def plugin(app, config, name="amqp"):
-    component = AMQPEmitter(config)
-    app.plugins.register(auth, name=name)
+    amqp = AMQPEmitter(config)
+    app.plugins.register(amqp, name=name)
     return app
