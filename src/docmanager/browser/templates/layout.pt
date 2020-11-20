@@ -33,8 +33,26 @@
   </section>
 
 
-  <footer id="portal-footer" class="footer mt-auto"> 
+  <footer id="portal-footer" class="footer mt-auto">
     <div tal:replace="structure slot: footer"> </div>
   </footer>
+
+  <script lang="text/javascript">
+    function registerServiceWorker() {
+        navigator.serviceWorker
+            .register('/service-worker.js')
+            .then(registration => {
+                console.log(
+                    'ServiceWorker registered with scope:',
+                    registration.scope
+                );
+            })
+            .catch(e => console.error('ServiceWorker failed', e));
+    }
+
+    if (navigator && navigator.serviceWorker) {
+        registerServiceWorker();
+    }
+  </script>
 </body>
 </html>

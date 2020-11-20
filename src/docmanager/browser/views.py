@@ -28,3 +28,9 @@ def openapi(request: Request):
 def index(request: Request):
     user = User(request.db_session)
     return dict(request=request, user=user)
+
+
+@browser.route("/test_webpush")
+@template(TEMPLATES["webpush.pt"], layout_name="default", raw=False)
+def webpush(request: Request):
+    return dict(request=request)

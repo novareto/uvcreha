@@ -13,25 +13,22 @@ install_requires = [
     'cromlech.sessions.file',
     'fanstatic',
     'horseman',
+    'kombu',
     'openapi_schema_pydantic',
     'orjson',
-    'python-arango',
+    'py-vapid',
     'pydantic',
+    'python-arango',
+    'pywebpush',
     'reg',
-    'rutter',
     'roughrider.auth',
-    'roughrider.routing',
     'roughrider.validation',
+    'rutter',
     'wrapt',
-    'kombu',
     'wtforms',
     'wtforms_pydantic',
 ]
 
-messager_requires = [
-    'aioamqp',
-    'aioarangodb'
-]
 
 test_requires = [
     'WebTest',
@@ -58,7 +55,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python:: 3 :: Only',
-        ],
+    ],
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
@@ -66,7 +63,6 @@ setup(
     install_requires=install_requires,
     extras_require={
         'test': test_requires,
-        'messager': messager_requires,
     },
     entry_points={
         'chameleon.tales': [

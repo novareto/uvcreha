@@ -1,18 +1,10 @@
 import abc
 import uuid
+import orjson
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, SecretStr
 from docmanager.request import Request
-
-
-class ProtectedModel(abc.ABC):
-
-    __permissions__: List
-
-    @abc.abstractmethod
-    def __check_security__(self, request: Request):
-        pass
 
 
 class Model(BaseModel):
@@ -22,6 +14,20 @@ class Model(BaseModel):
     rev: Optional[str] = Field(alias="_rev")
 
     creation_date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Webpush(Model):
+
+    subscription_info: str
+    is_active: bool
+
+    @property
+    def subscription_info_json(self):
+        return orjson.loads(self.subscription_info)
+
+    @subscription_info_json.setter
+    def subscription_info_json(self, value):
+        self.subscription_info = orjson.dumps(value)
 
 
 class Document(Model):

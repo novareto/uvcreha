@@ -1,10 +1,12 @@
 import re
+import inspect
 from http import HTTPStatus
 
 import autoroutes
 import dataclasses
-import roughrider.routing.route
+from horseman.meta import APIView
 from horseman.http import HTTPError
+from horseman.util import view_methods
 
 
 @dataclasses.dataclass
@@ -35,27 +37,37 @@ class Routes(autoroutes.Routes):
             raise ValueError(
                 f"No route found with name {name} and params {kwargs}")
 
+    @staticmethod
+    def route_payload(view, methods: list=None):
+        if inspect.isclass(view):
+            inst = view()
+            members = view_methods(inst)
+            if isinstance(inst, APIView):
+                for name, func in members:
+                    yield name, func
+        else:
+            if methods is None:
+                methods = ['GET']
+            for method in methods:
+                yield method, view
+
     def register(self, path: str, methods: list = None, **extras):
         def routing(view):
-            for fullpath, method, func in \
-                roughrider.routing.route.route_payload(
-                    path, view, methods):
-                cleaned = self.clean_path_pattern.sub("", fullpath)
-                name = extras.pop("name", None)
-                if not name:
-                    name = view.__name__.lower()
-                if name in self._registry:
-                    _, handler = self._registry[name]
-                    if handler != view:
-                        ref = f"{handler.__module__}.{handler.__name__}"
-                        raise ValueError(
-                            f"Route with name {name} already exists: {ref}.")
-                self._registry[name] = cleaned, view
+            name = extras.pop("name", view.__name__.lower())
+            if name in self._registry:
+                _, handler = self._registry[name]
+                if handler != view:
+                    ref = f"{handler.__module__}.{handler.__name__}"
+                    raise ValueError(
+                        f"Route with name {name} already exists: {ref}.")
+
+            self._registry[name] = path, view
+            for method, endpoint in self.route_payload(view, methods):
                 payload = {
-                    method: func,
+                    method: endpoint,
                     'extras': extras
                 }
-                self.add(fullpath, **payload)
+                self.add(path, **payload)
         return routing
 
     def match(self, method: str, path_info: str) -> Route:
