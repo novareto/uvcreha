@@ -119,11 +119,39 @@ def arangodb(request):
 
         request.addfinalizer(cleanup)
 
-    return docmanager.db.Database(**config.arango)
+    database = docmanager.db.Database(**config.arango)
+    # Create the needed collections
+    database.ensure_database()
+    database.session.create_collection(
+        docmanager.db.User.__collection__)
+    database.session.create_collection(
+        docmanager.db.File.__collection__)
+    database.session.create_collection(
+        docmanager.db.Document.__collection__)
+    yield database
+    database.session.delete_collection(
+        docmanager.db.Document.__collection__)
+    database.session.delete_collection(
+        docmanager.db.File.__collection__)
+    database.session.delete_collection(
+        docmanager.db.User.__collection__)
 
 
 @pytest.fixture(scope="session")
-def application(request, config, arangodb):
+def api_app(request, config, arangodb):
+    import importscan
+    import docmanager
+    from docmanager.app import api as app
+
+    importscan.scan(docmanager)
+
+    app.database = arangodb
+    app.config.update(config.app)
+    return app
+
+
+@pytest.fixture(scope="session")
+def web_app(request, config, arangodb):
     import logging
     import colorlog
     import importscan
@@ -131,7 +159,8 @@ def application(request, config, arangodb):
     import docmanager
     import docmanager.auth
     import docmanager.flash
-    from docmanager.app import application as app
+    from docmanager.mq import AMQPEmitter
+    from docmanager.app import browser as app
 
     importscan.scan(docmanager)
 
@@ -159,24 +188,12 @@ def application(request, config, arangodb):
         logger.setLevel(logging.DEBUG)
         return logger
 
-    app.setup(
-        config=config.app,
-        database=arangodb,
-        logger=make_logger(config.app.logger)
-    )
+    app.database = arangodb
+    app.config.update(config.app)
 
-    # Create the needed collections
-    arangodb.ensure_database()
-    arangodb.session.create_collection(
-        docmanager.db.User.__collection__)
-    arangodb.session.create_collection(
-        docmanager.db.File.__collection__)
-    arangodb.session.create_collection(
-        docmanager.db.Document.__collection__)
-
-    # Flash
-    flash = docmanager.flash.Flash()
-    app.plugins.register(flash, name="flash")
+    # AMQP
+    amqp = AMQPEmitter(config.amqp)
+    app.plugins.register(amqp, name="amqp")
 
     # Auth
     auth = docmanager.auth.Auth(
@@ -184,22 +201,14 @@ def application(request, config, arangodb):
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
+    app.middlewares.register(auth, order=0)
     app.middlewares.register(
-        fanstatic_middleware(config.app.assets), priority=0)
+        session_middleware(config.app.env), order=1)
     app.middlewares.register(
-        session_middleware(config.app.env), priority=1)
-    app.middlewares.register(auth, priority=2)
+        fanstatic_middleware(config.app.assets), order=2)
 
     yield app
-
-    # cleanup
     folder.cleanup()
-    arangodb.session.delete_collection(
-        docmanager.db.Document.__collection__)
-    arangodb.session.delete_collection(
-        docmanager.db.File.__collection__)
-    arangodb.session.delete_collection(
-        docmanager.db.User.__collection__)
 
 
 @pytest.fixture(scope="session")

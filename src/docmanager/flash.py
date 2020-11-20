@@ -15,9 +15,9 @@ class SessionMessages:
 
     def add(self, body: str, type: str = "info"):
         if self.key in self.session:
-            messages = self.session["flashmessages"]
+            messages = self.session[self.key]
         else:
-            messages = self.session["flashmessages"] = []
+            messages = self.session[self.key] = []
 
         message = Message(type=type, body=body)
         messages.append(message.dict())

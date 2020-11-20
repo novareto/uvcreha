@@ -9,6 +9,7 @@ from http import HTTPStatus
 from typing import Callable, Mapping, Optional
 
 import horseman.meta
+import horseman.response
 import horseman.http
 
 from docmanager import registries, db
@@ -59,12 +60,13 @@ class Router(horseman.meta.APINode):
         return None
 
     def __call__(self, environ, start_response):
-        if self.middlewares:
+        try:
             caller = super().__call__
             for order, middleware in self.middlewares:
                 caller = middleware(caller)
             return caller(environ, start_response)
-        return super().__call__(environ, start_response)
+        except ValidationError as exc:
+            return exc(environ, start_response)
 
 
 @dataclass

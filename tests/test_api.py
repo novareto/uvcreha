@@ -1,25 +1,14 @@
 from webtest import TestApp
 
 
-def test_index(application, user):
-    app = TestApp(application)
-    user.login(app)
-    resp = app.get("/")
-    assert resp.status == "200 OK"
-
-
-def test_add_user(application, user):
-
-    app = TestApp(application)
-    user.login(app)
-
+def test_add_user(api_app):
+    app = TestApp(api_app)
     resp = app.post(
         "/user.add",
         {"nothing": "at_all"},
         content_type="application/x-www-form-urlencoded",
         expect_errors=True,
     )
-
     assert resp.json == {
         "errors": [
             {
@@ -38,13 +27,12 @@ def test_add_user(application, user):
     }
 
 
-def test_add_user_ok(application, user):
-    app = TestApp(application)
-    user.login(app)
+def test_add_user_ok(api_app):
+    app = TestApp(api_app)
     resp = app.post(
         "/user.add",
         dict(username="cklinger", password="klinger"),
-        # content_type='application/x-www-form-urlencoded',
+        content_type='application/x-www-form-urlencoded',
         expect_errors=True,
     )
     assert resp.status == "201 Created"
@@ -55,10 +43,8 @@ def test_add_user_ok(application, user):
     assert resp.json["_key"] == "cklinger"
 
 
-def test_add_folder(application, user):
-    app = TestApp(application)
-    user.login(app)
-
+def test_add_folder(api_app, user):
+    app = TestApp(api_app)
     resp = app.put(
         f"/users/{user.user.username}/file.add", {
             'az': "4711"
@@ -72,7 +58,7 @@ def test_add_folder(application, user):
     assert resp.json["az"] == "4711"
 
 
-def test_add_file(application, user):
+def test_add_file(api_app, user):
     from docmanager.models import Document as BaseDoc
     from docmanager.db import Document
     from typing import Literal
@@ -84,15 +70,14 @@ def test_add_file(application, user):
         myfield: str
 
 
-    app = TestApp(application)
-    user.login(app)
-
+    app = TestApp(api_app)
 
     resp = app.put(
         f"/users/{user.user.username}/file.add", {
             'az': "1234"
         }
     )
+    assert resp.status == "201 Created"
 
     resp = app.put(
         f"/users/{user.user.username}/files/1234/doc.add", {

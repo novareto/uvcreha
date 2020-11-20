@@ -6,8 +6,7 @@ from docmanager.db import User
 
 
 @browser.route("/")
-@template(TEMPLATES["index.pt"], layout_name="default", raw=False,)
-def user(request: Request):
-    request.flash().add(body="BLA BLUB")
+@template(TEMPLATES["index.pt"], layout_name="default", raw=False)
+def index(request: Request):
     user = User(request.db_session)
     return dict(request=request, user=user)
