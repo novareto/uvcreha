@@ -41,11 +41,3 @@ siguvtheme = Group([
     bootstrap_css,
     bootstrap_js
 ])
-
-
-def plugin(app, config):
-    from functools import partial
-
-    middleware = partial(Fanstatic, **config.assets)
-    app.middlewares.register(middleware, order=2)
-    return app

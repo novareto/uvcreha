@@ -1,37 +1,29 @@
+from docmanager.app import browser
 from docmanager.models import Message
 
 
 class SessionMessages:
 
-    def __init__(self, request, key="flashmessages"):
+    def __init__(self, session, key="flashmessages"):
         self.key = key
-        self.request = request
+        self.session = session
 
     def __iter__(self):
-        if self.key in self.request.session:
-            while self.request.session[self.key]:
-                yield Message(**self.request.session[self.key].pop(0))
+        if self.key in self.session:
+            while self.session[self.key]:
+                yield Message(**self.session[self.key].pop(0))
 
     def add(self, body: str, type: str = "info"):
-        if self.key in self.request.session:
-            messages = self.request.session["flashmessages"]
+        if self.key in self.session:
+            messages = self.session["flashmessages"]
         else:
-            messages = self.request.session["flashmessages"] = []
+            messages = self.session["flashmessages"] = []
 
         message = Message(type=type, body=body)
         messages.append(message.dict())
 
 
-class Flash:
-
-    def __init__(self, source=SessionMessages):
-        self.source = source
-
-    def __call__(self, request):
-        return self.source(request)
-
-
-def plugin(app, config):
-    flash = Flash()
-    app.plugins.register(flash, name="flash")
-    return app
+@browser.subscribe('request_created')
+def flash_utility(app, request):
+    flash = SessionMessages(request.session)
+    request.utilities.register(flash, 'flash')

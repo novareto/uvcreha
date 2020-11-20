@@ -1,20 +1,28 @@
 import horseman.parsing
 from horseman.meta import Overhead
+from docmanager.registries import NamedComponents
 
 
 class Request(Overhead):
 
     __slots__ = (
-        'app', 'environ', 'route', 'method', '_extracted', '_data'
+        '_data'
+        '_extracted',
+        'app',
+        'environ',
+        'method',
+        'route',
+        'utilities',
     )
 
     def __init__(self, app, environ, route):
-        self.app = app
-        self.environ = environ
-        self.route = route
-        self.method = environ['REQUEST_METHOD']
         self._data = {}
         self._extracted = False
+        self.app = app
+        self.environ = environ
+        self.method = environ['REQUEST_METHOD']
+        self.route = route
+        self.utilities = NamedComponents()
 
     @property
     def content_type(self):
@@ -51,6 +59,3 @@ class Request(Overhead):
             self.set_data({'form': form, 'files': files})
 
         return self.get_data()
-
-    def flash(self):
-        return self.app.plugins['flash'](self)
