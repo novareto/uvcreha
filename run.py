@@ -52,21 +52,21 @@ def webpush_plugin(config):
 
     webpush = namedtuple(
         'Webpush', [
-            'vapid_claims',
-            'vapid_private_key',
-            'vapid_public_key',
+            'claims',
+            'private_key',
+            'public_key',
         ])
 
     with (CWD / pathlib.Path(config.private_key)).open() as fd:
-        vapid_private_key = fd.readline().strip("\n")
+        private_key = fd.readline().strip("\n")
 
     with (CWD / pathlib.Path(config.public_key)).open() as fd:
-        vapid_public_key = fd.readline().strip("\n")
+        public_key = fd.read().strip("\n")
 
     return webpush(
-        vapid_private_key=vapid_private_key,
-        vapid_public_key=vapid_public_key,
-        vapid_claims=config.vapid_claims
+        private_key=private_key,
+        public_key=public_key,
+        claims=config.vapid_claims
     )
 
 

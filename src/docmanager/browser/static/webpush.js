@@ -1,7 +1,5 @@
 'use strict';
 
-const applicationServerPublicKey = "BN3YLIm91MDefNA3joVnJKOztITKDvbxx3OVot13f5EkpaW9LhNkT_vuevWtt-YAbNc_EMV2RsLOmdSucUhMgVU";
-
 let isSubscribed = false;
 let swRegistration = null;
 
@@ -54,8 +52,10 @@ function updateSubscriptionOnServer(subscription) {
 }
 
 function subscribeUser() {
-    const applicationServerPublicKey = localStorage.getItem('applicationServerPublicKey');
-    const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
+    const applicationServerPublicKey = localStorage.getItem(
+        'applicationServerPublicKey');
+    const applicationServerKey = urlB64ToUint8Array(
+        applicationServerPublicKey);
     swRegistration.pushManager.subscribe({
 	userVisibleOnly: true,
 	applicationServerKey: applicationServerKey
@@ -64,7 +64,8 @@ function subscribeUser() {
 	    console.log('User is subscribed.');
 
 	    updateSubscriptionOnServer(subscription);
-	    localStorage.setItem('sub_token',JSON.stringify(subscription));
+	    localStorage.setItem(
+                'sub_token', JSON.stringify(subscription));
 	    isSubscribed = true;
 
 	    updateBtn();
@@ -148,11 +149,11 @@ function push_message() {
     console.log("sub_token", localStorage.getItem('sub_token'));
     $.ajax({
 	type: "POST",
-	url: "/push_v1/",
+	url: "/api/push_v1",
 	contentType: 'application/json; charset=utf-8',
 	dataType:'json',
 	data: JSON.stringify({
-            'sub_token':localStorage.getItem('sub_token')
+            'sub_token': localStorage.getItem('sub_token')
         }),
 	success: function( data ){
 	    console.log("success",data);
@@ -166,9 +167,9 @@ function push_message() {
 $(document).ready(function(){
     $.ajax({
 	type:"GET",
-	url:'/subscription/',
-	success:function(response){
-	    console.log("response",response);
+	url:'/api/subscription',
+	success: function(response) {
+	    console.log("response", response);
 	    localStorage.setItem(
                 'applicationServerPublicKey', response.public_key);
 	}
