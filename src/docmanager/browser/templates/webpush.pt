@@ -1,0 +1,27 @@
+<tal:webpush_example>
+  <header>
+    <h1>WebPush Notification</h1>
+  </header>
+
+  <main>
+    <p>Welcome to the webpush notification. The button below needs to be
+    fixed to support subscribing to push.</p>
+    <p>
+      <button disabled class="js-push-btn">
+	Enable Push Messaging
+      </button>
+    </p>
+    <section class="subscription-details js-subscription-details is-invisible">
+      <p>Once you've subscribed your user, you'd send their subscription to your
+      server to store in a database so that when you want to send a message
+      you can lookup the subscription and send a message to it.</p>
+      <pre><code class="js-subscription-json"></code></pre>
+
+      <hr />
+      <p>You can test push notification below.</p>
+      <button
+          type="submit"
+          onclick="push_message()">Test Push Notification</button>
+    </section>
+  </main>
+</tal:webpush_example>

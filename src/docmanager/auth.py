@@ -5,7 +5,7 @@ from docmanager.db import User
 
 class Auth:
 
-    unprotected = {'/login'}
+    unprotected = {'/login', '/webpush'}
 
     def __init__(self, model, config):
         self.model = model

@@ -2,12 +2,13 @@ import os
 import hydra
 import logging
 import functools
-from pathlib import Path
+import pathlib
 import contextlib
 import colorlog
 from horseman.prototyping import WSGICallable
 
-current_path = Path(__file__).parent
+
+CWD = pathlib.Path(__file__).parent.resolve()
 
 
 @contextlib.contextmanager
@@ -18,7 +19,7 @@ def environment(**environ):
         for k, v in mapping.items():
             v = str(v)
             if v.startswith('path:'):
-                path = Path(v[5:]).resolve()
+                path = pathlib.Path(v[5:]).resolve()
                 path.mkdir(parents=True, exist_ok=True)
                 yield k, str(path)
             else:
@@ -46,20 +47,44 @@ def hydra_environ(*args, **kwargs):
     return temporary_environ
 
 
+def webpush_plugin(config):
+    from collections import namedtuple
+
+    webpush = namedtuple(
+        'Webpush', [
+            'vapid_claims',
+            'vapid_private_key',
+            'vapid_public_key',
+        ])
+
+    with (CWD / pathlib.Path(config.private_key)).open() as fd:
+        vapid_private_key = fd.readline().strip("\n")
+
+    with (CWD / pathlib.Path(config.public_key)).open() as fd:
+        vapid_public_key = fd.readline().strip("\n")
+
+    return webpush(
+        vapid_private_key=vapid_private_key,
+        vapid_public_key=vapid_public_key,
+        vapid_claims=config.vapid_claims
+    )
+
+
 def make_logger(config) -> logging.Logger:
     logger = colorlog.getLogger(config.name)
     logger.setLevel(logging.DEBUG)
     return logger
 
 
-def api(config, database):
+def api(config, database, webpush):
     from docmanager.app import api as app
     app.database = database
     app.config.update(config)
+    app.plugins.register(webpush, name="webpush")
     return app
 
 
-def browser(config, database):
+def browser(config, database, webpush):
     from docmanager.db import User
     from docmanager.mq import AMQPEmitter
     from docmanager.auth import Auth
@@ -74,7 +99,7 @@ def browser(config, database):
         import cromlech.session
         import cromlech.sessions.file
 
-        folder = Path("/tmp/sessions")
+        folder = pathlib.Path("/tmp/sessions")
         handler = cromlech.sessions.file.FileStore(folder, 3000)
         manager = cromlech.session.SignedCookieManager(
             "secret", handler, cookie="my_sid")
@@ -83,6 +108,8 @@ def browser(config, database):
 
     app.database = database
     app.config.update(config.app)
+
+    app.plugins.register(webpush, name="webpush")
 
     auth = Auth(User(database.session), config.app.env)
     app.plugins.register(auth, name="authentication")
@@ -116,9 +143,10 @@ def run(config):
     importscan.scan(uvcreha.example)
 
     database = docmanager.db.Database(**config.arango)
+    webpush = webpush_plugin(config.app.webpush)
     app = URLMap()
-    app['/'] = browser(config, database)
-    app['/api'] = api(config, database)
+    app['/'] = browser(config, database, webpush)
+    app['/api'] = api(config, database, webpush)
 
     # Serving the app
     AMQPworker = docmanager.mq.Worker(app, config.amqp)

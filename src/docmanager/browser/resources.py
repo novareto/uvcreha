@@ -6,7 +6,7 @@
 from fanstatic import Library, Resource, Group
 
 
-library = Library('adhoc', 'static')
+library = Library('docmanager', 'static')
 
 custom_css = Resource(
     library, 'siguvtheme.css'
@@ -24,6 +24,10 @@ main_js = Resource(
     library, 'main.js'
 )
 
+application_webpush = Resource(
+    library, 'webpush.js'
+)
+
 bootstrap_css = Resource(
     library, 'uvc_serviceportal_bootstrap.css',
     compiler="sass", source="scss/siguv.scss"
@@ -35,6 +39,7 @@ bootstrap_js = Resource(
 )
 
 siguvtheme = Group([
+    application_webpush,
     custom_css,
     main_css,
     sidebar_css,
