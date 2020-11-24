@@ -1,10 +1,11 @@
 import datetime
 import json
-from docmanager.app import api
-from docmanager.db import WebpushSubscription
 import horseman.meta
 import horseman.response
 import pywebpush
+
+from docmanager.app import api
+from docmanager.db import WebpushSubscription
 
 
 @api.route("/subscription", name="webpush_subscription")
@@ -34,7 +35,7 @@ class Webpush(horseman.meta.APIView):
         return horseman.response.Response.create(400)
 
 
-@api.route("/push_v1", methods=['POST'])
+@api.route("/webpush", methods=['POST'])
 def push_v1(request):
 
     webpush = request.app.plugins["webpush"]
@@ -49,7 +50,6 @@ def push_v1(request):
         )
 
     try:
-
         info = json.loads(token)
         pywebpush.webpush(
             subscription_info=info,

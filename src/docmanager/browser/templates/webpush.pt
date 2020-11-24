@@ -2,7 +2,13 @@
   <header>
     <h1>WebPush Notification</h1>
   </header>
-
+  <script>
+    var webpush_service = null;
+    (async () => {
+       webpush_service = await initialize_webpush_service();
+    })();
+    console.log(webpush_service);
+  </script>
   <main>
     <p>Welcome to the webpush notification. The button below needs to be
     fixed to support subscribing to push.</p>
@@ -21,7 +27,8 @@
       <p>You can test push notification below.</p>
       <button
           type="submit"
-          onclick="push_message()">Test Push Notification</button>
+          onclick="webpush_service.push_message('test')"
+          >Test Push Notification</button>
     </section>
   </main>
 </tal:webpush_example>

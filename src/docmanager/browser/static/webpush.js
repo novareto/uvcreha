@@ -1,8 +1,5 @@
 'use strict';
 
-let isSubscribed = false;
-let swRegistration = null;
-
 function urlB64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
     const base64 = (base64String + padding)
@@ -18,160 +15,151 @@ function urlB64ToUint8Array(base64String) {
     return outputArray;
 }
 
-function updateBtn() {
-    var pushButton = document.querySelector('.js-push-btn');
-    if (Notification.permission === 'denied') {
-	pushButton.textContent = 'Push Messaging Blocked.';
-	pushButton.disabled = true;
-	updateSubscriptionOnServer(null);
-	return;
-    }
+class WebpushService {
 
-    if (isSubscribed) {
-	pushButton.textContent = 'Disable Push Messaging';
-    } else {
-	pushButton.textContent = 'Enable Push Messaging';
-    }
+    button;
+    text;
+    worker;
+    is_subscribed = false
 
-    pushButton.disabled = false;
-}
-
-function updateSubscriptionOnServer(subscription) {
-    // TODO: Send subscription to application server
-
-    const subscriptionJson = document.querySelector('.js-subscription-json');
-    const subscriptionDetails =
-	  document.querySelector('.js-subscription-details');
-
-    if (subscription) {
-	subscriptionJson.textContent = JSON.stringify(subscription);
-	subscriptionDetails.classList.remove('is-invisible');
-    } else {
-	subscriptionDetails.classList.add('is-invisible');
-    }
-}
-
-function subscribeUser() {
-    const applicationServerPublicKey = localStorage.getItem(
-        'applicationServerPublicKey');
-    const applicationServerKey = urlB64ToUint8Array(
-        applicationServerPublicKey);
-    swRegistration.pushManager.subscribe({
-	userVisibleOnly: true,
-	applicationServerKey: applicationServerKey
-    })
-	.then(function(subscription) {
-	    console.log('User is subscribed.');
-
-	    updateSubscriptionOnServer(subscription);
-	    localStorage.setItem(
-                'sub_token', JSON.stringify(subscription));
-	    isSubscribed = true;
-
-	    updateBtn();
-	})
-	.catch(function(err) {
-	    console.log('Failed to subscribe the user: ', err);
-	    updateBtn();
-	});
-}
-
-function unsubscribeUser() {
-    swRegistration.pushManager.getSubscription()
-	.then(function(subscription) {
-	    if (subscription) {
-		return subscription.unsubscribe();
-	    }
-	})
-	.catch(function(error) {
-	    console.log('Error unsubscribing', error);
-	})
-	.then(function() {
-	    updateSubscriptionOnServer(null);
-
-	    console.log('User is unsubscribed.');
-	    isSubscribed = false;
-
-	    updateBtn();
-	});
-}
-
-function initializeUI() {
-    var pushButton = document.querySelector('.js-push-btn');
-
-    pushButton.addEventListener('click', function() {
-	pushButton.disabled = true;
-	if (isSubscribed) {
-	    unsubscribeUser();
-	} else {
-	    subscribeUser();
-	}
-    });
-
-    // Set the initial subscription value
-    swRegistration.pushManager.getSubscription()
-	.then(function(subscription) {
-	    isSubscribed = !(subscription === null);
-
-	    updateSubscriptionOnServer(subscription);
-
-	    if (isSubscribed) {
-		console.log('User IS subscribed.');
-	    } else {
-		console.log('User is NOT subscribed.');
-	    }
-
-	    updateBtn();
-	});
-}
-
-if ('serviceWorker' in navigator && 'PushManager' in window) {
-    console.log('Service Worker and Push is supported');
-
-    var pushButton = document.querySelector('.js-push-btn');
-
-    navigator.serviceWorker.register("/static/docmanager/sw.js")
-	.then(function(swReg) {
-	    console.log('Service Worker is registered', swReg);
-
-	    swRegistration = swReg;
-	    initializeUI();
-	})
-	.catch(function(error) {
-	    console.error('Service Worker Error', error);
-	});
-} else {
-    console.warn('Push messaging is not supported');
-    pushButton.textContent = 'Push Not Supported';
-}
-
-function push_message() {
-    console.log("sub_token", localStorage.getItem('sub_token'));
-    $.ajax({
-	type: "POST",
-	url: "/api/push_v1",
-	contentType: 'application/json; charset=utf-8',
-	dataType:'json',
-	data: JSON.stringify({
-            'sub_token': localStorage.getItem('sub_token')
-        }),
-	success: function( data ){
-	    console.log("success",data);
-    },
-        error: function( jqXhr, textStatus, errorThrown ){
-            console.log("error",errorThrown);
+    get pubkey() {
+        const pubkey = localStorage.getItem('webpush.pubkey');
+        if (!pubkey) {
+            throw "No vapid public key available locally. Refresh.";
         }
-    });
+        return urlB64ToUint8Array(pubkey);
+    }
+
+    get token() {
+        return localStorage.getItem('webpush.token');
+    }
+
+    set token(value) {
+	localStorage.setItem('webpush.token', value);
+    }
+
+    constructor(worker, subscription) {
+        this.worker = worker;
+	this.is_subscribed = !(subscription === null);
+	if (this.is_subscribed) {
+	    console.log('User IS subscribed.');
+	} else {
+	    console.log('User is NOT subscribed.');
+	}
+        this.text = document.querySelector('.js-subscription-details');
+        this.button = document.querySelector('.js-push-btn');
+        this.button.addEventListener('click', function() {
+	    this.button.disabled = true;
+	    if (this.is_subscribed) {
+	        this.unsubscribe();
+	    } else {
+	        this.subscribe();
+	    }
+        }.bind(this));
+        console.log("The Webpush Service is active");
+    }
+
+    static async create() {
+        const worker = await navigator.serviceWorker.register(
+            "/static/docmanager/sw.js")
+        console.log('Service Worker is registered', worker);
+        const subscription = await worker.pushManager.getSubscription();
+        const service = new WebpushService(worker, subscription)
+        await service.update_serverside_subscription(subscription);
+        await service.update_button();
+        return service
+    }
+
+    async update_button() {
+        try {
+            if (Notification.permission === 'denied') {
+	        this.button.textContent = 'Push Messaging Blocked.';
+	        this.button.disabled = true;
+	        await this.update_serverside_subscription(null);
+	        return;
+            }
+            if (this.is_subscribed) {
+	        this.button.textContent = 'Disable Push Messaging';
+            } else {
+	        this.button.textContent = 'Enable Push Messaging';
+            }
+            this.button.disabled = false;
+        } catch(error) {
+            console.error(error);
+        }
+    }
+
+    async update_serverside_subscription(subscription) {
+        if (subscription) {
+            console.log(JSON.stringify(subscription));
+	    this.text.classList.remove('is-invisible');
+        } else {
+	    this.text.classList.add('is-invisible');
+        }
+    }
+
+    async subscribe() {
+        const subscription = await this.worker.pushManager.subscribe({
+	    userVisibleOnly: true,
+	    applicationServerKey: this.pubkey
+        })
+	console.log('User is subscribed.');
+	await this.update_serverside_subscription(subscription);
+        this.token = JSON.stringify(subscription);
+	this.is_subscribed = true;
+	await this.update_button();
+    }
+
+    async unsubscribe() {
+        var service = this;
+        const subscription = await this.worker.pushManager.getSubscription();
+        subscription.unsubscribe();
+	await this.update_serverside_subscription(null);
+	console.log('User is unsubscribed.');
+	this.is_subscribed = false;
+	await this.update_button();
+    }
+
+    async push_message(message) {
+
+        const response = await fetch('/api/webpush', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'message': message,
+                'sub_token': this.token
+            })
+        });
+
+        if (response.ok) {
+            let json = await response.json();
+            console.log("success", json);
+        } else {
+            console.log("failure", response);
+        }
+    }
+
 }
 
-$(document).ready(function(){
-    $.ajax({
-	type:"GET",
-	url:'/api/subscription',
-	success: function(response) {
-	    console.log("response", response);
-	    localStorage.setItem(
-                'applicationServerPublicKey', response.public_key);
-	}
-    })
-});
+async function initialize_webpush_service() {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        console.log('Service Worker and Push is supported');
+        const pubkey = localStorage.getItem('webpush.pubkey');
+
+        if (!pubkey) {
+            let response = await fetch('/api/subscription');
+            if (response.ok) {
+                let json = await response.json();
+                localStorage.setItem('webpush.pubkey', json.public_key);
+            } else {
+                return false;
+            }
+        }
+        return await WebpushService.create()
+    } else {
+        console.warn('Push messaging is not supported');
+    }
+}
