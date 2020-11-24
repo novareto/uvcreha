@@ -4,7 +4,6 @@ import horseman.response
 import pywebpush
 from datetime import datetime, timedelta
 from docmanager.app import api
-from docmanager.db import WebpushSubscription
 
 
 @api.route("/subscription", name="webpush_subscription")
@@ -28,10 +27,8 @@ class Webpush(horseman.meta.APIView):
         """store subscription information
         """
         data = request.extract()
-        token = data['form'].get('subscription_token')
-        if token is not None:
-            return horseman.response.Response.create(201)
-        return horseman.response.Response.create(400)
+        token = data['form'].get('subscription')
+        return horseman.response.Response.create(200)
 
 
 @api.route("/webpush", methods=['POST'])

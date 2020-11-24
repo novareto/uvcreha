@@ -16,20 +16,6 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Webpush(Model):
-
-    subscription_info: str
-    is_active: bool
-
-    @property
-    def subscription_info_json(self):
-        return orjson.loads(self.subscription_info)
-
-    @subscription_info_json.setter
-    def subscription_info_json(self, value):
-        self.subscription_info = orjson.dumps(value)
-
-
 class Document(Model):
 
     az: str
@@ -70,6 +56,9 @@ class User(Model):
     password: SecretStr = Field(
         title="Passwort", description="Bitte geb das PW ein.")
     permissions: Optional[List] = ['document.view']
+
+    webpush_subscription: Optional[str] = ""
+    webpush_activated: Optional[bool] = False
 
     @property
     def title(self) -> str:

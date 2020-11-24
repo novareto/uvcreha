@@ -90,8 +90,24 @@ class WebpushService {
     }
 
     async update_serverside_subscription(subscription) {
+        const response = await fetch('/api/subscription', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'subscription': subscription
+            })
+        });
+
+        if (response.ok) {
+                console.log("success");
+        } else {
+            console.log("failure", response);
+        }
+
         if (subscription) {
-            console.log(JSON.stringify(subscription));
 	    this.text.classList.remove('is-invisible');
         } else {
 	    this.text.classList.add('is-invisible');

@@ -212,14 +212,6 @@ class ArangoModel(DBModel):
         return True
 
 
-class WebpushSubscription(ArangoModel):
-    model = models.Webpush
-
-    __collection__: str = 'webpush'
-    __primarykey__: str
-    __parents__: List = []
-
-
 class User(ArangoModel):
     model = models.User
 
