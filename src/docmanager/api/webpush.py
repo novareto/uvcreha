@@ -1,9 +1,8 @@
-import datetime
 import json
 import horseman.meta
 import horseman.response
 import pywebpush
-
+from datetime import datetime, timedelta
 from docmanager.app import api
 from docmanager.db import WebpushSubscription
 
@@ -36,13 +35,12 @@ class Webpush(horseman.meta.APIView):
 
 
 @api.route("/webpush", methods=['POST'])
-def push_v1(request):
+def push(request):
 
     webpush = request.app.plugins["webpush"]
-    message = "Push Test v1"
     data = request.extract()
-
     token = data['form'].get('sub_token')
+    message = data['form'].get('message')
 
     if token is None:
         return horseman.response.Response.to_json(
@@ -51,11 +49,13 @@ def push_v1(request):
 
     try:
         info = json.loads(token)
+        ts = datetime.timestamp(datetime.now() + timedelta(hours=1))
+        claims = {**webpush.claims, 'exp': ts}
         pywebpush.webpush(
             subscription_info=info,
             data=message,
-            vapid_private_key=webpush.vapid_private_key,
-            vapid_claims=webpush.vapid_claims
+            vapid_private_key=webpush.private_key,
+            vapid_claims=claims
         )
         return horseman.response.Response.to_json(
             200, body={'success': 1}
