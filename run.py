@@ -1,14 +1,25 @@
 import os
-import hydra
 import logging
 import functools
 import pathlib
 import contextlib
 import colorlog
+from omegaconf import OmegaConf
 from horseman.prototyping import WSGICallable
 
 
 CWD = pathlib.Path(__file__).parent.resolve()
+
+
+def make_logger(name, level=logging.DEBUG) -> logging.Logger:
+    logger = colorlog.getLogger(name)
+    logger.setLevel(level)
+    handler = colorlog.StreamHandler()
+    handler.setFormatter(colorlog.ColoredFormatter(
+        '%(red)s%(levelname)-8s%(reset)s '
+        '%(yellow)s[%(name)s]%(reset)s %(green)s%(message)s'))
+    logger.addHandler(handler)
+    return logger
 
 
 @contextlib.contextmanager
@@ -34,19 +45,6 @@ def environment(**environ):
         os.environ.update(old_environ)
 
 
-def hydra_environ(*args, **kwargs):
-
-    def temporary_environ(func):
-        @functools.wraps(func)
-        @hydra.main(*args, **kwargs)
-        def hydra_conf_environ_wrapper(config):
-            with environment(**config.environ):
-                return func(config)
-
-        return hydra_conf_environ_wrapper
-    return temporary_environ
-
-
 def webpush_plugin(config):
     from collections import namedtuple
 
@@ -68,12 +66,6 @@ def webpush_plugin(config):
         public_key=public_key,
         claims=config.vapid_claims
     )
-
-
-def make_logger(config) -> logging.Logger:
-    logger = colorlog.getLogger(config.name)
-    logger.setLevel(logging.DEBUG)
-    return logger
 
 
 def api(config, database, webpush):
@@ -127,8 +119,7 @@ def browser(config, database, webpush):
     return app
 
 
-@hydra_environ(config_name="config.yaml")
-def run(config):
+def start(config):
     import bjoern
     import importscan
 
@@ -142,6 +133,7 @@ def run(config):
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
+    logger = make_logger('docmanager')
     database = docmanager.db.Database(**config.arango)
     webpush = webpush_plugin(config.app.webpush)
     app = URLMap()
@@ -153,7 +145,7 @@ def run(config):
     try:
         AMQPworker.start()
 
-        logging.info(
+        logger.info(
             "Server started on "
             f"http://{config.server.host}:{config.server.port}")
 
@@ -165,5 +157,8 @@ def run(config):
     finally:
         AMQPworker.stop()
 
+
 if __name__ == "__main__":
-    run()
+    config = OmegaConf.load('config.yaml')
+    with environment(**config.environ):
+        start(config)
