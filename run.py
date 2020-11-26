@@ -54,7 +54,6 @@ def webpush_plugin(config):
             'private_key',
             'public_key',
         ])
-
     with (CWD / pathlib.Path(config.private_key)).open() as fd:
         private_key = fd.readline().strip("\n")
 
