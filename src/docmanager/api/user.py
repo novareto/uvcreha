@@ -18,6 +18,7 @@ def user_add(request: Request):
 @api.route('/users/{username}', methods=['GET'])
 def user_view(request: Request, username: str):
     model = User(request.db_session)
+    import pdb; pdb.set_trace()
     item = model.fetch(username)
     if item is None:
         return horseman.response.Response.create(404)

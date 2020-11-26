@@ -17,7 +17,7 @@ install_requires = [
     'openapi_schema_pydantic',
     'orjson',
     'py-vapid',
-    'pydantic',
+    'pydantic[email]',
     'python-arango',
     'pywebpush',
     'reg',

@@ -48,7 +48,7 @@ def test_model_crud(arangodb):
     db_user = User(arangodb.session)
     assert isinstance(db_user, User) is True
 
-    model = db_user.model(username="souheil", password="secret")
+    model = db_user.model(username="souheil", password="secret", email="trollfot@gmail.com")
     assert isinstance(model, BaseUser) is True
     assert model.username == "souheil"
     assert model.password.get_secret_value() == "secret"
@@ -64,3 +64,12 @@ def test_model_crud(arangodb):
 
     new_user = db_user.fetch(saved_user.key)
     assert new_user.password.get_secret_value() == "newpw"
+
+
+def test_model_generation():
+    from docmanager.models import User, construct_model
+    from pydantic import BaseModel
+    um = construct_model('User', User, fields=('username', 'password'))
+    assert issubclass(um, BaseModel) is True
+    assert 'username' in um.schema()['properties'].keys()
+    assert 'password' in um.schema()['properties'].keys()

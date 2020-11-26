@@ -1,10 +1,15 @@
-import abc
 import uuid
-import orjson
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, SecretStr
-from docmanager.request import Request
+from pydantic import BaseModel, Field, SecretStr, EmailStr, create_model
+
+
+def construct_model(name: str, base: BaseModel, fields):
+    base_schema_props = base.schema()['properties']
+    model_fields = {}
+    for field in fields:
+        model_fields[field] = base_schema_props.get(field)
+    return create_model('FormModel', **model_fields)
 
 
 class Model(BaseModel):
@@ -53,8 +58,13 @@ class User(Model):
 
     username: str = Field(
         title="Loginname", description="Bitte geb hier was ein.")
+
     password: SecretStr = Field(
         title="Passwort", description="Bitte geb das PW ein.")
+
+    email: EmailStr = Field(
+        title="E-Mail", description="Bitte geben Sie die E-Mail ein")
+
     permissions: Optional[List] = ['document.view']
 
     webpush_subscription: Optional[str] = ""
