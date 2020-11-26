@@ -62,6 +62,8 @@ class User(Model):
     password: SecretStr = Field(
         title="Passwort", description="Bitte geb das PW ein.")
 
+    #email: Optional[EmailStr] = Field(
+    #    title="E-Mail", description="Bitte geben Sie die E-Mail ein")
     email: EmailStr = Field(
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
 

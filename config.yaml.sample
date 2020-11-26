@@ -27,8 +27,8 @@ amqp:
 
 
 webpush:
-  public_key: public_key.txt
-  private_key: private_key.txt
+  public_key: ${path:public_key.txt}
+  private_key: ${path:private_key.txt}
   vapid_claims:
     sub: mailto:cklinger@novareto.de
     aud: https://updates.push.services.mozilla.com
@@ -49,8 +49,3 @@ server:
 
 environ:
   CHAMELEON_CACHE: ${path:/tmp/templates_cache}
-
-
-defaults:
-  - hydra/job_logging: colorlog
-  - hydra/hydra_logging: colorlog
