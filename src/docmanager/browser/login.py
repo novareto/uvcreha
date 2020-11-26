@@ -41,7 +41,7 @@ class RegistrationForm(FormView):
             return horseman.response.Response.create(
                 302, headers={"Location": "/"}
             )
-        flash_messages = request.flash()
+        flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Failed login.')
         return horseman.response.Response.create(
             302, headers={"Location": "/login"}

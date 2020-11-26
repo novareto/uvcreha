@@ -27,17 +27,16 @@ class Webpush(horseman.meta.APIView):
         """store subscription information
         """
         data = request.extract()
-        token = data['form'].get('subscription')
+        token = data['form']['subscription']
         return horseman.response.Response.create(200)
 
 
 @api.route("/webpush", methods=['POST'])
 def push(request):
-
     webpush = request.app.plugins["webpush"]
     data = request.extract()
-    token = data['form'].get('sub_token')
-    message = data['form'].get('message')
+    token = data['form']['sub_token']
+    message = data['form']['message']
 
     if token is None:
         return horseman.response.Response.to_json(
