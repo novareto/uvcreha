@@ -1,14 +1,13 @@
 import pydantic
 import horseman.response
 
-from docmanager import db 
+from docmanager import db
 from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
-from docmanager.browser.form import CustomBaseForm, FormView, Triggers
+from docmanager.browser.form import Form, FormView, Triggers
 from docmanager.browser.layout import template, TEMPLATES
 from horseman.http import Multidict
-from wtforms_pydantic.wtforms_pydantic import model_form
 
 
 @browser.route("/login", methods=("GET", "POST"))
@@ -21,11 +20,7 @@ class LoginForm(FormView):
     triggers: Triggers = Triggers()
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = model_form(
-            self.model,
-            base_class=CustomBaseForm,
-            only=("username", "password")
-        )()
+        form = Form.from_model(self.model, only=("username", "password"))
         form.process(data=data, formdata=formdata)
         return form
 
