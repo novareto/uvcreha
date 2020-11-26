@@ -68,19 +68,21 @@ def webpush_plugin(config):
     )
 
 
-def api(config, database, webpush):
+def api(config, database, webpush, emailer):
     from docmanager.app import api as app
     app.database = database
     app.config.update(config)
     app.plugins.register(webpush, name="webpush")
+    app.plugins.register(emailer, name="emailer")
     return app
 
 
-def browser(config, database, webpush):
+def browser(config, database, webpush, emailer):
     from docmanager.db import User
     from docmanager.mq import AMQPEmitter
     from docmanager.auth import Auth
     from docmanager.app import browser as app
+
 
     def fanstatic_middleware(config) -> WSGICallable:
         from fanstatic import Fanstatic
@@ -98,10 +100,12 @@ def browser(config, database, webpush):
         return cromlech.session.WSGISessionManager(
             manager, environ_key=config.session)
 
+
     app.database = database
     app.config.update(config.app)
 
     app.plugins.register(webpush, name="webpush")
+    app.plugins.register(emailer, name="emailer")
 
     auth = Auth(User(database.session), config.app.env)
     app.plugins.register(auth, name="authentication")
@@ -129,16 +133,19 @@ def start(config):
     import uvcreha.example
     import uvcreha.example.app
     from rutter.urlmap import URLMap
+    from docmanager.emailer import SecureMailer
 
     importscan.scan(docmanager)
     importscan.scan(uvcreha.example)
 
     logger = make_logger('docmanager')
     database = docmanager.db.Database(**config.arango)
-    webpush = webpush_plugin(config.app.webpush)
+    webpush = webpush_plugin(config.webpush)
+    emailer = SecureMailer(config.emailer)
+
     app = URLMap()
-    app['/'] = browser(config, database, webpush)
-    app['/api'] = api(config, database, webpush)
+    app['/'] = browser(config, database, webpush, emailer)
+    app['/api'] = api(config, database, webpush, emailer)
 
     # Serving the app
     AMQPworker = docmanager.mq.Worker(app, config.amqp)
