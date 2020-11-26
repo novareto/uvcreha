@@ -8,9 +8,6 @@ from omegaconf import OmegaConf
 from horseman.prototyping import WSGICallable
 
 
-CWD = pathlib.Path(__file__).parent.resolve()
-
-
 def make_logger(name, level=logging.DEBUG) -> logging.Logger:
     logger = colorlog.getLogger(name)
     logger.setLevel(level)
@@ -55,10 +52,10 @@ def webpush_plugin(config):
             'public_key',
         ])
 
-    with (CWD / pathlib.Path(config.private_key)).open() as fd:
+    with open(config.private_key) as fd:
         private_key = fd.readline().strip("\n")
 
-    with (CWD / pathlib.Path(config.public_key)).open() as fd:
+    with open(config.public_key) as fd:
         public_key = fd.read().strip("\n")
 
     return webpush(
@@ -165,7 +162,15 @@ def start(config):
         AMQPworker.stop()
 
 
+def resolve_path(path):
+    path = pathlib.Path(path)
+    return path.resolve()
+
+
 if __name__ == "__main__":
-    config = OmegaConf.load('config.yaml')
+    OmegaConf.register_resolver("path", resolve_path)
+    baseconf = OmegaConf.load('config.yaml')
+    override = OmegaConf.from_cli()
+    config = OmegaConf.merge(baseconf, override)
     with environment(**config.environ):
         start(config)

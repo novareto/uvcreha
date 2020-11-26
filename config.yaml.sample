@@ -4,13 +4,6 @@ app:
     session: docmanager.session
     user: docmanager.user
 
-  webpush:
-    public_key: public_key.txt
-    private_key: private_key.txt
-    vapid_claims:
-      sub: mailto:cklinger@novareto.de
-      aud: https://updates.push.services.mozilla.com
-
   logger:
     name: docmanager.logger
 
@@ -33,6 +26,14 @@ amqp:
   serializer: json
 
 
+webpush:
+  public_key: public_key.txt
+  private_key: private_key.txt
+  vapid_claims:
+    sub: mailto:cklinger@novareto.de
+    aud: https://updates.push.services.mozilla.com
+
+
 emailer:
   host: localhost
   user:
@@ -47,7 +48,7 @@ server:
 
 
 environ:
-  CHAMELEON_CACHE: path:/tmp/templates_cache
+  CHAMELEON_CACHE: ${path:/tmp/templates_cache}
 
 
 defaults:
