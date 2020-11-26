@@ -1,6 +1,7 @@
 import pydantic
 import horseman.response
 
+from docmanager import db 
 from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
@@ -11,7 +12,7 @@ from wtforms_pydantic.wtforms_pydantic import model_form
 
 
 @browser.route("/login", methods=("GET", "POST"))
-class RegistrationForm(FormView):
+class LoginForm(FormView):
 
     title: str = "Registration Form"
     description: str = "Please fill out all details"
@@ -73,7 +74,11 @@ class EditPassword(FormView):
         form = view.setupForm(formdata=data)
         if not form.validate():
             return form
-        print("DO SOME REAL STUFF HERE")
+        um = db.User(request.app.database.session)
+        data.pop('trigger.speichern')
+        um.update(key=request.user.key, **data)
+        flash_messages = request.utilities.get('flash')
+        flash_messages.add(body='Password Change Successful.')
         return horseman.response.Response.create(
             302, headers={"Location": "/%s" % view.action}
         )
@@ -83,9 +88,42 @@ class EditPassword(FormView):
         pass
 
 
-@browser.route(
-    "/preferences", methods=["GET"], permissions={"document.view"}
-)
+@browser.route("/edit_mail", permissions={"document.view"})
+class EditMail(FormView):
+
+    title = "E-Mail Adresse ändern"
+    description = "Hier können Sie Ihre E-Mail Adresse ändern"
+    action = "edit_mail"
+    triggers = Triggers()
+    model: pydantic.BaseModel = User
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = model_form(
+            self.model, base_class=CustomBaseForm, only=("email"))()
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @triggers.register("speichern", "Speichern")
+    def speichern(view, request):
+        data = request.extract()["form"]
+        form = view.setupForm(formdata=data)
+        if not form.validate():
+            return form
+        um = db.User(request.app.database.session)
+        data.pop('trigger.speichern')
+        um.update(key=request.user.key, **data.dict())
+        flash_messages = request.utilities.get('flash')
+        flash_messages.add(body='EMAIL Change Successful.')
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"}
+        )
+
+    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    def abbrechen(form, *args):
+        pass
+
+
+@browser.route("/preferences", methods=["GET"], permissions={"document.view"})
 @template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
     return dict(request=request)
