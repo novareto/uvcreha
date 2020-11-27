@@ -5,7 +5,7 @@ from docmanager import db
 from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
-from docmanager.browser.form import Form, FormView, Triggers
+from docmanager.browser.form import Form, FormView, trigger
 from docmanager.browser.layout import template, TEMPLATES
 from horseman.http import Multidict
 
@@ -17,14 +17,13 @@ class LoginForm(FormView):
     description: str = "Please fill out all details"
     action: str = "login"
     model: pydantic.BaseModel = User
-    triggers: Triggers = Triggers()
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("username", "password"))
         form.process(data=data, formdata=formdata)
         return form
 
-    @triggers.register("speichern", "Speichern")
+    @trigger("speichern", "Speichern")
     def login(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
@@ -43,7 +42,7 @@ class LoginForm(FormView):
             302, headers={"Location": "/login"}
         )
 
-    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
         pass
 
@@ -54,7 +53,6 @@ class EditPassword(FormView):
     title = "Passwort ändern"
     description = "Hier können Sie Ihr Passwort ändern"
     action = "edit_pw"
-    triggers = Triggers()
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
@@ -62,7 +60,7 @@ class EditPassword(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @triggers.register("speichern", "Speichern")
+    @trigger("speichern", "Speichern")
     def speichern(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
@@ -77,7 +75,7 @@ class EditPassword(FormView):
             302, headers={"Location": "/%s" % view.action}
         )
 
-    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, *args):
         pass
 
@@ -88,7 +86,6 @@ class EditMail(FormView):
     title = "E-Mail Adresse ändern"
     description = "Hier können Sie Ihre E-Mail Adresse ändern"
     action = "edit_mail"
-    triggers = Triggers()
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
@@ -96,7 +93,7 @@ class EditMail(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @triggers.register("speichern", "Speichern")
+    @trigger("speichern", "Speichern")
     def speichern(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
@@ -111,7 +108,7 @@ class EditMail(FormView):
             302, headers={"Location": "/"}
         )
 
-    @triggers.register("abbrechen", "Abbrechen", _class="btn btn-secondary")
+    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, *args):
         pass
 

@@ -1,26 +1,33 @@
-import wtforms
 import collections
+import inspect
+import typing
 import pydantic
+import wtforms
+from dataclasses import dataclass
 from horseman.meta import APIView
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
 from wtforms_pydantic.converter import Converter, model_fields
 
 
-class Triggers(collections.OrderedDict):
+@dataclass
+class Trigger:
+    id: str
+    title: str
+    method: typing.Callable
+    css: str
 
-    def register(self, name, title=None, _class="btn btn-primary"):
-        def add_trigger(method):
-            tid = f"trigger.{name}"
-            self[tid] = {
-                "id": tid,
-                "title": title or name,
-                "method": method,
-                "class": _class,
-            }
-            return method
 
-        return add_trigger
+def trigger(id, title, css="btn btn-primary"):
+    def mark_as_trigger(func):
+        func.trigger = Trigger(
+            id=f'trigger.{id}',
+            title=title,
+            css=css,
+            method=func,
+        )
+        return func
+    return mark_as_trigger
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -45,13 +52,24 @@ class Form(wtforms.form.BaseForm):
         ))
 
 
-class FormView(APIView):
+class FormViewMeta(type):
+
+    def __init__(cls, name, bases, attrs):
+        type.__init__(cls, name, bases, attrs)
+        cls.triggers = collections.OrderedDict()
+        for name, member in attrs.items():
+            if inspect.isfunction(member) and hasattr(member, 'trigger'):
+                trigger = member.trigger
+                cls.triggers[trigger.id] = trigger
+                del member.trigger
+
+
+class FormView(APIView, metaclass=FormViewMeta):
 
     title: str = ""
     description: str = ""
     action: str = ""
     method: str = "POST"
-    triggers: Triggers = Triggers()
     schema: dict
     model: pydantic.BaseModel
 
