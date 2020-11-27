@@ -58,8 +58,7 @@ class EditPassword(FormView):
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = model_form(
-            self.model, base_class=CustomBaseForm, only=("password"))()
+        form = Form.from_model(self.model, only=("password"))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -93,8 +92,7 @@ class EditMail(FormView):
     model: pydantic.BaseModel = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = model_form(
-            self.model, base_class=CustomBaseForm, only=("email"))()
+        form = Form.from_model(self.model, only=("email"))
         form.process(data=data, formdata=formdata)
         return form
 
