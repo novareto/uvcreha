@@ -1,0 +1,35 @@
+DOCTEST
+=======
+
+This Doctest should describe the Flow between the App in two
+perspectives. 
+
+1) The Insurance which makes initial contents (User, Files, Documents)
+2) The Client which logs in then and work on his *tasks*
+   These Tasks are in Principal: Fill pre-defined Forms.
+
+
+The Insurance creates an empty User.
+
+
+  >>> api_app = getfixture('api_app') 
+  >>> from webtest import TestApp
+  >>> app = TestApp(api_app)
+  >>> app
+  <webtest.app.TestApp object at 0...>
+
+  >>> user = dict(username="12345678", password="passwort")
+  >>> resp = app.post("/user.add", user)
+  >>> resp.status
+  '201 Created'
+
+  >>> resp = app.get("/users/12345678")
+  >>> resp.status
+  '200 OK'
+
+
+The Insurance creates an empty File.
+
+  >>> resp = app.put("/users/12345678/file.add", {'az': "4712"})
+  >>> resp.status
+  '201 Created'

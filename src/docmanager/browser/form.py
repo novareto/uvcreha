@@ -4,7 +4,7 @@ import pydantic
 from horseman.meta import APIView
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
-from wtforms_pydantic.converter import model_fields, Converter
+from wtforms_pydantic.converter import Converter, model_fields
 
 
 class Triggers(collections.OrderedDict):
@@ -39,7 +39,7 @@ class Form(wtforms.form.BaseForm):
         super().__init__(fields, prefix, meta)
 
     @classmethod
-    def from_model(self, model, only=(), exclude=(), **overrides):
+    def from_model(cls, model, only=(), exclude=(), **overrides):
         return cls(Converter.convert(
             model_fields(model, only=only, exclude=exclude), **overrides
         ))

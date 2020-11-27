@@ -27,8 +27,8 @@ amqp:
 
 
 webpush:
-  public_key: ${path:public_key.txt}
-  private_key: ${path:private_key.txt}
+  public_key: ${path:conf/public_key.txt}
+  private_key: ${path:conf/private_key.txt}
   vapid_claims:
     sub: mailto:cklinger@novareto.de
     aud: https://updates.push.services.mozilla.com
