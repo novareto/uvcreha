@@ -39,9 +39,9 @@ class Form(wtforms.form.BaseForm):
         super().__init__(fields, prefix, meta)
 
     @classmethod
-    def from_model(self, model: pydantic.BaseModel, only=(), exclude=()):
+    def from_model(self, model, only=(), exclude=(), **overrides):
         return cls(Converter.convert(
-            model_fields(model, only=only, exclude=exclude)
+            model_fields(model, only=only, exclude=exclude), **overrides
         ))
 
 
