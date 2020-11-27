@@ -13,10 +13,10 @@ from horseman.http import Multidict
 @browser.route("/login", methods=("GET", "POST"))
 class LoginForm(FormView):
 
-    title: str = "Registration Form"
-    description: str = "Please fill out all details"
-    action: str = "login"
-    model: pydantic.BaseModel = User
+    title = "Registration Form"
+    description = "Please fill out all details"
+    action = "login"
+    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("username", "password"))
@@ -53,7 +53,7 @@ class EditPassword(FormView):
     title = "Passwort ändern"
     description = "Hier können Sie Ihr Passwort ändern"
     action = "edit_pw"
-    model: pydantic.BaseModel = User
+    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("password"))
@@ -86,7 +86,7 @@ class EditMail(FormView):
     title = "E-Mail Adresse ändern"
     description = "Hier können Sie Ihre E-Mail Adresse ändern"
     action = "edit_mail"
-    model: pydantic.BaseModel = User
+    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("email"))

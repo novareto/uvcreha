@@ -17,6 +17,9 @@ class Trigger:
     method: typing.Callable
     css: str
 
+    def __call__(self, *args, **kwargs):
+        return self.method(*args, **kwargs)
+
 
 def trigger(id, title, css="btn btn-primary"):
     def mark_as_trigger(func):
@@ -56,7 +59,7 @@ class FormViewMeta(type):
 
     def __init__(cls, name, bases, attrs):
         type.__init__(cls, name, bases, attrs)
-        cls.triggers = collections.OrderedDict()
+        cls.triggers = getattr(cls, 'triggers', collections.OrderedDict())
         for name, member in attrs.items():
             if inspect.isfunction(member) and hasattr(member, 'trigger'):
                 trigger = member.trigger
@@ -70,7 +73,6 @@ class FormView(APIView, metaclass=FormViewMeta):
     description: str = ""
     action: str = ""
     method: str = "POST"
-    schema: dict
     model: pydantic.BaseModel
 
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
@@ -83,10 +85,9 @@ class FormView(APIView, metaclass=FormViewMeta):
             "path": request.route.path
         }
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request):
-
         for trigger_id in self.triggers.keys():
-            if trigger_id in request.extract().get("form", []):
-                return self.triggers[trigger_id]["method"](self, request)
+            data = request.extract()
+            if trigger_id in data['form']:
+                return self.triggers[trigger_id](self, request)
         raise KeyError("No action found")
