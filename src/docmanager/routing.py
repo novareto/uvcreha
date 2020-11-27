@@ -68,6 +68,7 @@ class Routes(autoroutes.Routes):
                     'extras': extras
                 }
                 self.add(path, **payload)
+            return view
         return routing
 
     def match(self, method: str, path_info: str) -> Route:

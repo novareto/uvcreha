@@ -23,7 +23,7 @@ class LoginForm(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Speichern")
+    @trigger("speichern", "Speichern", order=1)
     def login(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
@@ -60,7 +60,7 @@ class EditPassword(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Speichern")
+    @trigger("speichern", "Speichern", order=1)
     def speichern(view, request):
         data = request.extract()["form"]
         form = view.setupForm(formdata=data)
@@ -108,6 +108,14 @@ class EditMail(FormView):
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, *args):
+        pass
+
+
+@browser.route("/edit_mail2", permissions={"document.view"})
+class Test(EditMail):
+
+    @trigger("test", "Test", css="btn btn-secondary")
+    def test(form, *args):
         pass
 
 

@@ -16,21 +16,32 @@ class Trigger:
     title: str
     method: typing.Callable
     css: str
+    order: int
 
     def __call__(self, *args, **kwargs):
         return self.method(*args, **kwargs)
 
+    @classmethod
+    def trigger(cls, id, title, css="btn btn-primary", order=10):
+        def mark_as_trigger(func):
+            func.trigger = cls(
+                id=f'trigger.{id}',
+                title=title,
+                css=css,
+                method=func,
+                order=order
+            )
+            return func
+        return mark_as_trigger
 
-def trigger(id, title, css="btn btn-primary"):
-    def mark_as_trigger(func):
-        func.trigger = Trigger(
-            id=f'trigger.{id}',
-            title=title,
-            css=css,
-            method=func,
-        )
-        return func
-    return mark_as_trigger
+    @staticmethod
+    def triggers(cls):
+        for name, func in inspect.getmembers(cls, predicate=(
+                lambda x: inspect.isfunction(x) and hasattr(x, 'trigger'))):
+            yield name, func.trigger
+
+
+trigger = Trigger.trigger
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -59,12 +70,15 @@ class FormViewMeta(type):
 
     def __init__(cls, name, bases, attrs):
         type.__init__(cls, name, bases, attrs)
-        cls.triggers = collections.OrderedDict()
-        for name, member in attrs.items():
-            if inspect.isfunction(member) and hasattr(member, 'trigger'):
-                trigger = member.trigger
-                cls.triggers[trigger.id] = trigger
-                del member.trigger
+        cls.triggers = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls.triggers is None:
+            triggers = list(Trigger.triggers(cls))
+            triggers.sort(key=lambda trigger: trigger[1].order)
+            cls.triggers = collections.OrderedDict(triggers)
+
+        return type.__call__(cls, *args, **kwargs)
 
 
 class FormView(APIView, metaclass=FormViewMeta):
