@@ -67,7 +67,6 @@ class EditPassword(FormView):
         if not form.validate():
             return form
         um = db.User(request.app.database.session)
-        data.pop('trigger.speichern')
         um.update(key=request.user.key, **data)
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Password Change Successful.')
@@ -100,7 +99,6 @@ class EditMail(FormView):
         if not form.validate():
             return form
         um = db.User(request.app.database.session)
-        data.pop('trigger.speichern')
         um.update(key=request.user.key, **data.dict())
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='EMAIL Change Successful.')

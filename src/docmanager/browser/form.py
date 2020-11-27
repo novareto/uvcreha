@@ -59,7 +59,7 @@ class FormViewMeta(type):
 
     def __init__(cls, name, bases, attrs):
         type.__init__(cls, name, bases, attrs)
-        cls.triggers = getattr(cls, 'triggers', collections.OrderedDict())
+        cls.triggers = collections.OrderedDict()
         for name, member in attrs.items():
             if inspect.isfunction(member) and hasattr(member, 'trigger'):
                 trigger = member.trigger
@@ -86,8 +86,9 @@ class FormView(APIView, metaclass=FormViewMeta):
         }
 
     def POST(self, request: Request):
-        for trigger_id in self.triggers.keys():
-            data = request.extract()
-            if trigger_id in data['form']:
-                return self.triggers[trigger_id](self, request)
+        data = request.extract()
+        if action := data['form'].get("form.trigger"):
+            if (trigger := self.triggers.get(action)) is not None:
+                del data['form']["form.trigger"]
+                return trigger(self, request)
         raise KeyError("No action found")

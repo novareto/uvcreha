@@ -15,9 +15,9 @@
     <div class="form-actions">
       <tal:action repeat="trigger view.triggers.values()">
         <button
+            name='form.trigger'
             class="btn btn-default"
-            tal:attributes="name trigger.id;
-                            value trigger.id;
+            tal:attributes="value trigger.id;
                             class trigger.css;"
             type="submit" tal:content="trigger.title">HTML</button>
       </tal:action>
