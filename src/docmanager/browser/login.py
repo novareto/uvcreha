@@ -5,7 +5,8 @@ from docmanager import db
 from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
-from docmanager.browser.form import Form, FormView, trigger
+from reiter.form import trigger
+from docmanager.browser.form import Form, FormView
 from docmanager.browser.layout import template, TEMPLATES
 from horseman.http import Multidict
 

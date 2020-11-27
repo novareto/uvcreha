@@ -1,6 +1,10 @@
+import collections
 import horseman.parsing
 from horseman.meta import Overhead
 from docmanager.registries import NamedComponents
+
+
+Data = collections.namedtuple('RequestData', ['form', 'files', 'json'])
 
 
 class Request(Overhead):
