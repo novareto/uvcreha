@@ -22,7 +22,6 @@ install_requires = [
     'pywebpush',
     'reg',
     'roughrider.auth',
-    'roughrider.validation',
     'rutter',
     'wrapt',
     'wtforms',
