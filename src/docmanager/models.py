@@ -1,15 +1,8 @@
+import enum
 import uuid
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field, SecretStr, EmailStr, create_model
-
-
-def construct_model(name: str, base: BaseModel, fields):
-    base_schema_props = base.schema()['properties']
-    model_fields = {}
-    for field in fields:
-        model_fields[field] = base_schema_props.get(field)
-    return create_model('FormModel', **model_fields)
+from pydantic import BaseModel, Field, SecretStr, EmailStr
 
 
 class Model(BaseModel):
@@ -54,6 +47,19 @@ class File(Model):
         return f"/users/{self.username}/files/{self.az}"
 
 
+class MessagingType(str, enum.Enum):
+    """Messaging system choices.
+    """
+    email = 'email'
+    webpush = 'webpush'
+
+
+class UserPreferences(BaseModel):
+    """User-based application preferences
+    """
+    messaging_type: MessagingType = MessagingType.email
+
+
 class User(Model):
 
     username: str = Field(
@@ -66,6 +72,7 @@ class User(Model):
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
 
     permissions: Optional[List] = ['document.view']
+    preferences: UserPreferences = Field(default_factory=UserPreferences)
 
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False

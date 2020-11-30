@@ -71,9 +71,7 @@ class Browser(Router):
         default_factory=registries.UIRegistry)
 
     def check_permissions(self, route, environ):
-        # default_permission = {'app.view'}
         if permissions := route.extras.get('permissions'):
-            # permissions.update(default_permission)
             user = environ.get(self.config.env.user)
             if user is None:
                 raise SecurityError(None, permissions)
