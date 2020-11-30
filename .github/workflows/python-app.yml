@@ -24,7 +24,7 @@ jobs:
       with:
         arangodb version: 'latest'
     - name: HEADERS
-      run: sudo apt-get install libyaml-cpp-dev
+      run: sudo apt-get install libyaml-cpp-dev libev-dev
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
