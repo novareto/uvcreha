@@ -2,9 +2,11 @@ import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.db import User
+from reiter.routing.predicates import with_predicates, content_types
 
 
 @api.route('/user.add', methods=['POST', 'PUT'])
+@with_predicates(content_types({'application/json'}))
 def user_add(request: Request):
     data = request.extract()
     model = User(request.db_session)
