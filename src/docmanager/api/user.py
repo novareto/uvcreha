@@ -8,7 +8,7 @@ from docmanager.db import User
 def user_add(request: Request):
     data = request.extract()
     model = User(request.db_session)
-    user = model.create(**data['form'].dict())
+    user = model.create(**data.form.dict())
     if user is None:
         return horseman.response.Response.create(400)
     return horseman.response.Response.to_json(

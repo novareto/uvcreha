@@ -8,7 +8,7 @@ from docmanager.db import File
 def file_add(request: Request, username: str):
     data = request.extract()
     model = File(request.db_session)
-    file = model.create(username=username, **data['form'].dict())
+    file = model.create(username=username, **data.form.dict())
     return horseman.response.Response.from_json(201, body=file.json())
 
 

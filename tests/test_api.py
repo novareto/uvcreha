@@ -85,7 +85,7 @@ def test_add_file(api_app, user):
     )
     assert resp.status == "201 Created"
 
-    resp = app.put(
+    resp = app.put_json(
         f"/users/{user.user.username}/files/1234/doc.add", {
             'body': "Some Doc",
             'myfield': "",

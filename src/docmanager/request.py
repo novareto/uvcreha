@@ -58,8 +58,7 @@ class Request(Overhead):
 
         self._extracted = True
         if content_type := self.content_type:
-            form, files = horseman.parsing.parse(
-                self.environ['wsgi.input'], content_type)
-            self.set_data({'form': form, 'files': files})
+            self.set_data(horseman.parsing.parse(
+                self.environ['wsgi.input'], content_type))
 
         return self.get_data()
