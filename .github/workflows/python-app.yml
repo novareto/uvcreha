@@ -29,6 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools==50.3.0
+        python -m pip install orjson 
         python bootstrap-buildout.py
         bin/buildout
     - name: Test with pytest
