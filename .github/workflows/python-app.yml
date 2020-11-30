@@ -26,6 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pythio -m pip install setuptools=50.3.0
         python bootstrap-buildout.py
         bin/buildout
     - name: Test with pytest
