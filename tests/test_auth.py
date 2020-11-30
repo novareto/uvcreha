@@ -24,7 +24,7 @@ def test_add_user_ok(api_app, web_app, user):
     assert resp.request.environ.get('test.principal', None) is None
 
     ud = dict(username="ck", password="klinger")
-    ud['trigger.speichern'] = "trigger.speichern"
+    ud['form.trigger'] = "trigger.speichern"
     resp = browser.post("/login", ud)
     assert resp.status == "302 Found"
     assert resp.request.environ['test.principal'] is not None
