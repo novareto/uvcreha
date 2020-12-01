@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, SecretStr, EmailStr
+from roughrider.workflow.meta import StatefulItem
 
 
 class Model(BaseModel):
@@ -14,13 +15,17 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Document(Model):
+class Document(Model, StatefulItem):
 
     az: str
     username: str
-    state: str
     body: str
+    state: str
     content_type: str
+
+    @property:
+    def __workflow_state__(self):
+        return self.state
 
     def dict(self, by_alias=True, **kwargs):
         if not self.key:
