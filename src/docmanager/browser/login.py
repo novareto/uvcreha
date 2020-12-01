@@ -120,7 +120,7 @@ class Test(EditMail):
         pass
 
 
-@browser.route("/preferences", methods=["GET"], permissions={"document.view"})
+@browser.route("/user_preferences", methods=["GET"], permissions={"document.view"})
 @template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
     return dict(request=request)
