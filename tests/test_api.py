@@ -3,10 +3,9 @@ def test_add_user(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
-    resp = app.post(
+    resp = app.post_json(
         "/user.add",
         {"nothing": "at_all"},
-        content_type="application/x-www-form-urlencoded",
         expect_errors=True,
     )
 
@@ -32,10 +31,9 @@ def test_add_user_ok(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
-    resp = app.post(
+    resp = app.post_json(
         "/user.add",
         dict(username="cklinger", password="klinger"),
-        content_type='application/x-www-form-urlencoded',
         expect_errors=True,
     )
     assert resp.status == "201 Created"
@@ -50,7 +48,7 @@ def test_add_folder(api_app, user):
     from webtest import TestApp
 
     app = TestApp(api_app)
-    resp = app.put(
+    resp = app.put_json(
         f"/users/{user.user.username}/file.add", {
             'az': "4711"
         }
@@ -78,7 +76,7 @@ def test_add_file(api_app, user):
 
     app = TestApp(api_app)
 
-    resp = app.put(
+    resp = app.put_json(
         f"/users/{user.user.username}/file.add", {
             'az': "1234"
         }

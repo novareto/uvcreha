@@ -2,13 +2,15 @@ import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.db import File
+from reiter.routing.predicates import with_predicates, content_types
 
 
 @api.route('/users/{username}/file.add', methods=['POST', 'PUT'])
+@with_predicates(content_types({'application/json'}))
 def file_add(request: Request, username: str):
     data = request.extract()
     model = File(request.db_session)
-    file = model.create(username=username, **data.form.dict())
+    file = model.create(username=username, **data.json)
     return horseman.response.Response.from_json(201, body=file.json())
 
 

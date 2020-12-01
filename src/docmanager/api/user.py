@@ -10,7 +10,7 @@ from reiter.routing.predicates import with_predicates, content_types
 def user_add(request: Request):
     data = request.extract()
     model = User(request.db_session)
-    user = model.create(**data.form.dict())
+    user = model.create(**data.json)
     if user is None:
         return horseman.response.Response.create(400)
     return horseman.response.Response.to_json(
