@@ -12,6 +12,6 @@
     <a href="/edit_mail"> Email Adresse ändern </a>
   </li>
   <li>
-    <a href="/edit_news"> Benachrichtigungen verwalten </a>
+    <a href="/edit_preferences"> Benachrichtigungen verwalten </a>
   </li>
 </ul>
