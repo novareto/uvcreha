@@ -1,10 +1,14 @@
+import cgi
 import collections
+from typing import Optional
+
 import horseman.parsing
 from horseman.meta import Overhead
 from docmanager.registries import NamedComponents
 
 
-Data = collections.namedtuple('RequestData', ['form', 'files', 'json'])
+ContentType = collections.namedtuple(
+    'ContentType', ['raw', 'mimetype', 'options'])
 
 
 class Request(Overhead):
@@ -13,6 +17,7 @@ class Request(Overhead):
         '_data'
         '_extracted',
         'app',
+        'content_type',
         'environ',
         'method',
         'route',
@@ -27,11 +32,11 @@ class Request(Overhead):
         self.method = environ['REQUEST_METHOD']
         self.route = route
         self.utilities = NamedComponents()
-
-    @property
-    def content_type(self):
-        if self.method in ('POST', 'PATCH', 'PUT'):
-            return self.environ.get('CONTENT_TYPE')
+        if 'CONTENT_TYPE' in self.environ:
+            ct = self.environ['CONTENT_TYPE']
+            self.content_type = ContentType(ct, *cgi.parse_header(ct))
+        else:
+            self.content_type = None
 
     @property
     def session(self):
@@ -58,8 +63,7 @@ class Request(Overhead):
 
         self._extracted = True
         if content_type := self.content_type:
-            form, files = horseman.parsing.parse(
-                self.environ['wsgi.input'], content_type)
-            self.set_data({'form': form, 'files': files})
+            self.set_data(horseman.parsing.parse(
+                self.environ['wsgi.input'], content_type.raw))
 
         return self.get_data()

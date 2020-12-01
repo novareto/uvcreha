@@ -25,14 +25,13 @@ class LoginForm(FormView):
         return form
 
     @trigger("speichern", "Speichern", order=1)
-    def login(view, request):
-        data = request.extract()["form"]
-        form = view.setupForm(formdata=data)
+    def login(view, request, data):
+        form = view.setupForm(formdata=data.form)
         if not form.validate():
             return form
 
         auth = request.app.plugins.get("authentication")
-        if (user := auth.from_credentials(data.dict())) is not None:
+        if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
             return horseman.response.Response.create(
                 302, headers={"Location": "/"}
@@ -62,13 +61,12 @@ class EditPassword(FormView):
         return form
 
     @trigger("speichern", "Speichern", order=1)
-    def speichern(view, request):
-        data = request.extract()["form"]
-        form = view.setupForm(formdata=data)
+    def speichern(view, request, data):
+        form = view.setupForm(formdata=data.form)
         if not form.validate():
             return form
         um = db.User(request.app.database.session)
-        um.update(key=request.user.key, **data)
+        um.update(key=request.user.key, **data.form)
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Password Change Successful.')
         return horseman.response.Response.create(
@@ -94,13 +92,12 @@ class EditMail(FormView):
         return form
 
     @trigger("speichern", "Speichern")
-    def speichern(view, request):
-        data = request.extract()["form"]
-        form = view.setupForm(formdata=data)
+    def speichern(view, request, data):
+        form = view.setupForm(formdata=data.form)
         if not form.validate():
             return form
         um = db.User(request.app.database.session)
-        um.update(key=request.user.key, **data.dict())
+        um.update(key=request.user.key, **data.form.dict())
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='EMAIL Change Successful.')
         return horseman.response.Response.create(

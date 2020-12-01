@@ -6,10 +6,9 @@ from typing import Mapping, Optional
 import horseman.meta
 import horseman.response
 import horseman.http
-
+from reiter.routing.routes import Routes
 from docmanager import registries, db
 from docmanager.security import SecurityError
-from docmanager.routing import Routes
 from docmanager.request import Request
 from docmanager.validation import ValidationError
 from omegaconf.dictconfig import DictConfig

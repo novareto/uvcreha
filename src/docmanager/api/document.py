@@ -9,9 +9,8 @@ from docmanager.db import Document
     methods=['POST', 'PUT'])
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
-    form = data['form'].dict()
     model = Document(request.db_session)
-    document = model.create(username=username, az=fileid, **form)
+    document = model.create(username=username, az=fileid, **data.json)
     return horseman.response.Response.from_json(201, body=document.json())
 
 
