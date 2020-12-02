@@ -24,6 +24,7 @@ install_requires = [
     'reiter.form',
     'reiter.routing',
     'roughrider.auth',
+    'roughrider.workflow',
     'rutter',
     'wrapt',
     'wtforms',

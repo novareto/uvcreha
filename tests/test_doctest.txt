@@ -33,3 +33,34 @@ The Insurance creates an empty File.
   >>> resp = app.put_json("/users/12345678/file.add", {'az': "4712"})
   >>> resp.status
   '201 Created'
+
+
+Now the user should be able to Login: Lets proove this.
+For this we have to create a new Instance of the HTML-App
+
+  >>> web_app = getfixture('web_app')
+  >>> from webtest import TestApp
+  >>> app = TestApp(web_app)
+
+  >>> landing_page_anon = app.get('/')
+  >>> landing_page_anon.status
+  '302 Found'
+
+We don't have the permission yet, so we get redirected to the login-page
+
+
+  >>> landing_page_anon.location
+  'http://localhost/login'
+
+Let's login
+
+  >>> user['form.trigger'] = "trigger.speichern"
+  >>> login = app.post('/login', user)
+  >>> login.location
+  'http://localhost/'
+  >>> login.status
+  '302 Found'
+
+Let's see the Login-Page
+
+  >>> lp = app.get(login.location)
