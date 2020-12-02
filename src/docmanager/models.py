@@ -3,7 +3,6 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, SecretStr, EmailStr
-#from roughrider.workflow.meta import StatefulItem
 
 
 class Model(BaseModel):
@@ -15,25 +14,18 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Document(Model): #, StatefulItem):
-
+class Document(Model):
     az: str
     username: str
     state: str
+    body: str
     content_type: str
-
-    @property
-    def __workflow_state__(self):
-        return self.state
+    state: Optional[str] = None
 
     def dict(self, by_alias=True, **kwargs):
         if not self.key:
             self.key = str(uuid.uuid4())
         return super().dict(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"
 
 
 class File(Model):
@@ -45,10 +37,6 @@ class File(Model):
         if not self.key:
             self.key = self.az
         return super().dict(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}"
 
 
 class MessagingType(str, enum.Enum):
@@ -84,10 +72,6 @@ class User(Model):
     @property
     def title(self) -> str:
         return self.username
-
-    @property
-    def url(self):
-        return f"/users/{self.username}"
 
     def dict(self, by_alias=True, **kwargs):
         if not self.key:
