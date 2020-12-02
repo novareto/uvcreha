@@ -87,7 +87,7 @@ class Layout:
 
 
 @browser.ui.register_slot(request=Request, name="sitecap")
-@template(TEMPLATES["sitecap.pt"])
+@template(TEMPLATES["sitecap.pt"], raw=True)
 def sitecap(request, name):
     return dict(request=request)
 

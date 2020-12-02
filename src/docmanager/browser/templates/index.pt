@@ -2,7 +2,7 @@
 <p class="lead">  </p>
 
 <div class="card-deck">
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> Nachrichten </h5>
       <p class="card-text"> Sie wollen auf sicheren Weg Dokumente mit der Unfallversicherung austaschen.</p>
@@ -12,7 +12,7 @@
       <a href="#" class="card-link">Nachrichten ansehen</a>
     </div>
   </div>
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> Dokumente </h5>
       <p class="card-text"> Formulare </p>
@@ -22,7 +22,7 @@
       <a href="#" class="card-link">Formulare ansehen</a>
     </div>
   </div>
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> News </h5>
     </div>
@@ -44,9 +44,9 @@
 </div>
 <hr>
 
-<h3> Ihre aktuelle(n) Akte(n) </h3>
+<h1> Ihre aktuelle(n) Akte(n) </h1>
 
-<div class="accordion" id="accordionExample">
+<div class="accordion" id="accordeonAnsicht">
   <div class="card" tal:repeat="file user.get_files(request.user.key)">
     <div class="card-header" id="headingOne" tal:attributes="id string:heading_${repeat.file.number}">
       <h2 class="mb-0">
@@ -56,7 +56,7 @@
       </h2>
     </div>
 
-    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample" tal:attributes="id string:collapse_${repeat.file.number}">
+    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordeonAnsicht" tal:attributes="id string:collapse_${repeat.file.number}">
       <div class="card-body">
         <table class="table">
           <thead>
