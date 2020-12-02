@@ -19,7 +19,6 @@ class Document(Model): #, StatefulItem):
 
     az: str
     username: str
-    body: str
     state: str
     content_type: str
 

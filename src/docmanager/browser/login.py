@@ -1,4 +1,3 @@
-import pydantic
 import horseman.response
 
 from docmanager import db
@@ -14,8 +13,8 @@ from horseman.http import Multidict
 @browser.route("/login", methods=("GET", "POST"))
 class LoginForm(FormView):
 
-    title = "Registration Form"
-    description = "Please fill out all details"
+    title = "Anmelden"
+    description = "Bitte tragen Sie hier Ihre Anmeldeinformationen ein"
     action = "login"
     model = User
 
@@ -68,7 +67,7 @@ class EditPassword(FormView):
         um = db.User(request.app.database.session)
         um.update(key=request.user.key, **data.form)
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Password Change Successful.')
+        flash_messages.add(body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
         return horseman.response.Response.create(
             302, headers={"Location": "/%s" % view.action}
         )
@@ -91,6 +90,25 @@ class EditMail(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
+    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
+    def GET(self, request: Request):
+        userdata = request.user.dict()
+        form = self.setupForm(data=userdata)
+        return {
+            "form": form,
+            "view": self,
+            "error": None,
+            "path": request.route.path
+        }
+
+    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
+    def abbrechen(form, request, data):
+        flash_messages = request.utilities.get('flash')
+        flash_messages.add(body='Ihre E-Mail Adresse wurde erfolgreich im System gespeichert.')
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"}
+        )
+
     @trigger("speichern", "Speichern")
     def speichern(view, request, data):
         form = view.setupForm(formdata=data.form)
@@ -99,22 +117,10 @@ class EditMail(FormView):
         um = db.User(request.app.database.session)
         um.update(key=request.user.key, **data.form.dict())
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='EMAIL Change Successful.')
+        flash_messages.add(body='Ihre E-Mail Adresse wurde erfolgreich im System gespeichert.')
         return horseman.response.Response.create(
             302, headers={"Location": "/"}
         )
-
-    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
-    def abbrechen(form, *args):
-        pass
-
-
-@browser.route("/edit_mail2", permissions={"document.view"})
-class Test(EditMail):
-
-    @trigger("test", "Test", css="btn btn-secondary")
-    def test(form, *args):
-        pass
 
 
 @browser.route("/user_preferences", methods=["GET"], permissions={"document.view"})
