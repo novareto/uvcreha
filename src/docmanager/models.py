@@ -15,7 +15,6 @@ class Model(BaseModel):
 
 
 class Document(Model):
-
     az: str
     username: str
     body: str

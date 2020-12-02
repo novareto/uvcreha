@@ -219,8 +219,21 @@ class User(ArangoModel):
     __primarykey__: str = 'username'
     __parents__: List = []
 
-    def files(self, **filters):
-        return File(self.session).find(**filters)
+    def data(self, username):
+        res = {}
+        for file_obj in File(self.session).find(username=username):
+            res[file_obj.key] = file_obj
+            docs = []
+            for document in Document(self.session).find(username=username):
+                docs.append(document)
+            res[file_obj] = docs
+        return res
+
+    def get_files(self, username):
+        return File(self.session).find(username=username)
+
+    def get_documents(self, username, az):
+        return Document(self.session).find(username=username, az=az)
 
 
 class File(ArangoModel):

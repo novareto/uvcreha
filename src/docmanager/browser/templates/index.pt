@@ -1,11 +1,8 @@
 <h1> Versicherten - Portal </h1>
-<p class="lead"> LOREM IPSUM </p>
-
-
-
+<p class="lead">  </p>
 
 <div class="card-deck">
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> Nachrichten </h5>
       <p class="card-text"> Sie wollen auf sicheren Weg Dokumente mit der Unfallversicherung austaschen.</p>
@@ -15,7 +12,7 @@
       <a href="#" class="card-link">Nachrichten ansehen</a>
     </div>
   </div>
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> Dokumente </h5>
       <p class="card-text"> Formulare </p>
@@ -25,7 +22,7 @@
       <a href="#" class="card-link">Formulare ansehen</a>
     </div>
   </div>
-  <div class="card">
+  <div class="card bg-light">
     <div class="card-body">
       <h5 class="card-title"> News </h5>
     </div>
@@ -46,39 +43,40 @@
   </div>
 </div>
 <hr>
-<div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Aktenzeichen</th>
-                <th scope="col">Datum</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr tal:repeat="file user.files()">
-                <td tal:content="repeat.file.number"> <span tal:content="file"/> </td>
-                <td> <a href="" tal:attributes="href file.url" tal:content="file.az"> </a> </td>
-                <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<hr>
 
+<h1> Ihre aktuelle(n) Akte(n) </h1>
 
-<div class="accordion" id="accordionExample">
-  <div class="card" tal:repeat="file user.files()">
+<div class="accordion" id="accordeonAnsicht">
+  <div class="card" tal:repeat="file user.get_files(request.user.key)">
     <div class="card-header" id="headingOne" tal:attributes="id string:heading_${repeat.file.number}">
       <h2 class="mb-0">
         <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" tal:attributes="data-target string:#collapse_${repeat.file.number}">
-            <span tal:replace="string: ${file.az}"/>
+          <span tal:replace="string: ${file.az}"/>
         </button>
       </h2>
     </div>
 
-    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample" tal:attributes="id string:collapse_${repeat.file.number}">
+    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordeonAnsicht" tal:attributes="id string:collapse_${repeat.file.number}">
       <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Dokument</th>
+              <th scope="col">Datum</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr tal:repeat="doc user.get_documents(username=request.user.key, az=file.az)">
+              <td tal:content="repeat.doc.number"> </td>
+              <td> <a href="" tal:attributes="href doc.url" tal:content="doc.key"> </a> </td>
+              <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
+              <td tal:content="doc.content_type"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

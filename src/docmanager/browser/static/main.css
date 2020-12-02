@@ -106,6 +106,6 @@ nav .breadcrumb-item {
     display: inline-block !important;
 }
 
-html body #content {
-    padding: 4rem 0 2rem 0;
+html body #content .container {
+    padding: 3rem 0 2rem 0;
 }
