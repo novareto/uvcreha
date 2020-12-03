@@ -27,9 +27,9 @@ class Document(Model):
             self.key = str(uuid.uuid4())
         return super().dict(by_alias=by_alias, **kwargs)
 
-    @property	
-    def url(self):	
-        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"    
+    @property
+    def url(self):
+        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"
 
 
 class File(Model):
@@ -42,8 +42,8 @@ class File(Model):
             self.key = self.az
         return super().dict(by_alias=by_alias, **kwargs)
 
-    @property	
-    def url(self):	
+    @property
+    def url(self):
         return f"/users/{self.username}/files/{self.az}"
 
 
@@ -71,6 +71,7 @@ class User(Model):
     email: Optional[EmailStr] = Field(
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
 
+    state: Optional[str] = None
     permissions: Optional[List] = ['document.view']
     preferences: UserPreferences = Field(default_factory=UserPreferences)
 
@@ -89,9 +90,9 @@ class User(Model):
     def json(self, by_alias=True, **kwargs):
         return super().json(by_alias=by_alias, **kwargs)
 
-    @property	
-    def url(self):	
-        return f"/users/{self.username}"	
+    @property
+    def url(self):
+        return f"/users/{self.username}"
 
 
 class Message(BaseModel):

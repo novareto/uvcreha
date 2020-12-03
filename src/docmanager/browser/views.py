@@ -3,12 +3,13 @@ import horseman.meta
 from horseman.http import Multidict
 from reiter.form import trigger
 from docmanager.app import browser
+from docmanager import db
 from docmanager.browser.form import Form, FormView
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.browser.openapi import generate_doc
-from docmanager.db import User
-from docmanager.models import UserPreferences
+from docmanager.models import User, UserPreferences
 from docmanager.request import Request
+from docmanager.workflow import user_workflow
 
 
 @browser.routes.register("/doc")
@@ -30,7 +31,7 @@ def openapi(request: Request):
 @browser.route("/")
 @template(TEMPLATES["index.pt"], layout_name="default", raw=False)
 def index(request: Request):
-    user = User(request.db_session)
+    user = db.User(request.db_session)
     return dict(request=request, user=user)
 
 
@@ -73,3 +74,44 @@ class EditPreferences(FormView):
             "error": None,
             "path": request.route.path
         }
+
+
+@browser.route("/register")
+class RegistrationForm(FormView):
+
+    title = "Registration"
+    description = "Finish your registration"
+    action = "/register"
+    model = User
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = Form.from_model(
+            self.model, only=("email",), email={
+                'required': True
+            })
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @trigger("register", "Register", css="btn btn-primary")
+    def register(self, request, data):
+        form = self.setupForm(
+            data=request.user.dict(), formdata=data.form
+        )
+        if not form.validate():
+            return form
+
+        request.user.email = form.data['email']
+        if error := user_workflow(request.user).check_reachable(
+                user_workflow.states.active):
+            raise error
+
+        user = db.User(request.db_session)
+        user.update(
+            key=request.user.username,
+            state=user_workflow.states.active.name,
+            **form.data
+        )
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"}
+
+)

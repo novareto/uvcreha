@@ -3,21 +3,18 @@ import json
 
 
 URL = "http://localhost:8080"
-DATA_USER = {'username': 'cklinger', 'password':'password' }
+DATA_USER = {'username': 'hans', 'password':'password' }
 
-#req = requests.put(URL+'/user.add', data=DATA_USER)
+#req = requests.put(URL+'/api/user.add', json=DATA_USER)
 #print(req)
 
-#req = requests.get(URL + '/users/cklinger')
-#print(req.json())
 
+#AZ_DATA = {'az': '4791'}
 
-#AZ_DATA = {'az': '4711'}
-
-#req = requests.put(URL + '/users/cklinger/file.add', data=AZ_DATA)
+#req = requests.put(URL + '/api/users/hans/file.add', json=AZ_DATA)
 #print(req.json())
 
 DOC_DATA = {'content_type': 'account_info'}
 
-req = requests.put(URL + '/api/users/cklinger/files/4711/doc.add', json=DOC_DATA)
+req = requests.put(URL + '/api/users/hans/files/4791/doc.add', json=DOC_DATA)
 print(req.json())
