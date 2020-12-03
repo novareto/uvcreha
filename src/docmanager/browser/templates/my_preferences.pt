@@ -1,0 +1,39 @@
+<h1> Meine Einstellungen </h1>
+
+
+<div class="row">
+  <div class="col-3">
+    <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">
+      <a class="nav-link" tal:repeat="tab tabs.keys()" tal:attributes="id string:l-pills-${tab}; href string:#v-pills-${tab}" data-toggle="pill" role="tab" aria-controls="v-pills-home" aria-selected="true"><span tal:replace="tab"/> </a>
+    </div>
+  </div>
+  <div class="col-9">
+    <div class="tab-content" id="v-pills-tabContent">
+      <div tal:repeat="tab tabs.keys()" tal:attributes="id string:v-pills-${tab}" class="tab-pane fade" role="tabpanel" aria-labelledby="v-pills-home-tab">
+        <form tal:define="form tabs[tab]" method="POST" tal:attributes="action string:${view.action}?tab=${tab}">
+          <div class="form-group" tal:repeat="field form">
+            <label tal:replace="field.label" />
+              <div tal:content="structure field()" tal:attributes="class field.errors and 'is-invalid' or 'is-valid' "/>
+                <small id="emailHelp" class="form-text text-muted" tal:content="field.description" tal:condition="field.description"> </small>
+                <div class="invalid-feedback" tal:condition="field.errors">
+                  <div tal:repeat="error field.errors">
+                    <span tal:content="error" />
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <tal:action repeat="trigger view.triggers.values()">
+                <button
+                  name='form.trigger'
+                  class="btn btn-default"
+                  tal:attributes="value trigger.id;
+                                  class trigger.css;"
+                  type="submit" tal:content="trigger.title">HTML</button>
+                </tal:action>
+              </div>
+        </form>
+        <span tal:content="tabs[tab]">
+      </div>
+    </div>
+  </div>
+</div>
