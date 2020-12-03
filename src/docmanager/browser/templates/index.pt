@@ -71,9 +71,9 @@
 
             <tr tal:repeat="doc user.get_documents(username=request.user.key, az=file.az)">
               <td tal:content="repeat.doc.number"> </td>
-              <td> <a href="" tal:attributes="href doc.url" tal:content="doc.key"> </a> </td>
+              <td> <a href="" tal:attributes="href doc.url" tal:content="doc.content_type"> </a> </td>
               <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
-              <td tal:content="doc.content_type"></td>
+              <td tal:content="doc.state"></td>
             </tr>
           </tbody>
         </table>

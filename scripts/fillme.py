@@ -17,8 +17,7 @@ DATA_USER = {'username': 'cklinger', 'password':'password' }
 #req = requests.put(URL + '/users/cklinger/file.add', data=AZ_DATA)
 #print(req.json())
 
-DOC_DATA = {'content_type': 'account_info', 'state': 'init'}
+DOC_DATA = {'content_type': 'account_info'}
 
 req = requests.put(URL + '/api/users/cklinger/files/4711/doc.add', json=DOC_DATA)
-import pdb; pdb.set_trace()
 print(req.json())

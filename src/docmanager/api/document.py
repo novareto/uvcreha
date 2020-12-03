@@ -2,21 +2,24 @@ import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.db import Document
+from docmanager.workflow import document_workflow
 
 
-@api.route(
-    '/users/{username}/files/{fileid}/doc.add',
-    methods=['POST', 'PUT'])
+@api.route("/users/{username}/files/{fileid}/doc.add", methods=["POST", "PUT"])
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
     model = Document(request.db_session)
-    document = model.create(username=username, az=fileid, **data.json)
+    document = model.create(
+        username=username,
+        az=fileid,
+        state=document_workflow.default_state.name,
+        **data.json
+    )
+    request.app.notify('document_created', user=username, document=document)
     return horseman.response.Response.from_json(201, body=document.json())
 
 
-@api.route(
-    '/users/{username}/files/{fileid}/docs/{docid}',
-    methods=['GET'])
+@api.route("/users/{username}/files/{fileid}/docs/{docid}", methods=["GET"])
 def doc_view(request: Request, username: str, fileid: str, docid: str):
     model = Document(request.db_session)
     document = model.find_one(_key=docid, az=fileid, username=username)
@@ -25,9 +28,7 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
     return horseman.response.Response.from_json(200, body=document.json())
 
 
-@api.route(
-    '/users/{username}/files/{fileid}/docs/{docid}',
-    methods=['DELETE'])
+@api.route("/users/{username}/files/{fileid}/docs/{docid}", methods=["DELETE"])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):
     model = Document(request.db_session)
     if model.find_one(_key=docid, az=fileid, username=username) is None:
