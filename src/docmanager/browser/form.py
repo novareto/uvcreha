@@ -47,8 +47,8 @@ class FormView(reiter.form.FormView):
 class DocFormView(FormView):
 
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def GET(self, request: Request, username: str, fileid: str, docid: str):
-        form = self.setupForm()
+    def GET(self, request: Request, **data):
+        form = self.setupForm(data=data)
         return {
             "form": form,
             "view": self,
@@ -57,6 +57,6 @@ class DocFormView(FormView):
         }
 
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def POST(self, request: Request, username: str, fileid: str, docid: str):
+    def POST(self, request: Request, **data):
         request.extract()
         return self.process_action(request)
