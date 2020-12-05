@@ -3,13 +3,11 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, SecretStr, EmailStr
+from docmanager.database import arango_model
+
 
 
 class Model(BaseModel):
-
-    id: Optional[str] = Field(alias="_id")
-    key: Optional[str] = Field(alias="_key")
-    rev: Optional[str] = Field(alias="_rev")
 
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
@@ -60,6 +58,7 @@ class UserPreferences(BaseModel):
     messaging_type: MessagingType = MessagingType.email
 
 
+@arango_model('users')
 class User(Model):
 
     username: str = Field(
