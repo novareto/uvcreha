@@ -15,6 +15,7 @@ class Request(Overhead):
 
     __slots__ = (
         '_data'
+        '_db',
         '_extracted',
         'app',
         'content_type',
@@ -26,6 +27,7 @@ class Request(Overhead):
 
     def __init__(self, app, environ, route):
         self._data = {}
+        self._db = None
         self._extracted = False
         self.app = app
         self.environ = environ
@@ -43,13 +45,14 @@ class Request(Overhead):
         return self.environ.get(self.app.config.env.session)
 
     @property
-    def db_session(self):
-        # Returns the session
-        return self.app.database.session
-
-    @property
     def user(self):
         return self.environ.get(self.app.config.env.user)
+
+    @property
+    def database(self):
+        if self._db is None:
+            self._db = self.app.connector.get_database()
+        return self._db
 
     def set_data(self, data):
         self._data = data

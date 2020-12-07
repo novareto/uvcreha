@@ -3,46 +3,36 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field, SecretStr, EmailStr
-from docmanager.database import arango_model
+from reiter.arango.model import arango_model
 
+
+class Message(BaseModel):
+    type: str
+    body: str
 
 
 class Model(BaseModel):
-
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
+@arango_model('docs')
 class Document(Model):
     az: str
     username: str
     state: str
-#    body: str
     content_type: str
     state: Optional[str] = None
 
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = str(uuid.uuid4())
-        return super().dict(by_alias=by_alias, **kwargs)
 
-    @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"
-
-
+@arango_model('files')
 class File(Model):
 
     az: str
     username: str
 
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = self.az
-        return super().dict(by_alias=by_alias, **kwargs)
-
     @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}"
+    def __key__(self):
+        return self.az
 
 
 class MessagingType(str, enum.Enum):
@@ -78,22 +68,5 @@ class User(Model):
     webpush_activated: Optional[bool] = False
 
     @property
-    def title(self) -> str:
+    def __key__(self) -> str:
         return self.username
-
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = self.username
-        return super().dict(by_alias=by_alias, **kwargs)
-
-    def json(self, by_alias=True, **kwargs):
-        return super().json(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}"
-
-
-class Message(BaseModel):
-    type: str
-    body: str
