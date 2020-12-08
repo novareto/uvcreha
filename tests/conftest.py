@@ -3,10 +3,11 @@ global settings
 """
 
 from io import StringIO
+import omegaconf
 import pytest
 
 
-CONFIG = '''
+CONFIG = omegaconf.OmegaConf.create('''
 app:
 
   env:
@@ -21,13 +22,7 @@ app:
     compile: True
     recompute_hashes: True
     bottom: True
-'''
-
-
-@pytest.fixture(scope="session")
-def config(request):
-    import omegaconf
-    return omegaconf.OmegaConf.create(CONFIG)
+''')
 
 
 @pytest.fixture(scope="session")
@@ -47,7 +42,7 @@ def db_connector(arango_config):
 
 
 @pytest.fixture(scope="session")
-def api_app(request, config, db_connector):
+def api_app(request, db_connector):
     import importscan
     import docmanager
     from docmanager.app import api as app
@@ -56,12 +51,12 @@ def api_app(request, config, db_connector):
     importscan.scan(docmanager)
 
     app.connector = db_connector
-    app.config.update(config.app)
+    app.config.update(CONFIG.app)
     return app
 
 
 @pytest.fixture(scope="session")
-def web_app(request, config, db_connector):
+def web_app(request, db_connector):
     import logging
     import colorlog
     import importscan
@@ -86,7 +81,7 @@ def web_app(request, config, db_connector):
         manager = cromlech.session.SignedCookieManager(
             "secret", handler, cookie="my_sid")
         return cromlech.session.WSGISessionManager(
-            manager, environ_key=config.session)
+            manager, environ_key=CONFIG.session)
 
     def fanstatic_middleware(config):
         from fanstatic import Fanstatic
@@ -95,28 +90,28 @@ def web_app(request, config, db_connector):
         return partial(Fanstatic, **config)
 
     def make_logger(config) -> logging.Logger:
-        logger = colorlog.getLogger(config.name)
+        logger = colorlog.getLogger(CONFIG.name)
         logger.setLevel(logging.DEBUG)
         return logger
 
     app.connector = db_connector
-    app.config.update(config.app)
+    app.config.update(CONFIG.app)
 
     # AMQP
-    amqp = AMQPEmitter(config.amqp)
+    amqp = AMQPEmitter(CONFIG.amqp)
     app.plugins.register(amqp, name="amqp")
 
     # Auth
     db = db_connector.get_database()
-    auth = docmanager.auth.Auth(db.bind(User), config.app.env)
+    auth = docmanager.auth.Auth(db.bind(User), CONFIG.app.env)
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
     app.middlewares.register(auth, order=0)
     app.middlewares.register(
-        session_middleware(config.app.env), order=1)
+        session_middleware(CONFIG.app.env), order=1)
     app.middlewares.register(
-        fanstatic_middleware(config.app.assets), order=2)
+        fanstatic_middleware(CONFIG.app.assets), order=2)
 
     yield app
     folder.cleanup()
