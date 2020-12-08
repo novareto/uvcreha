@@ -6,21 +6,6 @@ from io import StringIO
 import pytest
 
 
-
-READY_PHRASE = (
-    b"ArangoDB (version 3.7.3 [linux]) is ready for business. Have fun!\n"
-)
-
-
-ARANGO_CONFIG = '''
-arango:
-  user: {arango_user}
-  password: {arango_password}
-  database: {arango_database}
-  url: {arango_url}
-'''
-
-
 CONFIG = '''
 app:
 
@@ -46,112 +31,37 @@ def config(request):
 
 
 @pytest.fixture(scope="session")
-def arangodb(request):
-    """Create a intermediary docker container a arangodb instance
-    """
-    import omegaconf
-    import docmanager.db
+def db_connector(arango_config):
+    from docmanager.models import User, File, Document
+    from reiter.arango.connector import Connector
 
-    arango_type = request.config.getoption("--arango")
-    arango_user = request.config.getoption("--arango_user")
-    arango_password = request.config.getoption("--arango_password")
-    arango_database = request.config.getoption("--arango_database")
-
-    if arango_type == 'local':
-        arango_url = request.config.getoption("--arango_url")
-        config = omegaconf.OmegaConf.create(ARANGO_CONFIG.format(
-            arango_user=arango_user,
-            arango_password=arango_password,
-            arango_database=arango_database,
-            arango_url=arango_url,
-        ))
-        cleanup = None
-
-    else:
-        import docker
-        import time
-
-        client = docker.from_env()
-        arango_url = 'http://192.168.52.2:8529'
-        config = omegaconf.OmegaConf.create(ARANGO_CONFIG.format(
-            arango_user=arango_user,
-            arango_password=arango_password,
-            arango_database=arango_database,
-            arango_url=arango_url,
-        ))
-
-        container = client.containers.run(
-            image="arangodb/arangodb:3.7.3",
-            environment={
-                "ARANGO_ROOT_PASSWORD": config.arango.password
-            },
-            detach=True
-        )
-
-        ipam_pool = docker.types.IPAMPool(
-            subnet='192.168.52.0/24',
-            gateway='192.168.52.254'
-        )
-
-        ipam_config = docker.types.IPAMConfig(
-            pool_configs=[ipam_pool]
-        )
-
-        mynet = client.networks.create(
-            "network1",
-            driver="bridge",
-            ipam=ipam_config
-        )
-
-        mynet.connect(container, ipv4_address="192.168.52.2")
-
-        while True:
-            logs = container.logs()
-            if logs.endswith(READY_PHRASE):
-                break
-            time.sleep(0.1)
-
-        def cleanup():
-            mynet.disconnect(container)
-            mynet.remove()
-            container.stop()
-            container.remove()
-
-        request.addfinalizer(cleanup)
-
-    database = docmanager.db.Database(**config.arango)
-    # Create the needed collections
-    database.ensure_database()
-    database.session.create_collection(
-        docmanager.db.User.__collection__)
-    database.session.create_collection(
-        docmanager.db.File.__collection__)
-    database.session.create_collection(
-        docmanager.db.Document.__collection__)
-    yield database
-    database.session.delete_collection(
-        docmanager.db.Document.__collection__)
-    database.session.delete_collection(
-        docmanager.db.File.__collection__)
-    database.session.delete_collection(
-        docmanager.db.User.__collection__)
+    connector = Connector(**arango_config._asdict())
+    db = connector.get_database()
+    db.arango_db.create_collection(User.__collection__)
+    db.arango_db.create_collection(File.__collection__)
+    db.arango_db.create_collection(Document.__collection__)
+    yield connector
+    db.arango_db.delete_collection(User.__collection__)
+    db.arango_db.delete_collection(File.__collection__)
+    db.arango_db.delete_collection(Document.__collection__)
 
 
 @pytest.fixture(scope="session")
-def api_app(request, config, arangodb):
+def api_app(request, config, db_connector):
     import importscan
     import docmanager
     from docmanager.app import api as app
+    from docmanager.models import User, Document, File
 
     importscan.scan(docmanager)
 
-    app.database = arangodb
+    app.connector = db_connector
     app.config.update(config.app)
     return app
 
 
 @pytest.fixture(scope="session")
-def web_app(request, config, arangodb):
+def web_app(request, config, db_connector):
     import logging
     import colorlog
     import importscan
@@ -159,6 +69,7 @@ def web_app(request, config, arangodb):
     import docmanager
     import docmanager.auth
     import docmanager.flash
+    from docmanager.models import User
     from docmanager.mq import AMQPEmitter
     from docmanager.app import browser as app
 
@@ -188,7 +99,7 @@ def web_app(request, config, arangodb):
         logger.setLevel(logging.DEBUG)
         return logger
 
-    app.database = arangodb
+    app.connector = db_connector
     app.config.update(config.app)
 
     # AMQP
@@ -196,8 +107,8 @@ def web_app(request, config, arangodb):
     app.plugins.register(amqp, name="amqp")
 
     # Auth
-    auth = docmanager.auth.Auth(
-        docmanager.db.User(arangodb.session), config.app.env)
+    db = db_connector.get_database()
+    auth = docmanager.auth.Auth(db.bind(User), config.app.env)
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
@@ -212,19 +123,21 @@ def web_app(request, config, arangodb):
 
 
 @pytest.fixture(scope="session")
-def user(arangodb):
-    import docmanager.db
+def user(db_connector):
+    from docmanager.models import User
     from functools import partial
     from collections import namedtuple
 
     testuser = namedtuple('TestUser', ['user', 'login'])
 
     # Add the User
-    user = docmanager.db.User(arangodb.session).create(
+    user = User(
         username='test',
         password='test',
         permissions=['document.view', 'document.add']
     )
+    db = db_connector.get_database()
+    db.add(user)
 
     def login(app):
         response = app.post("/login", {
@@ -235,30 +148,3 @@ def user(arangodb):
         return response
 
     yield testuser(user=user, login=login)
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--arango", action="store", default="local",
-        help="arango: local or docker"
-    )
-
-    parser.addoption(
-        "--arango_user", action="store", default="root",
-        help="arango_user: name of the arango user"
-    )
-
-    parser.addoption(
-        "--arango_password", action="store", default="openSesame",
-        help="arango_password: arango password"
-    )
-
-    parser.addoption(
-        "--arango_database", action="store", default="tests",
-        help="arango_database: arango database"
-    )
-
-    parser.addoption(
-        "--arango_url", action="store", default="http://127.0.0.1:8529",
-        help="arango_url: arango database url"
-    )

@@ -19,7 +19,7 @@ def user_add(request: Request):
 
 @api.route('/users/{username}', methods=['GET'])
 def user_view(request: Request, username: str):
-    model = User(request.db_session)
+    model = request.database.bind(User)
     item = model.fetch(username)
     if item is None:
         return horseman.response.Response.create(404)
@@ -28,7 +28,7 @@ def user_view(request: Request, username: str):
 
 @api.route('/users/{username}', methods=['DELETE'])
 def user_delete(request: Request, username: str):
-    model = User(request.db_session)
+    model = request.database.bind(User)
     if model.delete(username):
         return horseman.response.Response.create(202)
     return horseman.response.Response.create(404)
@@ -36,7 +36,7 @@ def user_delete(request: Request, username: str):
 
 @api.route('/users/{username}/files', methods=['GET'])
 def user_files(request: Request, username: str):
+    model = request.database.bind(User)
     files = "[{}]".format(','.join([
-        file.json() for file in
-        User(request.db_session).files(username=username)]))
+        file.json() for file in model.files(username=username)]))
     return horseman.response.Response.from_json(200, body=files)
