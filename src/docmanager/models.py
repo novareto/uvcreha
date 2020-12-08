@@ -1,7 +1,7 @@
 import enum
 import uuid
-from datetime import datetime
 from typing import List, Optional
+from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr
 
 
@@ -18,7 +18,6 @@ class Document(Model):
     az: str
     username: str
     state: str
-#    body: str
     content_type: str
     state: Optional[str] = None
 
@@ -26,10 +25,6 @@ class Document(Model):
         if not self.key:
             self.key = str(uuid.uuid4())
         return super().dict(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}/documents/{self.key}"
 
 
 class File(Model):
@@ -41,10 +36,6 @@ class File(Model):
         if not self.key:
             self.key = self.az
         return super().dict(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}/files/{self.az}"
 
 
 class MessagingType(str, enum.Enum):
@@ -58,6 +49,12 @@ class UserPreferences(BaseModel):
     """User-based application preferences
     """
     messaging_type: MessagingType = MessagingType.email
+    name: str = Field(title="Vorname", description="Vorname")
+    surname: str = Field(title="Nachname", description="Nachname")
+    birthdate: Optional[date] = Field(title="Geburtsdatum")
+    webpush_subscription: Optional[str] = ""
+    webpush_activated: Optional[bool] = False
+    datenschutz: Optional[bool] = Field(title="Datenschutz", default=False)
 
 
 class User(Model):
@@ -73,7 +70,7 @@ class User(Model):
 
     state: Optional[str] = None
     permissions: Optional[List] = ['document.view']
-    preferences: UserPreferences = Field(default_factory=UserPreferences)
+    preferences: Optional[UserPreferences] #  = Field(default_factory=UserPreferences)
 
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False
@@ -89,10 +86,6 @@ class User(Model):
 
     def json(self, by_alias=True, **kwargs):
         return super().json(by_alias=by_alias, **kwargs)
-
-    @property
-    def url(self):
-        return f"/users/{self.username}"
 
 
 class Message(BaseModel):
