@@ -1,3 +1,4 @@
+import uuid
 import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
@@ -9,13 +10,12 @@ from docmanager.workflow import document_workflow
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
     model_class = Document.lookup(**data.json)
-    import pdb
-    pdb.set_trace()
     document = model_class(
         username=username,
         az=fileid,
         **data.json
     )
+    document.key = str(uuid.uuid4())
     request.database.add(document)
     request.app.notify('document_created', user=username, document=document)
     return horseman.response.Response.from_json(201, body=document.json())

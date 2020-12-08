@@ -15,6 +15,7 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
+@arango_model('docs')
 class BaseDocument(BaseModel):
     az: str
     username: str
@@ -25,7 +26,7 @@ class BaseDocument(BaseModel):
 
 class Document(PluggableModel):
 
-    __collection__ = 'docs'
+    __collection__ = BaseDocument.__collection__
     alternatives = NamedComponents()
 
     @classmethod
