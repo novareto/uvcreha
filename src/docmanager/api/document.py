@@ -8,10 +8,12 @@ from docmanager.workflow import document_workflow
 @api.route("/users/{username}/files/{fileid}/doc.add", methods=["POST", "PUT"])
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
-    document = Document(
+    model_class = Document.lookup(**data.json)
+    import pdb
+    pdb.set_trace()
+    document = model_class(
         username=username,
         az=fileid,
-        state=document_workflow.default_state.name,
         **data.json
     )
     request.database.add(document)
@@ -21,7 +23,7 @@ def doc_add(request: Request, username: str, fileid: str):
 
 @api.route("/users/{username}/files/{fileid}/docs/{docid}", methods=["GET"])
 def doc_view(request: Request, username: str, fileid: str, docid: str):
-    model = Document(request.db_session)
+    model = request.database.bind(Document)
     document = model.find_one(_key=docid, az=fileid, username=username)
     if document is None:
         return horseman.response.reply(404)
@@ -30,7 +32,7 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
 
 @api.route("/users/{username}/files/{fileid}/docs/{docid}", methods=["DELETE"])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):
-    model = Document(request.db_session)
+    model = request.database.bind(Document)
     if model.find_one(_key=docid, az=fileid, username=username) is None:
         return horseman.response.reply(404)
     model.delete(docid)

@@ -2,7 +2,8 @@ import enum
 from typing import List, Optional
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr
-from reiter.arango.model import arango_model
+from reiter.arango.model import arango_model, PluggableModel
+from docmanager.registries import NamedComponents
 
 
 class Message(BaseModel):
@@ -14,13 +15,25 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-@arango_model('documents')
-class Document(Model):
+class BaseDocument(BaseModel):
     az: str
     username: str
     state: str
     content_type: str
     state: Optional[str] = None
+
+
+class Document(PluggableModel):
+
+    __collection__ = 'docs'
+    alternatives = NamedComponents()
+
+    @classmethod
+    def lookup(cls, content_type: str, **data):
+        model_class = cls.alternatives.get(content_type)
+        if model_class is None:
+            raise KeyError(f'Unknown document type: {content_type}.')
+        return model_class
 
 
 @arango_model('files')

@@ -63,12 +63,12 @@ def test_add_folder(api_app, user):
 
 def test_add_file(api_app, user):
     from webtest import TestApp
-    from docmanager.models import Document
+    from docmanager.models import Document, BaseDocument
     from typing import Literal
 
 
     @Document.alternatives.component('event')
-    class Event(BaseDoc):
+    class Event(BaseDocument):
         content_type: Literal['event']
         myfield: str
 
@@ -86,7 +86,7 @@ def test_add_file(api_app, user):
         f"/users/{user.user.username}/files/1234/doc.add", {
             'body': "Some Doc",
             'myfield': "",
-            'state': "Submitted",
+            'state': "submitted",
             'content_type': "event"
         }
     )
