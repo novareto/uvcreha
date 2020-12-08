@@ -5,7 +5,7 @@ from reiter.form import trigger
 from docmanager.request import Request
 from horseman.http import Multidict
 import pydantic
-from docmanager.db import User
+from docmanager.models import User
 import horseman.response
 
 
@@ -33,13 +33,12 @@ class MyPreferences(FormView):
 
     @trigger("update", "Update", css="btn btn-primary", order=1)
     def update(self, request, data):
-        data = data.form 
-        import pdb; pdb.set_trace()
+        data = data.form
         form = self.setupForm(Kontaktdaten, formdata=data)
         if not form.validate():
             return form
 
-        user = User(request.db_session)
+        user = request.database.bind(User)
         cd = request.user.preferences.dict()
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)

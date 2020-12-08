@@ -1,6 +1,6 @@
 from horseman.prototyping import Environ
 from horseman.response import Response
-from docmanager.db import User
+from docmanager.models import User
 from docmanager.workflow import user_workflow
 
 
@@ -12,12 +12,12 @@ class Auth:
         user_workflow.states.closed
     }
 
-    def __init__(self, model, config):
-        self.model = model
+    def __init__(self, binding, config):
+        self.binding = binding
         self.config = config
 
     def from_credentials(self, credentials: dict):
-        return self.model.find_one(
+        return self.binding.find_one(
             username=credentials['username'],
             password=credentials['password']
         )
@@ -27,7 +27,7 @@ class Auth:
             return user
         session = environ.get(self.config.session)
         if (user_key := session.get(self.config.user, None)) is not None:
-            user = environ[self.config.user] = self.model.fetch(user_key)
+            user = environ[self.config.user] = self.binding.fetch(user_key)
             return user
         return None
 
@@ -63,11 +63,3 @@ class Auth:
             return app(environ, start_response)
 
         return auth_application_wrapper
-
-
-def plugin(app, config, user_model=User, name="authentication"):
-    user = user_model(app.database.session)
-    auth = Auth(user, config.env)
-    app.plugins.register(auth, name=name)
-    app.middlewares.register(auth, order=0)  # very first.
-    return app
