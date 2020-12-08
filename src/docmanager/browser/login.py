@@ -1,6 +1,6 @@
 import horseman.response
 
-from docmanager import db
+from docmanager import models
 from docmanager.app import browser
 from docmanager.models import User
 from docmanager.request import Request
@@ -16,7 +16,7 @@ class LoginForm(FormView):
     title = "Anmelden"
     description = "Bitte tragen Sie hier Ihre Anmeldeinformationen ein"
     action = "login"
-    model = User
+    model = models.User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("username", "password"))
@@ -69,10 +69,12 @@ class EditPassword(FormView):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
             return form
-        um = db.User(request.app.database.session)
+
+        um = request.database.bind(model.User)
         um.update(key=request.user.key, **data.form)
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
+        flash_messages.add(
+            body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
         return horseman.response.Response.create(
             302, headers={"Location": "/%s" % view.action}
         )
@@ -119,7 +121,7 @@ class EditMail(FormView):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
             return form
-        um = db.User(request.app.database.session)
+        um = request.database.bind(models.User)
         um.update(key=request.user.key, **data.form.dict())
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Ihre E-Mail Adresse wurde erfolgreich im System gespeichert.')

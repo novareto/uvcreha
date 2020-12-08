@@ -65,17 +65,17 @@ def webpush_plugin(config):
     )
 
 
-def api(config, database, webpush, emailer):
+def api(config, connector, webpush, emailer):
     from docmanager.app import api as app
-    app.database = database
+    app.connector = connector
     app.config.update(config)
     app.plugins.register(webpush, name="webpush")
     app.plugins.register(emailer, name="emailer")
     return app
 
 
-def browser(config, database, webpush, emailer):
-    from docmanager.db import User
+def browser(config, connector, webpush, emailer):
+    from docmanager.models import User
     from docmanager.mq import AMQPEmitter
     from docmanager.auth import Auth
     from docmanager.app import browser as app
@@ -98,13 +98,14 @@ def browser(config, database, webpush, emailer):
             manager, environ_key=config.session)
 
 
-    app.database = database
+    app.connector = connector
     app.config.update(config.app)
 
     app.plugins.register(webpush, name="webpush")
     app.plugins.register(emailer, name="emailer")
 
-    auth = Auth(User(database.session), config.app.env)
+    db = connector.get_database()
+    auth = Auth(db.bind(User), config.app.env)
     app.plugins.register(auth, name="authentication")
     app.middlewares.register(auth, order=0)  # very first.
 
@@ -125,10 +126,10 @@ def start(config):
     import importscan
 
     import docmanager
-    import docmanager.db
     import docmanager.mq
     import uvcreha.example
     import uvcreha.example.app
+    from reiter.arango.connector import Connector
     from rutter.urlmap import URLMap
     from docmanager.emailer import SecureMailer
 
@@ -136,13 +137,13 @@ def start(config):
     importscan.scan(uvcreha.example)
 
     logger = make_logger('docmanager')
-    database = docmanager.db.Database(**config.arango)
+    connector = Connector(**config.arango)
     webpush = webpush_plugin(config.webpush)
     emailer = SecureMailer(config.emailer)
 
     app = URLMap()
-    app['/'] = browser(config, database, webpush, emailer)
-    app['/api'] = api(config, database, webpush, emailer)
+    app['/'] = browser(config, connector, webpush, emailer)
+    app['/api'] = api(config, connector, webpush, emailer)
 
     # Serving the app
     AMQPworker = docmanager.mq.Worker(app, config.amqp)

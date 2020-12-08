@@ -6,8 +6,9 @@ from typing import Mapping, Optional
 import horseman.meta
 import horseman.response
 import horseman.http
+from reiter.arango.connector import Connector
 from reiter.routing.routes import Routes
-from docmanager import registries, db
+from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.request import Request
 from docmanager.validation import ValidationError
@@ -18,7 +19,7 @@ from omegaconf.dictconfig import DictConfig
 class Router(horseman.meta.APINode):
 
     config: Mapping = field(default_factory=partial(DictConfig, {}))
-    database: Optional[db.Database] = None
+    connector: Optional[Connector] = None
     middlewares: list = field(default_factory=registries.PriorityList)
     plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request

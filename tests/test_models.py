@@ -1,49 +1,8 @@
-from docmanager.models import Document as BaseDoc, User as BaseUser
-from docmanager.db import Document, User
+from docmanager.models import Document, User
 from typing import Literal
 
 
-def test_model(arangodb):
-
-    @Document.alternatives.component("doc")
-    class Doc(BaseDoc):
-        pass
-
-    doc = Document(arangodb.session)
-    assert isinstance(doc, Document) is True
-    instance = doc.model(
-        content_type="doc",
-        az="2",
-        username="4711",
-        body="",
-        state=""
-    )
-    assert isinstance(instance, BaseDoc) is True
-    Document.alternatives.unregister("doc")
-
-
-def test_model_alternative(arangodb):
-
-    @Document.alternatives.component("event")
-    class Event(BaseDoc):
-        content_type: Literal["event"]
-        myfield: str
-
-    doc = Document(arangodb.session)
-    assert isinstance(doc, Document) is True
-    instance = doc.model(
-        "event",
-        az="2",
-        username="4711",
-        body="",
-        myfield="",
-        state=""
-    )
-    assert isinstance(instance, Event) is True
-    Document.alternatives.unregister("event")
-
-
-def test_model_crud(arangodb):
+def test_model_crud(connector):
 
     db_user = User(arangodb.session)
     assert isinstance(db_user, User) is True

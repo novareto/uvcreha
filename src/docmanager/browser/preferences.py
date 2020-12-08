@@ -5,8 +5,7 @@ from reiter.form import trigger
 from docmanager.request import Request
 from horseman.http import Multidict
 import pydantic
-from docmanager.db import User
-from docmanager.models import UserPreferences
+from docmanager.models import User, UserPreferences
 import horseman.response
 from urllib.parse import parse_qs
 
@@ -60,8 +59,8 @@ class MyPreferences(FormView):
                 "path": request.route.path
             }
 
-        user = User(request.db_session)
-        cd = self.get_user_data(request)
+        user = request.database.bind(User)
+        cd = request.user.preferences.dict()
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
         flash_messages = request.utilities.get('flash')
@@ -74,7 +73,7 @@ class MyPreferences(FormView):
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
-        tabs = {k: self.setupForm(UserPreferences,formdata=None, data=self.get_user_data(request), only=v) for (k, v) in self.tabs.items()}
+        tabs = {k: self.setupForm(UserPreferences, formdata=None, data=self.get_user_data(request), only=v) for (k, v) in self.tabs.items()}
         return dict(request=request, tabs=tabs, view=self)
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)

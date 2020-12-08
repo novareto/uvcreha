@@ -3,7 +3,7 @@ import horseman.meta
 from horseman.http import Multidict
 from reiter.form import trigger
 from docmanager.app import browser
-from docmanager import db
+from docmanager import models
 from docmanager.browser.form import Form, FormView
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.browser.openapi import generate_doc
@@ -31,7 +31,7 @@ def openapi(request: Request):
 @browser.route("/")
 @template(TEMPLATES["index.pt"], layout_name="default", raw=False)
 def index(request: Request):
-    user = db.User(request.db_session)
+    user = request.user
     return dict(request=request, user=user)
 
 
@@ -115,7 +115,7 @@ class RegistrationForm(FormView):
                 user_workflow.states.active):
             raise error
 
-        user = db.User(request.db_session)
+        user = request.database.bind(models.User)
         user.update(
             key=request.user.username,
             state=user_workflow.states.active.name,

@@ -1,20 +1,20 @@
 import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
-from docmanager.db import Document
+from docmanager.models import Document
 from docmanager.workflow import document_workflow
 
 
 @api.route("/users/{username}/files/{fileid}/doc.add", methods=["POST", "PUT"])
 def doc_add(request: Request, username: str, fileid: str):
     data = request.extract()
-    model = Document(request.db_session)
-    document = model.create(
+    document = Document(
         username=username,
         az=fileid,
         state=document_workflow.default_state.name,
         **data.json
     )
+    request.database.add(document)
     request.app.notify('document_created', user=username, document=document)
     return horseman.response.Response.from_json(201, body=document.json())
 

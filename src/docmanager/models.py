@@ -1,19 +1,20 @@
 import enum
-import uuid
 from typing import List, Optional
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr
+from reiter.arango.model import arango_model
+
+
+class Message(BaseModel):
+    type: str
+    body: str
 
 
 class Model(BaseModel):
-
-    id: Optional[str] = Field(alias="_id")
-    key: Optional[str] = Field(alias="_key")
-    rev: Optional[str] = Field(alias="_rev")
-
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
+@arango_model('documents')
 class Document(Model):
     az: str
     username: str
@@ -21,21 +22,16 @@ class Document(Model):
     content_type: str
     state: Optional[str] = None
 
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = str(uuid.uuid4())
-        return super().dict(by_alias=by_alias, **kwargs)
 
-
+@arango_model('files')
 class File(Model):
 
     az: str
     username: str
 
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = self.az
-        return super().dict(by_alias=by_alias, **kwargs)
+    @property
+    def __key__(self):
+        return self.az
 
 
 class MessagingType(str, enum.Enum):
@@ -57,6 +53,7 @@ class UserPreferences(BaseModel):
     datenschutz: Optional[bool] = Field(title="Datenschutz", default=False)
 
 
+@arango_model('users')
 class User(Model):
 
     username: str = Field(
@@ -70,24 +67,19 @@ class User(Model):
 
     state: Optional[str] = None
     permissions: Optional[List] = ['document.view']
-    preferences: Optional[UserPreferences] #  = Field(default_factory=UserPreferences)
+    preferences: Optional[UserPreferences]  #  = Field(default_factory=UserPreferences)
 
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False
 
     @property
-    def title(self) -> str:
+    def __key__(self) -> str:
         return self.username
 
-    def dict(self, by_alias=True, **kwargs):
-        if not self.key:
-            self.key = self.username
-        return super().dict(by_alias=by_alias, **kwargs)
+    def get_files(self, request, key):
+        binding_file = request.database.bind(File)
+        return binding_file.find(username=key)
 
-    def json(self, by_alias=True, **kwargs):
-        return super().json(by_alias=by_alias, **kwargs)
-
-
-class Message(BaseModel):
-    type: str
-    body: str
+    def get_documents(self, request, username, az):
+        binding_doc = request.database.bind(Document)
+        return binding_doc.find(username=username, az=az)

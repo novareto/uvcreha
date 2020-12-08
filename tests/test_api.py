@@ -63,8 +63,7 @@ def test_add_folder(api_app, user):
 
 def test_add_file(api_app, user):
     from webtest import TestApp
-    from docmanager.models import Document as BaseDoc
-    from docmanager.db import Document
+    from docmanager.models import Document
     from typing import Literal
 
 

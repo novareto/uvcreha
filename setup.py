@@ -21,6 +21,7 @@ install_requires = [
     'python-arango',
     'pywebpush',
     'reg',
+    'reiter.arango',
     'reiter.form',
     'reiter.routing',
     'roughrider.auth',
