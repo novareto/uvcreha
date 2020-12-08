@@ -111,16 +111,10 @@ class RegistrationForm(FormView):
             }
 
         request.user.email = form.data['email']
-        if error := user_workflow(request.user).check_reachable(
-                user_workflow.states.active):
-            raise error
+        wf = user_workflow(request.user)
+        wf.set_state(user_workflow.states.active)
+        request.user.save()
 
-        user = request.database.bind(models.User)
-        user.update(
-            key=request.user.username,
-            state=user_workflow.states.active.name,
-            **form.data
-        )
         return horseman.response.Response.create(
             302, headers={"Location": "/"}
         )
