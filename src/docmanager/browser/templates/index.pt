@@ -46,17 +46,20 @@
 
 <h1> Ihre aktuelle(n) Akte(n) </h1>
 
-<div class="accordion" id="accordeonAnsicht">
+<div class="accordion" id="akten-liste" xmlns:xlink="http://www.w3.org/1999/xlink">
   <div class="card" tal:repeat="file user.get_files(request.user.key)">
     <div class="card-header" id="headingOne" tal:attributes="id string:heading_${repeat.file.number}">
       <h2 class="mb-0">
-        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" tal:attributes="data-target string:#collapse_${repeat.file.number}">
-          <span tal:replace="string: ${file.az}"/>
+        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" aria-expanded="true" aria-controls="collapseOne" tal:attributes="data-target string:#collapse_${repeat.file.number}">
+          <svg class="bi" width="32" height="32" fill="currentColor">
+            <use xlink:href="static/docmanager/bootstrap-icons.svg#folder"/>
+          </svg>
+          Akte - <span tal:replace="string: ${file.az}"/>
         </button>
       </h2>
     </div>
 
-    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordeonAnsicht" tal:attributes="id string:collapse_${repeat.file.number}">
+    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#akten-liste" tal:attributes="id string:collapse_${repeat.file.number}">
       <div class="card-body">
         <table class="table">
           <thead>
@@ -71,7 +74,7 @@
 
             <tr tal:repeat="doc user.get_documents(username=request.user.key, az=file.az)">
               <td tal:content="repeat.doc.number"> </td>
-              <td> <a href="" tal:attributes="href doc.url" tal:content="doc.content_type"> </a> </td>
+              <td> <a href="" tal:attributes="href request.app.routes.url_for('event_edit', az=file.az, username=file.username, key=doc.key)" tal:content="doc.content_type"> </a> </td>
               <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
               <td tal:content="doc.state"></td>
             </tr>

@@ -6,7 +6,9 @@ from docmanager.request import Request
 from horseman.http import Multidict
 import pydantic
 from docmanager.db import User
+from docmanager.models import UserPreferences
 import horseman.response
+from urllib.parse import parse_qs
 
 
 class Kontaktdaten(pydantic.BaseModel):
@@ -26,41 +28,53 @@ class MyPreferences(FormView):
     description = "Edit your preferences."
     action = "my_preferences"
 
-    def setupForm(self, model, data={}, formdata=Multidict()):
-        form = Form.from_model(model)
+    def __init__(self, *args, **kwargs):
+        self.tabs = {
+            "Kontaktdaten": ('name', 'surname', 'birthdate'),
+            "Benachrichtigungen": ('messaging_type', 'webpush_subscription', 'webpush_activated'),
+            "Datenschutz": ('datenschutz',),
+#            "Benachrichtigungen": Account,
+        }
+
+    def setupForm(self, model, data={}, formdata=Multidict(), only=None):
+        form = Form.from_model(model, only)
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("update", "Update", css="btn btn-primary", order=1)
+    def get_user_data(self, request):
+        return request.user.preferences.dict()
+
+    @trigger("update", "Speichern", css="btn btn-primary", order=1)
     def update(self, request, data):
-        data = data.form 
-        import pdb; pdb.set_trace()
-        form = self.setupForm(Kontaktdaten, formdata=data)
+        data = data.form
+        query_string = parse_qs(request.environ['QUERY_STRING'])
+        tab = query_string.get('tab', ' ')[0]
+        if not tab:
+            raise
+        form = self.setupForm(UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
-            return form
+            return {
+                "form": form,
+                "view": self,
+                "error": None,
+                "path": request.route.path
+            }
 
         user = User(request.db_session)
-        cd = request.user.preferences.dict()
+        cd = self.get_user_data(request)
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
-        return horseman.response.reply(200)
+        flash_messages = request.utilities.get('flash')
+        flash_messages.add(body='Ihre Angaben wurden erfolgreich gespeichert.')
+        return horseman.response.Response.create(302, headers={'Location': '/'})
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary", order=20)
-    def abbrechen(self, request):
-        pass
-
+    def abbrechen(self, request, data):
+        return horseman.response.Response.create(302, headers={'Location': '/'})
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
-        contact = self.setupForm(Kontaktdaten)
-        account = self.setupForm(Account)
-
-        tabs = {
-            "Kontaktdaten": contact,
-            "Passwort": account,
-            "Datenschutz": contact,
-            "Benachrichtigungen": account,
-        }
+        tabs = {k: self.setupForm(UserPreferences,formdata=None, data=self.get_user_data(request), only=v) for (k, v) in self.tabs.items()}
         return dict(request=request, tabs=tabs, view=self)
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)

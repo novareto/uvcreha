@@ -8,7 +8,10 @@ from docmanager.browser.layout import template, TEMPLATES
 class FormMeta(wtforms.meta.DefaultMeta):
 
     def render_field(inst, field, render_kw):
-        class_ = "form-control"
+        if isinstance(field, wtforms.fields.core.BooleanField):
+            class_ = "form-check"
+        else:
+            class_ = "form-control"
         if field.errors:
             class_ += " is-invalid"
         render_kw.update({"class_": class_})

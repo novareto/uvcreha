@@ -35,8 +35,8 @@ class Webpush(horseman.meta.APIView):
 def push(request):
     webpush = request.app.plugins["webpush"]
     data = request.extract()
-    token = data.form['sub_token']
-    message = data.form['message']
+    token = data.json['sub_token']
+    message = data.json['message']
 
     if token is None:
         return horseman.response.Response.to_json(

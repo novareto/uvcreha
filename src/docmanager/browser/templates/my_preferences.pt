@@ -1,15 +1,16 @@
 <h1> Meine Einstellungen </h1>
-
+<p class="lead"> Hier können Sie Ihre Einstellungen überprüfuen und ändern </p>
 
 <div class="row">
   <div class="col-3">
     <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">
-      <a class="nav-link" tal:repeat="tab tabs.keys()" tal:attributes="id string:l-pills-${tab}; href string:#v-pills-${tab}" data-toggle="pill" role="tab" aria-controls="v-pills-home" aria-selected="true"><span tal:replace="tab"/> </a>
+      <a class="nav-link" tal:repeat="tab tabs.keys()" tal:attributes="class repeat.tab.index == 0 and 'nav-link active' or 'nav-link'; id string:l-pills-${tab}; href string:#v-pills-${tab}" data-toggle="pill" role="tab" aria-controls="v-pills-home" aria-selected="true"><span tal:replace="tab"/> </a>
     </div>
   </div>
   <div class="col-9">
     <div class="tab-content" id="v-pills-tabContent">
-      <div tal:repeat="tab tabs.keys()" tal:attributes="id string:v-pills-${tab}" class="tab-pane fade" role="tabpanel" aria-labelledby="v-pills-home-tab">
+      <div tal:repeat="tab tabs.keys()" class="tab-pane fade" role="tabpanel" aria-labelledby="v-pills-home-tab" 
+        tal:attributes="class repeat.tab.index == 0 and 'tab-pane fade active show' or 'tab-pane fade'; id string:v-pills-${tab}">
         <form tal:define="form tabs[tab]" method="POST" tal:attributes="action string:${view.action}?tab=${tab}">
           <div class="form-group" tal:repeat="field form">
             <label tal:replace="field.label" />
@@ -32,7 +33,6 @@
                 </tal:action>
               </div>
         </form>
-        <span tal:content="tabs[tab]">
       </div>
     </div>
   </div>

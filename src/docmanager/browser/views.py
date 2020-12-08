@@ -58,7 +58,12 @@ class EditPreferences(FormView):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)
         if not form.validate():
-            return form
+            return {
+                "form": form,
+                "view": self,
+                "error": None,
+                "path": request.route.path
+            }
 
         user = User(request.db_session)
         user.update(request.user.key, preferences=data.dict())
@@ -98,7 +103,12 @@ class RegistrationForm(FormView):
             data=request.user.dict(), formdata=data.form
         )
         if not form.validate():
-            return form
+            return {
+                "form": form,
+                "view": self,
+                "error": None,
+                "path": request.route.path
+            }
 
         request.user.email = form.data['email']
         if error := user_workflow(request.user).check_reachable(
@@ -113,5 +123,4 @@ class RegistrationForm(FormView):
         )
         return horseman.response.Response.create(
             302, headers={"Location": "/"}
-
-)
+        )

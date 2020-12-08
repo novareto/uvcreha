@@ -1,25 +1,25 @@
 <div id="form">
   <h1 tal:content="view.title"> </h1>
   <p class="lead" tal:content="view.description"> </p>
-  <form method="POST" tal:attributes="action view.action">
+  <form method="POST" tal:attributes="action view.action" novalidate>
     <div class="form-group" tal:repeat="field form">
-      <label tal:replace="field.label" />
-      <div tal:content="structure field()" tal:attributes="class field.errors and 'is-invalid' or 'is-valid' "/>
-      <small id="emailHelp" class="form-text text-muted" tal:content="field.description" tal:condition="field.description"> </small>
+      <label tal:replace="field.label"> </label>
+      <div tal:content="structure field()" tal:attributes="class field.errors and 'is-invalid' or 'is-valid'"> </div>
       <div class="invalid-feedback" tal:condition="field.errors">
-	<div tal:repeat="error field.errors">
-	  <span tal:content="error" />
-	</div>
+        <div tal:repeat="error field.errors">
+          <span tal:content="error" />
+        </div>
       </div>
+      <small id="emailHelp" class="form-text text-muted" tal:content="field.description" tal:condition="field.description"> </small>
     </div>
     <div class="form-actions">
       <tal:action repeat="trigger view.triggers.values()">
-        <button
-            name='form.trigger'
-            class="btn btn-default"
-            tal:attributes="value trigger.id;
-                            class trigger.css;"
-            type="submit" tal:content="trigger.title">HTML</button>
+      <button
+        name='form.trigger'
+        class="btn btn-default"
+        tal:attributes="value trigger.id;
+                        class trigger.css;"
+        type="submit" tal:content="trigger.title">HTML</button>
       </tal:action>
     </div>
   </form>
