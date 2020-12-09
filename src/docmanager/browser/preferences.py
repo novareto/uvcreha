@@ -1,13 +1,14 @@
-from docmanager.browser.layout import template, TEMPLATES
-from docmanager.browser.form import FormView, Form
-from docmanager.app import browser
-from reiter.form import trigger
-from docmanager.request import Request
-from horseman.http import Multidict
 import pydantic
-from docmanager.models import User, UserPreferences
 import horseman.response
+
 from urllib.parse import parse_qs
+from horseman.http import Multidict
+from reiter.form import trigger
+from docmanager.app import browser
+from docmanager.browser.form import FormView, Form
+from docmanager.browser.layout import template, TEMPLATES
+from docmanager.models import User, UserPreferences
+from docmanager.request import Request
 
 
 class Kontaktdaten(pydantic.BaseModel):
@@ -29,9 +30,19 @@ class MyPreferences(FormView):
 
     def __init__(self, *args, **kwargs):
         self.tabs = {
-            "Kontaktdaten": ('name', 'surname', 'birthdate'),
-            "Benachrichtigungen": ('messaging_type', 'webpush_subscription', 'webpush_activated'),
-            "Datenschutz": ('datenschutz',),
+            "Kontaktdaten": (
+                'name',
+                'surname',
+                'birthdate'
+            ),
+            "Benachrichtigungen": (
+                'messaging_type',
+                'webpush_subscription',
+                'webpush_activated'
+            ),
+            "Datenschutz": (
+                'datenschutz',
+            ),
 #            "Benachrichtigungen": Account,
         }
 
@@ -50,7 +61,11 @@ class MyPreferences(FormView):
         tab = query_string.get('tab', ' ')[0]
         if not tab:
             raise
-        form = self.setupForm(UserPreferences, only=self.tabs.get(tab), formdata=data)
+        form = self.setupForm(
+            UserPreferences,
+            only=self.tabs.get(tab),
+            formdata=data
+        )
         if not form.validate():
             return {
                 "form": form,
@@ -64,12 +79,16 @@ class MyPreferences(FormView):
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Ihre Angaben wurden erfolgreich gespeichert.')
-        return horseman.response.Response.create(302, headers={'Location': '/'})
+        flash_messages.add(
+            body='Ihre Angaben wurden erfolgreich gespeichert.'
+        )
+        return horseman.response.Response.create(
+            302, headers={'Location': '/'})
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary", order=20)
     def abbrechen(self, request, data):
-        return horseman.response.Response.create(302, headers={'Location': '/'})
+        return horseman.response.Response.create(
+            302, headers={'Location': '/'})
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):

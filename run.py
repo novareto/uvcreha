@@ -43,14 +43,7 @@ def environment(**environ):
 
 
 def webpush_plugin(config):
-    from collections import namedtuple
-
-    webpush = namedtuple(
-        'Webpush', [
-            'claims',
-            'private_key',
-            'public_key',
-        ])
+    from docmanager.webpush import Webpush
 
     with open(config.private_key) as fd:
         private_key = fd.readline().strip("\n")
@@ -58,7 +51,7 @@ def webpush_plugin(config):
     with open(config.public_key) as fd:
         public_key = fd.read().strip("\n")
 
-    return webpush(
+    return Webpush(
         private_key=private_key,
         public_key=public_key,
         claims=config.vapid_claims

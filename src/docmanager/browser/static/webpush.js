@@ -90,7 +90,7 @@ class WebpushService {
     }
 
     async update_serverside_subscription(subscription) {
-        const response = await fetch('/api/subscription', {
+        const response = await fetch('/webpush/subscription', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -138,7 +138,7 @@ class WebpushService {
 
     async push_message(message) {
 
-        const response = await fetch('/api/webpush', {
+        const response = await fetch('/webpush', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -166,7 +166,7 @@ async function initialize_webpush_service() {
         const pubkey = localStorage.getItem('webpush.pubkey');
 
         if (!pubkey) {
-            let response = await fetch('/api/subscription');
+            let response = await fetch('/webpush/subscription');
             if (response.ok) {
                 let json = await response.json();
                 localStorage.setItem('webpush.pubkey', json.public_key);

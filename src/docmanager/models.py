@@ -100,10 +100,7 @@ class User(Model):
 
     state: Optional[str] = None
     permissions: Optional[List] = ['document.view']
-    preferences: Optional[UserPreferences]  #  = Field(default_factory=UserPreferences)
-
-    webpush_subscription: Optional[str] = ""
-    webpush_activated: Optional[bool] = False
+    preferences: UserPreferences = Field(default_factory=UserPreferences)
 
     @property
     def __key__(self) -> str:
