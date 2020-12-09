@@ -3,6 +3,7 @@ import reiter.form
 from horseman.http import Multidict
 from docmanager.request import Request
 from docmanager.browser.layout import template, TEMPLATES
+from docmanager.models import BaseDocument
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -52,6 +53,8 @@ class DocFormView(FormView):
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request, **data):
         form = self.setupForm(data=data)
+        document = request.database.bind(BaseDocument)
+        document.fetch(request.route.params.get('key'))
         return {
             "form": form,
             "view": self,

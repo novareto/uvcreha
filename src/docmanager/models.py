@@ -1,7 +1,7 @@
 import enum
-from typing import List, Optional
+from typing import List, Optional, Any, ClassVar
 from datetime import datetime, date
-from pydantic import BaseModel, Field, SecretStr, EmailStr
+from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import arango_model, PluggableModel
 from docmanager.registries import NamedComponents
 
@@ -15,13 +15,32 @@ class Model(BaseModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-@arango_model('docs')
+@arango_model('documents')
 class BaseDocument(BaseModel):
     az: str
     username: str
     state: str
     content_type: str
     state: Optional[str] = None
+    alternatives: ClassVar[Any] = NamedComponents()
+
+    item: Optional[Any]
+
+    @classmethod
+    def lookup(cls, content_type: str, **data):
+        model_class = cls.alternatives.get(content_type)
+        if model_class is None:
+            raise KeyError(f'Unknown document type: {content_type}.')
+        return model_class
+
+    @validator('item', always=True, pre=True)
+    def set_item(cls, v, values):
+        if v:
+            model_class = cls.alternatives.get(values['content_type'])
+            if model_class is None:
+                raise KeyError(f'Unknown document type: {values["content_type"]}.')
+            return model_class(**v)
+
 
 
 class Document(PluggableModel):
@@ -92,5 +111,5 @@ class User(Model):
         return binding_file.find(username=key)
 
     def get_documents(self, request, username, az):
-        binding_doc = request.database.bind(Document)
+        binding_doc = request.database.bind(BaseDocument)
         return binding_doc.find(username=username, az=az)
