@@ -20,7 +20,7 @@ class BaseDocument(BaseModel):
     az: str
     username: str
     state: str
-    content_type: str
+    content_type: str = None
     state: Optional[str] = None
     alternatives: ClassVar[Any] = NamedComponents()
 
@@ -100,7 +100,7 @@ class User(Model):
 
     state: Optional[str] = None
     permissions: Optional[List] = ['document.view']
-    preferences: UserPreferences = Field(default_factory=UserPreferences)
+    preferences: Optional[UserPreferences]
 
     @property
     def __key__(self) -> str:

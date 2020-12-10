@@ -31,7 +31,7 @@ class Request(Overhead):
         self._extracted = False
         self.app = app
         self.environ = environ
-        self.method = environ['REQUEST_METHOD']
+        self.method = environ['REQUEST_METHOD'].upper()
         self.route = route
         self.utilities = NamedComponents()
         if 'CONTENT_TYPE' in self.environ:

@@ -10,7 +10,7 @@ from docmanager.browser.layout import template, TEMPLATES
 from horseman.http import Multidict
 
 
-@browser.route("/login", methods=("GET", "POST"))
+@browser.route("/login")
 class LoginForm(FormView):
 
     title = "Anmelden"

@@ -2,6 +2,7 @@ import horseman.response
 import horseman.meta
 from horseman.http import Multidict
 from reiter.form import trigger
+from reiter.routing.predicate_route import BranchingView, PredicateError
 from docmanager.app import browser
 from docmanager import models
 from docmanager.browser.form import Form, FormView
@@ -39,6 +40,27 @@ def index(request: Request):
 @template(TEMPLATES["webpush.pt"], layout_name="default", raw=False)
 def webpush(request: Request):
     return dict(request=request)
+
+
+def condition_is_test(request):
+    if request.route.params['condition'] != 'test':
+        raise PredicateError.create(400, 'Condition must be test')
+
+
+@browser.route("/branching/{condition}", methods=['GET'])
+class Branch(BranchingView):
+    pass
+
+
+@Branch.register(['GET'], condition_is_test)
+def test_branching(request: Request, condition):
+    return horseman.response.reply(200, "Yeah, i'm a test")
+
+
+@Branch.register(['GET'])
+def test_other_branching(request: Request, condition):
+    return horseman.response.reply(
+        200, "Yeah, i'm not the test, but a default")
 
 
 @browser.route("/preferences")
