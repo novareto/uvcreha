@@ -1,6 +1,5 @@
 from horseman.prototyping import Environ
 from horseman.response import Response
-from docmanager.models import User
 from docmanager.workflow import user_workflow
 
 
@@ -25,14 +24,14 @@ class Auth:
     def identify(self, environ: Environ):
         if (user := environ.get(self.config.user)) is not None:
             return user
-        session = environ.get(self.config.session)
+        session = environ[self.config.session]
         if (user_key := session.get(self.config.user, None)) is not None:
             user = environ[self.config.user] = self.binding.fetch(user_key)
             return user
         return None
 
     def remember(self, environ: Environ, user):
-        session = environ.get(self.config.session)
+        session = environ[self.config.session]
         session[self.config.user] = user.key
         environ[self.config.user] = user
 

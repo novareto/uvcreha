@@ -1,26 +1,35 @@
-from docmanager.models import Document, User
+import hamcrest
 from typing import Literal
+from docmanager.models import Document, User
 
 
-def test_model_crud(connector):
+def test_model_crud(db_connector):
 
-    db_user = User(arangodb.session)
-    assert isinstance(db_user, User) is True
-
-    model = db_user.model(
-        username="souheil", password="secret", email="trollfot@gmail.com")
-    assert isinstance(model, BaseUser) is True
+    db = db_connector.get_database()
+    wrapper = db(User)
+    model = wrapper.model(
+        username="souheil",
+        password="secret",
+        email="trollfot@gmail.com"
+    )
+    assert isinstance(model, User) is True
     assert model.username == "souheil"
     assert model.password.get_secret_value() == "secret"
 
-    saved_user = db_user.create(**model.dict())
+    saved_user, response = wrapper.create(**model.dict())
     assert saved_user.key == 'souheil'
-    assert db_user.exists('souheil') is True
+    assert wrapper.exists('souheil') is True
 
-    assert isinstance(saved_user, BaseUser) is True
+    assert isinstance(saved_user, User) is True
     saved_user.password = "newpw"
 
-    assert db_user.replace(saved_user) is True
+    response = db.save(saved_user)
+    hamcrest.assert_that(response, hamcrest.has_entries({
+        '_id': 'users/souheil',
+        '_key': 'souheil',
+        '_rev': hamcrest.instance_of(str),
+        '_old_rev': hamcrest.instance_of(str)
+    }))
 
-    new_user = db_user.fetch(saved_user.key)
+    new_user = wrapper.fetch(saved_user.key)
     assert new_user.password.get_secret_value() == "newpw"

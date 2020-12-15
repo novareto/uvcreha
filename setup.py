@@ -35,10 +35,11 @@ install_requires = [
 
 test_requires = [
     'WebTest',
+    'omegaconf',
+    'pyhamcrest',
     'pytest',
     'pyyaml',
-    'omegaconf',
-    'docker',
+    'reiter.arango[test]',
 ]
 
 

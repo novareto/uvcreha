@@ -70,7 +70,7 @@ class EditPassword(FormView):
         if not form.validate():
             return form
 
-        um = request.database.bind(model.User)
+        um = request.database(User)
         um.update(key=request.user.key, **data.form)
         flash_messages = request.utilities.get('flash')
         flash_messages.add(

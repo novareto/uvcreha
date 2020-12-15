@@ -7,11 +7,11 @@ import horseman.meta
 import horseman.response
 import horseman.http
 from reiter.arango.connector import Connector
+from reiter.arango.validation import ValidationError
 from reiter.routing.routes import Routes
 from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.request import Request
-from docmanager.validation import ValidationError
 from omegaconf.dictconfig import DictConfig
 
 

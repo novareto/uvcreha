@@ -20,5 +20,5 @@ class Webpush(NamedTuple):
                 vapid_private_key=self.private_key,
                 vapid_claims=claims
             )
-        except pywebpush.WebPushException as e:
+        except WebPushException as e:
             return str(e)

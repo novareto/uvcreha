@@ -1,4 +1,3 @@
-import json
 import horseman.meta
 import horseman.response
 from docmanager.app import browser

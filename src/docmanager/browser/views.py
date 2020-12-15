@@ -4,7 +4,6 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from reiter.routing.predicate_route import BranchingView, PredicateError
 from docmanager.app import browser
-from docmanager import models
 from docmanager.browser.form import Form, FormView
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.browser.openapi import generate_doc

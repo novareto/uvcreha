@@ -2,7 +2,7 @@ import enum
 from typing import List, Optional, Any, ClassVar
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
-from reiter.arango.model import arango_model, PluggableModel
+from reiter.arango.model import ArangoModel
 from docmanager.registries import NamedComponents
 
 
@@ -11,53 +11,36 @@ class Message(BaseModel):
     body: str
 
 
-class Model(BaseModel):
+class Model(ArangoModel):
     creation_date: datetime = Field(default_factory=datetime.utcnow)
 
 
-@arango_model('documents')
-class BaseDocument(BaseModel):
+class Document(Model):
+
+    __collection__ = "documents"
+
     az: str
     username: str
     state: str
     content_type: str = None
     state: Optional[str] = None
-    alternatives: ClassVar[Any] = NamedComponents()
-
     item: Optional[Any]
 
-    @classmethod
-    def lookup(cls, content_type: str, **data):
-        model_class = cls.alternatives.get(content_type)
-        if model_class is None:
-            raise KeyError(f'Unknown document type: {content_type}.')
-        return model_class
+    alternatives: ClassVar[Any] = NamedComponents()
 
     @validator('item', always=True, pre=True)
     def set_item(cls, v, values):
         if v:
             model_class = cls.alternatives.get(values['content_type'])
             if model_class is None:
-                raise KeyError(f'Unknown document type: {values["content_type"]}.')
+                raise KeyError(
+                    f'Unknown document type: {values["content_type"]}.')
             return model_class(**v)
 
 
-
-class Document(PluggableModel):
-
-    __collection__ = BaseDocument.__collection__
-    alternatives = NamedComponents()
-
-    @classmethod
-    def lookup(cls, content_type: str, **data):
-        model_class = cls.alternatives.get(content_type)
-        if model_class is None:
-            raise KeyError(f'Unknown document type: {content_type}.')
-        return model_class
-
-
-@arango_model('files')
 class File(Model):
+
+    __collection__ = "files"
 
     az: str
     username: str
@@ -86,8 +69,9 @@ class UserPreferences(BaseModel):
     datenschutz: Optional[bool] = Field(title="Datenschutz", default=False)
 
 
-@arango_model('users')
 class User(Model):
+
+    __collection__ = "users"
 
     username: str = Field(
         title="Loginname", description="Bitte geb hier was ein.")
@@ -105,11 +89,3 @@ class User(Model):
     @property
     def __key__(self) -> str:
         return self.username
-
-    def get_files(self, request, key):
-        binding_file = request.database.bind(File)
-        return binding_file.find(username=key)
-
-    def get_documents(self, request, username, az):
-        binding_doc = request.database.bind(BaseDocument)
-        return binding_doc.find(username=username, az=az)

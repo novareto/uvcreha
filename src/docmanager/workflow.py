@@ -21,7 +21,8 @@ class ValidUser(workflow.Validator):
     @classmethod
     def validate(cls, item, **namespace):
         if not item.email:
-            raise Error(message=f'User {item} needs a valid email.')
+            raise workflow.Error(
+                message=f'User {item} needs a valid email.')
 
 
 class UserWorkflow(workflow.Workflow):

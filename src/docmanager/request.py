@@ -1,7 +1,5 @@
 import cgi
 import collections
-from typing import Optional
-
 import horseman.parsing
 from horseman.meta import Overhead
 from docmanager.registries import NamedComponents

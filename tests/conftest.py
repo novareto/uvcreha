@@ -32,13 +32,13 @@ def db_connector(arango_config):
 
     connector = Connector(**arango_config._asdict())
     db = connector.get_database()
-    db.arango_db.create_collection(User.__collection__)
-    db.arango_db.create_collection(File.__collection__)
-    db.arango_db.create_collection(Document.__collection__)
+    db.db.create_collection(User.__collection__)
+    db.db.create_collection(File.__collection__)
+    db.db.create_collection(Document.__collection__)
     yield connector
-    db.arango_db.delete_collection(User.__collection__)
-    db.arango_db.delete_collection(File.__collection__)
-    db.arango_db.delete_collection(Document.__collection__)
+    db.db.delete_collection(User.__collection__)
+    db.db.delete_collection(File.__collection__)
+    db.db.delete_collection(Document.__collection__)
 
 
 @pytest.fixture(scope="session")
@@ -81,7 +81,7 @@ def web_app(request, db_connector):
         manager = cromlech.session.SignedCookieManager(
             "secret", handler, cookie="my_sid")
         return cromlech.session.WSGISessionManager(
-            manager, environ_key=CONFIG.session)
+            manager, environ_key=CONFIG.app.env.session)
 
     def fanstatic_middleware(config):
         from fanstatic import Fanstatic
@@ -103,7 +103,7 @@ def web_app(request, db_connector):
 
     # Auth
     db = db_connector.get_database()
-    auth = docmanager.auth.Auth(db.bind(User), CONFIG.app.env)
+    auth = docmanager.auth.Auth(db(User), CONFIG.app.env)
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
