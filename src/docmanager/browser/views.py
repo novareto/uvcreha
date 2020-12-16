@@ -7,7 +7,7 @@ from docmanager.app import browser
 from docmanager.browser.form import Form, FormView
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.browser.openapi import generate_doc
-from docmanager.models import User, UserPreferences
+from docmanager.models import User, UserPreferences, File, Document
 from docmanager.request import Request
 from docmanager.workflow import user_workflow
 
@@ -29,10 +29,19 @@ def openapi(request: Request):
 
 
 @browser.route("/")
-@template(TEMPLATES["index.pt"], layout_name="default", raw=False)
-def index(request: Request):
-    user = request.user
-    return dict(request=request, user=user)
+class LandingPage(horseman.meta.APIView):
+
+    @template(TEMPLATES["index.pt"], layout_name="default", raw=False)
+    def GET(self, request: Request):
+        user = request.user
+        return dict(request=request, user=user, view=self)
+
+    def get_files(self, request, key):
+        return request.database(File).find(username=key)
+
+    def get_documents(self, request, username, az):
+
+        return request.database(Document).find(username=username, az=az)
 
 
 @browser.route("/webpush")
