@@ -1,8 +1,13 @@
 app:
 
+  session:
+    cache: ${path:sessions}
+    cookie_name: docmanager.cookie
+    cookie_secret: secret
+
   env:
-    session: docmanager.session
     user: docmanager.user
+    session: docmanager.session
 
   logger:
     name: docmanager.logger
@@ -15,7 +20,7 @@ app:
 
 
 arango:
-  user:
+  user: root
   password:
   database:
   url: http://127.0.0.1:8529
@@ -27,8 +32,8 @@ amqp:
 
 
 webpush:
-  public_key: ${path:conf/public_key.txt}
-  private_key: ${path:conf/private_key.txt}
+  public_key: ${path:identities/public_key.txt}
+  private_key: ${path:identities/private_key.txt}
   vapid_claims:
     sub: mailto:cklinger@novareto.de
     aud: https://updates.push.services.mozilla.com
@@ -48,4 +53,4 @@ server:
 
 
 environ:
-  CHAMELEON_CACHE: ${path:/tmp/templates_cache}
+  CHAMELEON_CACHE: ${path:templates_cache}

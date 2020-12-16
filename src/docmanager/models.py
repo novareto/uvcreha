@@ -60,13 +60,28 @@ class MessagingType(str, enum.Enum):
 class UserPreferences(BaseModel):
     """User-based application preferences
     """
+    name: Optional[str] = Field(
+        title="Vorname",
+        description="Vorname"
+    )
+
+    surname: Optional[str] = Field(
+        title="Nachname",
+        description="Nachname"
+    )
+
+    birthdate: Optional[date] = Field(
+        title="Geburtsdatum"
+    )
+
+    datenschutz: Optional[bool] = Field(
+        title="Datenschutz",
+        default=False
+    )
+
     messaging_type: MessagingType = MessagingType.email
-    name: str = Field(title="Vorname", description="Vorname")
-    surname: str = Field(title="Nachname", description="Nachname")
-    birthdate: Optional[date] = Field(title="Geburtsdatum")
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False
-    datenschutz: Optional[bool] = Field(title="Datenschutz", default=False)
 
 
 class User(Model):

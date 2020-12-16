@@ -58,7 +58,7 @@ def webpush_plugin(config):
     )
 
 
-def api(config, connector, webpush, emailer):
+def api(config, connector, webpush, emailer) -> WSGICallable:
     from docmanager.app import api as app
     app.connector = connector
     app.config.update(config)
@@ -67,7 +67,7 @@ def api(config, connector, webpush, emailer):
     return app
 
 
-def browser(config, connector, webpush, emailer):
+def browser(config, connector, webpush, emailer) -> WSGICallable:
     from docmanager.models import User
     from docmanager.mq import AMQPEmitter
     from docmanager.auth import Auth
@@ -83,12 +83,16 @@ def browser(config, connector, webpush, emailer):
         import cromlech.session
         import cromlech.sessions.file
 
-        folder = pathlib.Path("/tmp/sessions")
-        handler = cromlech.sessions.file.FileStore(folder, 3000)
+        handler = cromlech.sessions.file.FileStore(
+            config.session.cache, 3000
+        )
         manager = cromlech.session.SignedCookieManager(
-            "secret", handler, cookie="my_sid")
+            config.session.cookie_secret,
+            handler,
+            cookie=config.session.cookie_name
+        )
         return cromlech.session.WSGISessionManager(
-            manager, environ_key=config.session)
+            manager, environ_key=config.env.session)
 
 
     app.connector = connector
@@ -98,7 +102,7 @@ def browser(config, connector, webpush, emailer):
     app.plugins.register(emailer, name="emailer")
 
     db = connector.get_database()
-    auth = Auth(db.bind(User), config.app.env)
+    auth = Auth(db(User), config.app.env)
     app.plugins.register(auth, name="authentication")
     app.middlewares.register(auth, order=0)  # very first.
 
@@ -106,7 +110,7 @@ def browser(config, connector, webpush, emailer):
     app.plugins.register(amqp, name="amqp")
 
     app.middlewares.register(
-        session_middleware(config.app.env), order=1)
+        session_middleware(config.app), order=1)
 
     app.middlewares.register(
         fanstatic_middleware(config.app.assets), order=2)
