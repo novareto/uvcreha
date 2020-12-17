@@ -49,8 +49,7 @@ class Auth:
                         302, headers={'Location': '/login'}
                     )(environ, start_response)
 
-                state = user_workflow(user).get_state()
-                if state is user_workflow.states.pending:
+                if user_workflow(user).state is user_workflow.states.pending:
                     if environ['PATH_INFO'] != '/register':
                         # user needs to finish the registration
                         return Response.create(

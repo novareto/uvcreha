@@ -3,17 +3,13 @@ from roughrider import workflow
 
 class ModelWorkflowItem(workflow.WorkflowItem):
 
-    def get_state(self):
+    @property
+    def state(self):
         return self.workflow.get(self.item.state)
 
-    def set_state(self, state):
-        if (error := self.check_reachable(state)):
-            raise error
+    @state.setter
+    def state(self, state):
         self.item.state = state.name
-
-
-def notify_trigger(item, request, **ns):
-    print(f'This is a notification: {item}, {request}.')
 
 
 class ValidUser(workflow.Validator):
@@ -73,18 +69,12 @@ class DocumentWorkflow(workflow.Workflow):
         workflow.Transition(
             origin=states.inquiry,
             target=states.sent,
-            action=workflow.Action(
-                'Send',
-                triggers=[notify_trigger]
-            )
+            action=workflow.Action('Send')
         ),
         workflow.Transition(
             origin=states.sent,
             target=states.approved,
-            action=workflow.Action(
-                'Approve',
-                triggers=[notify_trigger]
-            )
+            action=workflow.Action('Approve')
         )
     ))
 
@@ -93,3 +83,9 @@ class DocumentWorkflow(workflow.Workflow):
 
 document_workflow = DocumentWorkflow('inquiry')
 user_workflow = UserWorkflow('pending')
+
+
+@document_workflow.subscribe('Send')
+@document_workflow.subscribe('Approve')
+def notify_trigger(transition, item, request, **ns):
+    print(f'This is a notification: {item}, {request}.')

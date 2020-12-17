@@ -40,6 +40,7 @@ class Router(horseman.meta.APINode):
     def subscribe(self, event_name: str):
         def wrapper(func):
             self.subscribers[event_name].append(func)
+            return func
         return wrapper
 
     def resolve(self, path, environ):
