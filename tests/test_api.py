@@ -86,7 +86,6 @@ def test_add_file(api_app, user):
         f"/users/{user.user.username}/files/1234/doc.add", {
             'body': "Some Doc",
             'myfield': "",
-            'state': "submitted",
             'content_type': "event"
         }
     )

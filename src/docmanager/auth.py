@@ -1,6 +1,6 @@
 from horseman.prototyping import Environ
 from horseman.response import Response
-from docmanager.workflow import user_workflow
+from docmanager.workflow import user_workflow, UserWorkflow
 
 
 class Auth:
@@ -42,14 +42,13 @@ class Auth:
 
             if environ['PATH_INFO'] not in self.unprotected:
                 # App results need protection checks now.
-
                 if user is None:
                     # Protected access and no user. Go login.
                     return Response.create(
                         302, headers={'Location': '/login'}
                     )(environ, start_response)
-
-                if user_workflow(user).state is user_workflow.states.pending:
+                state = user_workflow(user).state
+                if state is user_workflow.states.pending:
                     if environ['PATH_INFO'] != '/register':
                         # user needs to finish the registration
                         return Response.create(

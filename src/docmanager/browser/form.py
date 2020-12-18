@@ -53,7 +53,8 @@ class DocFormView(FormView):
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request, **data):
         doc = request.database(Document).fetch(request.route.params['key'])
-        data.update(doc.item.dict())
+        if doc.item:
+            data.update(doc.item.dict())
         form = self.setupForm(data=data)
         return {
             "form": form,
