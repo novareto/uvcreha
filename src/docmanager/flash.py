@@ -12,7 +12,6 @@ class SessionMessages:
         if self.key in self.session:
             while self.session[self.key]:
                 yield Message(**self.session[self.key].pop(0))
-                self.session[self.key] = self.session[self.key][:]
                 self.session.save()
 
     def add(self, body: str, type: str = "info"):
