@@ -19,7 +19,7 @@
           <a href="/logout">
             <span class="menu-item-title"> Logout </span>
           </a>
-          <a href="/user_preferences">
+          <a href="/preferences">
             <span class="menu-item-title"> Einstellungen </span>
           </a>
         </div>

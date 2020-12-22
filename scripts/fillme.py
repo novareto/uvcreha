@@ -18,5 +18,4 @@ AZ_DATA = {'az': '4711'}
 DOC_DATA = {'content_type': 'account_info'}
 
 req = requests.put(URL + '/api/users/cklinger/files/4711/doc.add', json=DOC_DATA)
-import pdb; pdb.set_trace()
 print(req.json())

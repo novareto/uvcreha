@@ -9,6 +9,7 @@ from docmanager.browser.form import FormView, Form
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.models import User, UserPreferences
 from docmanager.request import Request
+from docmanager.workflow import user_workflow
 
 
 class Kontaktdaten(pydantic.BaseModel):
@@ -21,29 +22,23 @@ class Account(pydantic.BaseModel):
     iban: str
 
 
-@browser.route("/my_preferences")
+@browser.route("/preferences")
 class MyPreferences(FormView):
 
     title = "E-Mail Adresse ändern"
     description = "Edit your preferences."
-    action = "my_preferences"
+    action = "preferences"
 
     def __init__(self, *args, **kwargs):
         self.tabs = {
-            "Kontaktdaten": (
-                'name',
-                'surname',
-                'birthdate'
-            ),
+            "Stammdaten": ("name", "surname", "birthdate"),
             "Benachrichtigungen": (
-                'messaging_type',
-                'webpush_subscription',
-                'webpush_activated'
+                "messaging_type",
+                "webpush_subscription",
+                "webpush_activated",
             ),
-            "Datenschutz": (
-                'datenschutz',
-            ),
-#            "Benachrichtigungen": Account,
+            "Datenschutz": ("datenschutz",),
+            "Kontaktdaten": ("email", "mobile"),
         }
 
     def setupForm(self, model, data={}, formdata=Multidict(), only=None):
@@ -57,45 +52,74 @@ class MyPreferences(FormView):
     @trigger("update", "Speichern", css="btn btn-primary", order=1)
     def update(self, request, data):
         data = data.form
-        query_string = parse_qs(request.environ['QUERY_STRING'])
-        tab = query_string.get('tab', ' ')[0]
+        query_string = parse_qs(request.environ["QUERY_STRING"])
+        tab = query_string.get("tab", " ")[0]
         if not tab:
             raise
-        form = self.setupForm(
-            UserPreferences,
-            only=self.tabs.get(tab),
-            formdata=data
-        )
+        form = self.setupForm(UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
             return {
                 "form": form,
                 "view": self,
                 "error": None,
-                "path": request.route.path
+                "path": request.route.path,
             }
 
-        user = request.database.bind(User)
+        user = request.database(User)
         cd = request.user.preferences.dict()
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
-        flash_messages = request.utilities.get('flash')
-        flash_messages.add(
-            body='Ihre Angaben wurden erfolgreich gespeichert.'
-        )
-        return horseman.response.Response.create(
-            302, headers={'Location': '/'})
+        flash_messages = request.utilities.get("flash")
+        flash_messages.add(body="Ihre Angaben wurden erfolgreich gespeichert.")
+        return horseman.response.Response.create(302, headers={"Location": "/"})
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary", order=20)
     def abbrechen(self, request, data):
-        return horseman.response.Response.create(
-            302, headers={'Location': '/'})
+        return horseman.response.Response.create(302, headers={"Location": "/"})
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
-        tabs = {k: self.setupForm(UserPreferences, formdata=None, data=self.get_user_data(request), only=v) for (k, v) in self.tabs.items()}
+        tabs = {
+            k: self.setupForm(
+                UserPreferences, formdata=None, data=self.get_user_data(request), only=v
+            )
+            for (k, v) in self.tabs.items()
+        }
         return dict(request=request, tabs=tabs, view=self)
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def POST(self, request: Request, **data):
         request.extract()
         return self.process_action(request)
+
+
+@browser.route("/register")
+class RegistrationForm(FormView):
+
+    title = "Registration"
+    description = "Finish your registration"
+    action = "/register"
+    model = User
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = Form.from_model(self.model, only=("email",), email={"required": True})
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @trigger("register", "Register", css="btn btn-primary")
+    def register(self, request, data):
+        form = self.setupForm(data=request.user.dict(), formdata=data.form)
+        if not form.validate():
+            return {
+                "form": form,
+                "view": self,
+                "error": None,
+                "path": request.route.path,
+            }
+
+        request.user.email = form.data["email"]
+        wf = user_workflow(request.user)
+        wf.set_state(user_workflow.states.active)
+        request.user.save()
+
+        return horseman.response.Response.create(302, headers={"Location": "/"})

@@ -79,6 +79,11 @@ class UserPreferences(BaseModel):
         default=False
     )
 
+    mobile: Optional[str] = Field(
+        title="Telefonnummer",
+        description="Telefonnummer"
+    )
+
     messaging_type: MessagingType = MessagingType.email
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False
