@@ -98,23 +98,20 @@ def browser(config, connector, webpush, emailer) -> WSGICallable:
     app.connector = connector
     app.config.update(config.app)
 
-    app.plugins.register(webpush, name="webpush")
-    app.plugins.register(emailer, name="emailer")
+    app.register_middleware(
+        fanstatic_middleware(config.app.assets), order=0)  # very first.
+
+    app.register_middleware(
+        session_middleware(config.app), order=1)
 
     db = connector.get_database()
     auth = Auth(db(User), config.app.env)
     app.plugins.register(auth, name="authentication")
-    app.middlewares.register(auth, order=0)  # very first.
+    app.register_middleware(auth, order=2)
 
-    amqp = AMQPEmitter(config.amqp)
-    app.plugins.register(amqp, name="amqp")
-
-    app.middlewares.register(
-        session_middleware(config.app), order=1)
-
-    app.middlewares.register(
-        fanstatic_middleware(config.app.assets), order=2)
-
+    app.plugins.register(AMQPEmitter(config.amqp), name="amqp")
+    app.plugins.register(webpush, name="webpush")
+    app.plugins.register(emailer, name="emailer")
     return app
 
 

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Callable
 
 import horseman.meta
 import horseman.response
@@ -20,7 +20,8 @@ class Router(horseman.meta.APINode):
 
     config: Mapping = field(default_factory=partial(DictConfig, {}))
     connector: Optional[Connector] = None
-    middlewares: list = field(default_factory=registries.PriorityList)
+    _middlewares: list = field(default_factory=registries.PriorityList)
+    _caller: Callable = field(init=False)
     plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request
     routes: Routes = field(default_factory=Routes)
@@ -52,15 +53,23 @@ class Router(horseman.meta.APINode):
             environ['horseman.path.params'] = route.params
             request = self.request_factory(self, environ, route)
             self.notify('request_created', self, request)
-            return route.endpoint(request, **route.params)
+            response = route.endpoint(request, **route.params)
+            self.notify('response_created', self, request, response)
+            return response
         return None
+
+    def register_middleware(self, middleware, order):
+        self._middlewares.register(middleware, order=order)
+        caller = super().__call__
+        for order, middleware in reversed(self._middlewares):
+            caller = middleware(caller)
+        self._caller = caller
 
     def __call__(self, environ, start_response):
         try:
-            caller = super().__call__
-            for order, middleware in self.middlewares:
-                caller = middleware(caller)
-            return caller(environ, start_response)
+            if self._caller is not None:
+                return self._caller(environ, start_response)
+            return super().__call__(environ, start_response)
         except ValidationError as exc:
             return exc(environ, start_response)
 

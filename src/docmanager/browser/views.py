@@ -46,7 +46,6 @@ class LandingPage(horseman.meta.APIView):
         return request.database(File).find(username=key)
 
     def get_documents(self, request, username, az):
-
         return request.database(Document).find(username=username, az=az)
 
 

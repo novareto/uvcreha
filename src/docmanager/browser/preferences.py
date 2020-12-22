@@ -119,7 +119,8 @@ class RegistrationForm(FormView):
 
         request.user.email = form.data["email"]
         wf = user_workflow(request.user)
-        wf.set_state(user_workflow.states.active)
-        request.user.save()
+        wf.state = user_workflow.states.active
+        request.database.save(request.user)
 
-        return horseman.response.Response.create(302, headers={"Location": "/"})
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"})
