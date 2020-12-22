@@ -21,7 +21,7 @@ class Router(horseman.meta.APINode):
     config: Mapping = field(default_factory=partial(DictConfig, {}))
     connector: Optional[Connector] = None
     _middlewares: list = field(default_factory=registries.PriorityList)
-    _caller: Callable = field(init=False)
+    _caller: Callable = field(default=None)
     plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request
     routes: Routes = field(default_factory=Routes)

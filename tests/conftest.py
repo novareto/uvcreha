@@ -25,6 +25,42 @@ app:
 ''')
 
 
+@pytest.fixture
+def session():
+    from cromlech.session import Store, Session
+
+    class MemoryStore(Store):
+
+        def __init__(self):
+            self._store = {}
+
+        def __iter__(self):
+            return iter(self._store.keys())
+
+        def touch(self, sid):
+            print('Session "%s" was accessed' % sid)
+
+        def get(self, sid):
+            """We return a copy, to avoid mutability by reference.
+            """
+            data = self._store.get(sid)
+            if data is not None:
+                return deepcopy(data)
+            return data
+
+        def set(self, sid, session):
+            self._store[sid] = session
+
+        def clear(self, sid):
+            if sid in self._store:
+                self._store[sid].clear()
+
+        def delete(self, sid):
+            del self._store[sid]
+
+    return Session('a sid', MemoryStore(), new=True)
+
+
 @pytest.fixture(scope="session")
 def db_connector(arango_config):
     from docmanager.models import User, File, Document
@@ -107,11 +143,12 @@ def web_app(request, db_connector):
     app.plugins.register(auth, name="authentication")
 
     # Middlewares
-    app.middlewares.register(auth, order=0)
-    app.middlewares.register(
+    app.register_middleware(
+        fanstatic_middleware(CONFIG.app.assets), order=0)
+    app.register_middleware(
         session_middleware(CONFIG.app.env), order=1)
-    app.middlewares.register(
-        fanstatic_middleware(CONFIG.app.assets), order=2)
+    app.register_middleware(
+        auth, order=2)
 
     yield app
     folder.cleanup()
