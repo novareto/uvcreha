@@ -23,18 +23,8 @@ def make_logger(name, level=logging.DEBUG) -> logging.Logger:
 def environment(**environ):
     """Temporarily set the process environment variables.
     """
-    def cast_items(mapping):
-        for k, v in mapping.items():
-            v = str(v)
-            if v.startswith('path:'):
-                path = pathlib.Path(v[5:]).resolve()
-                path.mkdir(parents=True, exist_ok=True)
-                yield k, str(path)
-            else:
-                yield k, v
-
     old_environ = dict(os.environ)
-    os.environ.update(dict(cast_items(environ)))
+    os.environ.update(dict(environ))
     try:
         yield
     finally:
