@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from functools import partial
+from functools import partial, reduce
 from typing import Mapping, Optional, Callable
 
 import horseman.meta
@@ -21,7 +21,7 @@ class Router(horseman.meta.APINode):
     config: Mapping = field(default_factory=partial(DictConfig, {}))
     connector: Optional[Connector] = None
     _middlewares: list = field(default_factory=registries.PriorityList)
-    _caller: Callable = field(default=None)
+    _caller: Optional[Callable] = field(default=None)
     plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request
     routes: Routes = field(default_factory=Routes)
@@ -60,10 +60,11 @@ class Router(horseman.meta.APINode):
 
     def register_middleware(self, middleware, order):
         self._middlewares.register(middleware, order=order)
-        caller = super().__call__
-        for order, middleware in reversed(self._middlewares):
-            caller = middleware(caller)
-        self._caller = caller
+        self._caller = reduce(
+            lambda x, y: y(x),
+            (func for order, func in reversed(self._middlewares)),
+             super().__call__
+        )
 
     def __call__(self, environ, start_response):
         try:

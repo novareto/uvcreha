@@ -108,7 +108,6 @@ def browser(config, connector, webpush, emailer) -> WSGICallable:
 def start(config):
     import bjoern
     import importscan
-
     import docmanager
     import docmanager.mq
     import uvcreha.example
@@ -147,9 +146,9 @@ def start(config):
         AMQPworker.stop()
 
 
-def resolve_path(path):
+def resolve_path(path: str) -> str:
     path = pathlib.Path(path)
-    return path.resolve()
+    return str(path.resolve())
 
 
 if __name__ == "__main__":
