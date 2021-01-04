@@ -1,12 +1,20 @@
 import horseman.response
 import horseman.meta
+from typing import NamedTuple
 from reiter.form import trigger
+from roughrider.workflow import State
 from docmanager.app import browser
 from docmanager.browser.form import FormView
 from docmanager.browser.layout import template, TEMPLATES
 from docmanager.browser.openapi import generate_doc
 from docmanager.models import User, UserPreferences, File, Document
 from docmanager.request import Request
+from docmanager.workflow import document_workflow
+
+
+class UserDocument(NamedTuple):
+    item: Document
+    state: State
 
 
 @browser.routes.register("/doc")
@@ -28,7 +36,7 @@ def openapi(request: Request):
 @browser.route("/flash")
 def flash(request):
     flash_messages = request.utilities.get("flash")
-    flash_messages.add(body="HELLO WORLD FROM REDIERCT.")
+    flash_messages.add(body="HELLO WORLD FROM REDIRECT.")
     return horseman.response.Response.create(302, headers={"Location": "/"})
 
 
@@ -46,7 +54,11 @@ class LandingPage(horseman.meta.APIView):
         return request.database(File).find(username=key)
 
     def get_documents(self, request, username, az):
-        return request.database(Document).find(username=username, az=az)
+        docs = request.database(Document).find(username=username, az=az)
+        for doc in docs:
+            yield UserDocument(
+                item=doc,
+                state=document_workflow(doc).state)
 
 
 @browser.route("/webpush")
