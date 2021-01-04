@@ -3,7 +3,7 @@ import json
 
 
 URL = "http://localhost:8080"
-DATA_USER = {'username': 'cklinger', 'password':'password' }
+DATA_USER = {'username': 'cklinger1', 'password':'password' }
 
 #req = requests.put(URL+'/api/user.add', json=DATA_USER)
 #print(req)

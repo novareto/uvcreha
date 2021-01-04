@@ -17,7 +17,7 @@ def doc_add(request: Request, username: str, fileid: str):
         state=DocumentWorkflow.states.inquiry.name,
         **data.json,
     )
-    request.app.notify("document_created", user=username, document=document)
+    request.app.notify("document_created", username=username, request=request, document=document)
     return horseman.response.Response.from_json(201, body=document.json())
 
 

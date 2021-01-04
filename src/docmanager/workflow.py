@@ -20,10 +20,10 @@ def ValidUser(item, **namespace):
 class UserWorkflow(workflow.Workflow):
 
     class states(workflow.WorkflowState):
-        pending = 'Pending'
-        active = 'Active'
-        inactive = 'Inactive'
-        closed = 'Closed'
+        pending = 'in Prüfung'
+        active = 'Aktiv'
+        inactive = 'Inaktiv'
+        closed = 'Geschlossen'
 
     transitions = workflow.Transitions((
         workflow.Transition(
@@ -57,9 +57,9 @@ class UserWorkflow(workflow.Workflow):
 class DocumentWorkflow(workflow.Workflow):
 
     class states(workflow.WorkflowState):
-        inquiry = 'Inquiry'
-        sent = 'Sent'
-        approved = 'Approved'
+        inquiry = 'Anfrage'
+        sent = 'Gesendet'
+        approved = 'Bestätigt/Abgeschlossen'
 
     transitions = workflow.Transitions((
         workflow.Transition(

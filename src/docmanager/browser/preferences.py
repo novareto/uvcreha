@@ -47,7 +47,9 @@ class MyPreferences(FormView):
         return form
 
     def get_user_data(self, request):
-        return request.user.preferences.dict()
+        if request.user.preferences:
+            return request.user.preferences.dict()
+        return UserPreferences.construct().dict()
 
     @trigger("update", "Speichern", css="btn btn-primary", order=1)
     def update(self, request, data):
@@ -66,7 +68,7 @@ class MyPreferences(FormView):
             }
 
         user = request.database(User)
-        cd = request.user.preferences.dict()
+        cd = self.get_user_data(request)
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
         flash_messages = request.utilities.get("flash")
