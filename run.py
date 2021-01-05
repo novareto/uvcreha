@@ -133,13 +133,20 @@ def start(config):
     try:
         AMQPworker.start()
 
-        logger.info(
-            "Server started on "
-            f"http://{config.server.host}:{config.server.port}")
+        if not config.server.socket:
+            logger.info(
+                "Server started on "
+                f"http://{config.server.host}:{config.server.port}")
 
-        bjoern.run(
-            app, config.server.host,
-            int(config.server.port), reuse_port=True)
+            bjoern.run(
+                app, config.server.host,
+                int(config.server.port), reuse_port=True)
+        else:
+            logger.info(
+                f"Server started on socket {config.server.socket}.")
+
+            bjoern.run(app, config.server.socket)
+
     except KeyboardInterrupt:
         pass
     finally:

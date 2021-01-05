@@ -1,6 +1,8 @@
+import json
 import horseman.meta
 import horseman.response
 from docmanager.app import browser
+from docmanager.models import User
 
 
 @browser.route("/webpush/subscription", name="webpush_subscription")
@@ -25,6 +27,8 @@ class Webpush(horseman.meta.APIView):
         """
         data = request.extract()
         token = data.json['subscription']
-        request.user.preferences.webpush_subscription = token
-        request.user.update(preferences=request.user.preferences.dict())
+        request.user.preferences.webpush_subscription = json.dumps(token)
+        user = request.database(User)
+        user.update(
+            request.user.key, preferences=request.user.preferences.dict())
         return horseman.response.Response.create(200)
