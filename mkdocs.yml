@@ -1,0 +1,20 @@
+site_name: My Docs
+
+
+theme:
+  name: 'material'
+  custom_dir: 'docs/theme'
+  palette:
+    primary: pink
+    accent: pink
+  logo: 'logo-white.svg'
+  favicon: 'favicon.png'
+
+
+nav:
+- Overview: index.md
+
+
+markdown_extensions:
+- markdown_include.include:
+    base_path: docs

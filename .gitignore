@@ -159,3 +159,5 @@ src/wtforms_pydantic/
 src/reiter.form/
 src/reiter.routing/
 src/roughrider.workflow/
+
+docs/.DS_Store
