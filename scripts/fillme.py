@@ -3,6 +3,7 @@ import json
 
 
 URL = "https://kraft.novareto.de"
+URL = "http://localhost:8080"
 DATA_USER = {'username': 'cklinger', 'password':'password' }
 
 #req = requests.put(URL+'/api/user.add', json=DATA_USER)

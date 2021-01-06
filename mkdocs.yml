@@ -1,18 +1,20 @@
-site_name: My Docs
+site_name: UVC-Reha 
 
 
 theme:
   name: 'material'
   custom_dir: 'docs/theme'
   palette:
-    primary: pink
-    accent: pink
-  logo: 'logo-white.svg'
+    primary: indigo 
+    accent: indigo
+  logo: 'favicon.png'
   favicon: 'favicon.png'
 
 
 nav:
-- Overview: index.md
+- Übersicht: index.md
+- Installation: installation.md
+- Development: development.md
 
 
 markdown_extensions:
