@@ -111,7 +111,9 @@ class EditMail(FormView):
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, request, data):
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Ihre E-Mail Adresse wurde erfolgreich im System gespeichert.')
+        flash_messages.add(
+            body=('Ihre E-Mail Adresse wurde erfolgreich im '
+                  'System gespeichert.'))
         return horseman.response.Response.create(
             302, headers={"Location": "/"}
         )
@@ -124,13 +126,16 @@ class EditMail(FormView):
         um = request.database.bind(models.User)
         um.update(key=request.user.key, **data.form.dict())
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Ihre E-Mail Adresse wurde erfolgreich im System gespeichert.')
+        flash_messages.add(
+            body=('Ihre E-Mail Adresse wurde erfolgreich im '
+                  'System gespeichert.'))
         return horseman.response.Response.create(
             302, headers={"Location": "/"}
         )
 
 
-@browser.route("/user_preferences", methods=["GET"], permissions={"document.view"})
+@browser.route(
+    "/user_preferences", methods=["GET"], permissions={"document.view"})
 @template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
     return dict(request=request)

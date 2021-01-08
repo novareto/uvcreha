@@ -58,7 +58,8 @@ class MyPreferences(FormView):
         tab = query_string.get("tab", " ")[0]
         if not tab:
             raise
-        form = self.setupForm(UserPreferences, only=self.tabs.get(tab), formdata=data)
+        form = self.setupForm(
+            UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
             return {
                 "form": form,
@@ -72,18 +73,22 @@ class MyPreferences(FormView):
         cd.update(data.dict())
         user.update(request.user.key, preferences=cd)
         flash_messages = request.utilities.get("flash")
-        flash_messages.add(body="Ihre Angaben wurden erfolgreich gespeichert.")
-        return horseman.response.Response.create(302, headers={"Location": "/"})
+        flash_messages.add(body=("Ihre Angaben wurden erfolgreich "
+                                 "gespeichert."))
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"})
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary", order=20)
     def abbrechen(self, request, data):
-        return horseman.response.Response.create(302, headers={"Location": "/"})
+        return horseman.response.Response.create(
+            302, headers={"Location": "/"})
 
     @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         tabs = {
             k: self.setupForm(
-                UserPreferences, formdata=None, data=self.get_user_data(request), only=v
+                UserPreferences, formdata=None,
+                data=self.get_user_data(request), only=v
             )
             for (k, v) in self.tabs.items()
         }
@@ -104,7 +109,8 @@ class RegistrationForm(FormView):
     model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("email",), email={"required": True})
+        form = Form.from_model(
+            self.model, only=("email",), email={"required": True})
         form.process(data=data, formdata=formdata)
         return form
 

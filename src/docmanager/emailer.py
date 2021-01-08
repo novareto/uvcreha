@@ -50,7 +50,7 @@ class SecureMailer:
         # If we can encrypt this session, do it
         if server.has_extn('STARTTLS'):
             server.starttls()
-            server.ehlo() # re-identify ourselves over TLS connection
+            server.ehlo()  # re-identify ourselves over TLS connection
 
         server.login(self.config.user, self.config.password)
         try:

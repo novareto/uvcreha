@@ -56,7 +56,7 @@ def make_api(api: dict, node, level=0):
         model = extras.get('model', None)
         if model:
             for method, dispatcher in node.payload.items():
-                api["api%s" %node.path][method] = create_model(
+                api[f"api{node.path}"][method] = create_model(
                     f"api/{node.path.replace('/', '_')}_{method.lower()}",
                     __base__=model,
                 )

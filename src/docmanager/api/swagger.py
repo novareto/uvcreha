@@ -21,4 +21,3 @@ def openapi(request: Request):
         body=open_api.json(by_alias=True, exclude_none=True, indent=2),
         headers={"Content-Type": "application/json"}
     )
-

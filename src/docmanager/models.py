@@ -89,7 +89,6 @@ class UserPreferences(BaseModel):
     webpush_activated: Optional[bool] = False
 
 
-
 class User(Model):
 
     __collection__ = "users"

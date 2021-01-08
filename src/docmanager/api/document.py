@@ -38,7 +38,8 @@ def doc_view(request: Request, username: str, fileid: str, docid: str):
 @api.route("/users/{username}/files/{fileid}/docs/{docid}", methods=["DELETE"])
 def doc_delete(request: Request, username: str, fileid: str, docid: str):
     if (
-        request.database(Document).find_one(_key=docid, az=fileid, username=username)
+        request.database(Document).find_one(
+            _key=docid, az=fileid, username=username)
     ) is not None:
         request.database(Document).delete(docid)
         return horseman.response.reply(202)

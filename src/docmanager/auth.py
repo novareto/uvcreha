@@ -1,6 +1,6 @@
 from horseman.prototyping import Environ
 from horseman.response import Response
-from docmanager.workflow import user_workflow, UserWorkflow
+from docmanager.workflow import user_workflow
 
 
 class Auth:

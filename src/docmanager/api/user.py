@@ -19,7 +19,7 @@ def user_view(request: Request, username: str):
     return horseman.response.Response.create(404)
 
 
-#@api.route('/users/{username}', methods=['DELETE'])
+#  @api.route('/users/{username}', methods=['DELETE'])
 def user_delete(request: Request, username: str):
     if request.database(User).delete(username):
         return horseman.response.Response.create(202)
