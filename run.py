@@ -52,8 +52,8 @@ def api(config, connector, webpush, emailer) -> WSGICallable:
     from docmanager.app import api as app
     app.connector = connector
     app.config.update(config)
-    app.plugins.register(webpush, name="webpush")
-    app.plugins.register(emailer, name="emailer")
+    app.utilities.register(webpush, name="webpush")
+    app.utilities.register(emailer, name="emailer")
     return app
 
 
@@ -96,12 +96,12 @@ def browser(config, connector, webpush, emailer) -> WSGICallable:
 
     db = connector.get_database()
     auth = Auth(db(User), config.app.env)
-    app.plugins.register(auth, name="authentication")
+    app.utilities.register(auth, name="authentication")
     app.register_middleware(auth, order=2)
 
-    app.plugins.register(AMQPEmitter(config.amqp), name="amqp")
-    app.plugins.register(webpush, name="webpush")
-    app.plugins.register(emailer, name="emailer")
+    app.utilities.register(AMQPEmitter(config.amqp), name="amqp")
+    app.utilities.register(webpush, name="webpush")
+    app.utilities.register(emailer, name="emailer")
     return app
 
 

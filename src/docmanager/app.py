@@ -6,6 +6,7 @@ from typing import Mapping, Optional, Callable
 import horseman.meta
 import horseman.response
 import horseman.http
+from reiter.application.app import Application
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
 from roughrider.routing.route import Routes
@@ -16,55 +17,10 @@ from omegaconf.dictconfig import DictConfig
 
 
 @dataclass
-class Router(horseman.meta.APINode):
+class RESTApplication(Application):
 
-    config: Mapping = field(default_factory=partial(DictConfig, {}))
     connector: Optional[Connector] = None
-    _middlewares: list = field(default_factory=registries.PriorityList)
-    _caller: Optional[Callable] = field(default=None)
-    plugins: Mapping = field(default_factory=registries.NamedComponents)
     request_factory: horseman.meta.Overhead = Request
-    routes: Routes = field(default_factory=Routes)
-    subscribers: dict = field(default_factory=partial(defaultdict, list))
-
-    def route(self, *args, **kwargs):
-        return self.routes.register(*args, **kwargs)
-
-    def check_permissions(self, route, environ):
-        pass
-
-    def notify(self, event_name: str, *args, **kwargs):
-        for subscriber in self.subscribers[event_name]:
-            if (result := subscriber(*args, **kwargs)):
-                return result
-
-    def subscribe(self, event_name: str):
-        def wrapper(func):
-            self.subscribers[event_name].append(func)
-            return func
-        return wrapper
-
-    def resolve(self, path, environ):
-        route = self.routes.match(
-            environ['REQUEST_METHOD'], path)
-        if route is not None:
-            self.notify('route_found', self, route, environ)
-            self.check_permissions(route, environ)
-            environ['horseman.path.params'] = route.params
-            request = self.request_factory(self, environ, route)
-            self.notify('request_created', self, request)
-            response = route.endpoint(request, **route.params)
-            self.notify('response_created', self, request, response)
-            return response
-        return None
-
-    def register_middleware(self, middleware, order):
-        self._middlewares.register(middleware, order=order)
-        self._caller = reduce(
-            lambda x, y: y(x),
-            (func for order, func in reversed(self._middlewares)),
-             super().__call__
-        )
 
     def __call__(self, environ, start_response):
         try:
@@ -76,7 +32,7 @@ class Router(horseman.meta.APINode):
 
 
 @dataclass
-class Browser(Router):
+class Browser(RESTApplication):
 
     ui: registries.UIRegistry = field(
         default_factory=registries.UIRegistry)
@@ -90,5 +46,5 @@ class Browser(Router):
                 raise SecurityError(user, permissions - user.permissions)
 
 
-browser = Browser()
-api = Router()
+browser = Browser('Browser Application')
+api = RESTApplication('REST Application')
