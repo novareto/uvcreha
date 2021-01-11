@@ -1,8 +1,8 @@
+from webtest import TestApp
+import docmanager.auth
+
 
 def test_add_user_ok(api_app, web_app, user):
-    from webtest import TestApp
-    import docmanager.auth
-
     browser = TestApp(web_app)
     api = TestApp(api_app)
 
@@ -11,7 +11,7 @@ def test_add_user_ok(api_app, web_app, user):
     assert resp.status == "201 Created"
     assert resp.json == {"id": "ck"}
 
-    auth = web_app.plugins.get('authentication')
+    auth = web_app.utilities.get('authentication')
     assert isinstance(auth, docmanager.auth.Auth) is True
 
     user = auth.from_credentials(ud)

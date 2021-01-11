@@ -34,7 +34,7 @@ class LoginForm(FormView):
                 "path": request.route.path
             }
 
-        auth = request.app.plugins.get("authentication")
+        auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
             return horseman.response.Response.create(

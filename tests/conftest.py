@@ -135,12 +135,12 @@ def web_app(request, db_connector):
 
     # AMQP
     amqp = AMQPEmitter(CONFIG.amqp)
-    app.plugins.register(amqp, name="amqp")
+    app.utilities.register(amqp, name="amqp")
 
     # Auth
     db = db_connector.get_database()
     auth = docmanager.auth.Auth(db(User), CONFIG.app.env)
-    app.plugins.register(auth, name="authentication")
+    app.utilities.register(auth, name="authentication")
 
     # Middlewares
     app.register_middleware(
