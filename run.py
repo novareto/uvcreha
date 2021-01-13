@@ -4,104 +4,30 @@ import functools
 import pathlib
 import contextlib
 import colorlog
+from fanstatic import Fanstatic
 from omegaconf import OmegaConf
+from reiter.application.startup import environment, make_logger
 from horseman.prototyping import WSGICallable
 
 
-def make_logger(name, level=logging.DEBUG) -> logging.Logger:
-    logger = colorlog.getLogger(name)
-    logger.setLevel(level)
-    handler = colorlog.StreamHandler()
-    handler.setFormatter(colorlog.ColoredFormatter(
-        '%(red)s%(levelname)-8s%(reset)s '
-        '%(yellow)s[%(name)s]%(reset)s %(green)s%(message)s'))
-    logger.addHandler(handler)
-    return logger
+def fanstatic_middleware(config) -> WSGICallable:
+    return functools.partial(Fanstatic, **config)
 
 
-@contextlib.contextmanager
-def environment(**environ):
-    """Temporarily set the process environment variables.
-    """
-    old_environ = dict(os.environ)
-    os.environ.update(dict(environ))
-    try:
-        yield
-    finally:
-        os.environ.clear()
-        os.environ.update(old_environ)
+def session_middleware(config) -> WSGICallable:
+    import cromlech.session
+    import cromlech.sessions.file
 
-
-def webpush_plugin(config):
-    from docmanager.webpush import Webpush
-
-    with open(config.private_key) as fd:
-        private_key = fd.readline().strip("\n")
-
-    with open(config.public_key) as fd:
-        public_key = fd.read().strip("\n")
-
-    return Webpush(
-        private_key=private_key,
-        public_key=public_key,
-        claims=config.vapid_claims
+    handler = cromlech.sessions.file.FileStore(
+        config.session.cache, 3000
     )
-
-
-def api(config, connector, webpush, emailer) -> WSGICallable:
-    from docmanager.app import api as app
-    app.connector = connector
-    app.config.update(config)
-    app.utilities.register(webpush, name="webpush")
-    app.utilities.register(emailer, name="emailer")
-    return app
-
-
-def browser(config, connector, webpush, emailer) -> WSGICallable:
-    from docmanager.models import User
-    from docmanager.mq import AMQPEmitter
-    from docmanager.auth import Auth
-    from docmanager.app import browser as app
-
-    def fanstatic_middleware(config) -> WSGICallable:
-        from fanstatic import Fanstatic
-        return functools.partial(Fanstatic, **config)
-
-
-    def session_middleware(config) -> WSGICallable:
-        import cromlech.session
-        import cromlech.sessions.file
-
-        handler = cromlech.sessions.file.FileStore(
-            config.session.cache, 3000
-        )
-        manager = cromlech.session.SignedCookieManager(
-            config.session.cookie_secret,
-            handler,
-            cookie=config.session.cookie_name
-        )
-        return cromlech.session.WSGISessionManager(
-            manager, environ_key=config.env.session)
-
-
-    app.connector = connector
-    app.config.update(config.app)
-
-    app.register_middleware(
-        fanstatic_middleware(config.app.assets), order=0)  # very first.
-
-    app.register_middleware(
-        session_middleware(config.app), order=1)
-
-    db = connector.get_database()
-    auth = Auth(db(User), config.app.env)
-    app.utilities.register(auth, name="authentication")
-    app.register_middleware(auth, order=2)
-
-    app.utilities.register(AMQPEmitter(config.amqp), name="amqp")
-    app.utilities.register(webpush, name="webpush")
-    app.utilities.register(emailer, name="emailer")
-    return app
+    manager = cromlech.session.SignedCookieManager(
+        config.session.cookie_secret,
+        handler,
+        cookie=config.session.cookie_name
+    )
+    return cromlech.session.WSGISessionManager(
+        manager, environ_key=config.env.session)
 
 
 def start(config):
@@ -109,22 +35,23 @@ def start(config):
     import importscan
     import docmanager
     import docmanager.mq
-    import docmanager.plugins
-    from reiter.arango.connector import Connector
+    from docmanager.startup import Applications
     from rutter.urlmap import URLMap
-    from docmanager.emailer import SecureMailer
 
     importscan.scan(docmanager)
 
-    logger = make_logger('docmanager')
-    connector = Connector(**config.arango)
-    webpush = webpush_plugin(config.webpush)
-    emailer = SecureMailer(config.emailer)
-    docmanager.plugins.load(logger=logger)
+    logger = make_logger("docmanager")
+    apps = Applications.from_configuration(config, logger=logger)
+
+    apps.browser.register_middleware(
+        fanstatic_middleware(config.app.assets), order=0)  # very first.
+
+    apps.browser.register_middleware(
+        session_middleware(config.app), order=1)
 
     app = URLMap()
-    app['/'] = browser(config, connector, webpush, emailer)
-    app['/api'] = api(config, connector, webpush, emailer)
+    app['/'] = apps.browser
+    app['/api'] = apps.api
 
     # Serving the app
     AMQPworker = docmanager.mq.Worker(app, config.amqp)
