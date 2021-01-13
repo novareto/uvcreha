@@ -63,7 +63,6 @@ def browser(config, connector, webpush, emailer) -> WSGICallable:
     from docmanager.auth import Auth
     from docmanager.app import browser as app
 
-
     def fanstatic_middleware(config) -> WSGICallable:
         from fanstatic import Fanstatic
         return functools.partial(Fanstatic, **config)

@@ -10,6 +10,7 @@ from reiter.arango.validation import ValidationError
 from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.request import Request
+from roughrider.routing.route import NamedRoutes
 
 
 @dataclass
@@ -30,6 +31,8 @@ class RESTApplication(Application):
 @dataclass
 class Browser(RESTApplication):
 
+
+    routes: NamedRoutes = field(default_factory=NamedRoutes)
     ui: registries.UIRegistry = field(
         default_factory=registries.UIRegistry)
 
