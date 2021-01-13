@@ -110,19 +110,18 @@ def start(config):
     import importscan
     import docmanager
     import docmanager.mq
-    import uvcreha.example
-    import uvcreha.example.app
+    import docmanager.plugins
     from reiter.arango.connector import Connector
     from rutter.urlmap import URLMap
     from docmanager.emailer import SecureMailer
 
     importscan.scan(docmanager)
-    importscan.scan(uvcreha.example)
 
     logger = make_logger('docmanager')
     connector = Connector(**config.arango)
     webpush = webpush_plugin(config.webpush)
     emailer = SecureMailer(config.emailer)
+    docmanager.plugins.load(logger=logger)
 
     app = URLMap()
     app['/'] = browser(config, connector, webpush, emailer)
