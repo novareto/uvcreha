@@ -41,6 +41,7 @@ test_requires = [
     'pytest',
     'pyyaml',
     'reiter.arango[test]',
+    'tox',
 ]
 
 
