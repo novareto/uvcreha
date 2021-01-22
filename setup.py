@@ -7,6 +7,7 @@ version = "0.1"
 install_requires = [
     'bjoern',
     'chameleon',
+    'colorlog',
     'cromlech.jwt',
     'cromlech.session',
     'cromlech.sessions.file',
