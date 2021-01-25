@@ -1,4 +1,3 @@
-recursive-include src *.py *.txt *.css *.scss *.js
+recursive-include src *.py *.pt *.txt *.css *.scss *.js
 recursive-include docs *.txt
-include *.ini
-include *.txt
+include *.ini *.txt
