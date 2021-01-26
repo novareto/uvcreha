@@ -7,5 +7,5 @@ git+https://github.com/trollfot/roughrider.routing.git#egg=roughrider.routing
 git+https://github.com/trollfot/roughrider.predicate.git#egg=roughrider.predicate
 git+https://github.com/novareto/wtforms_pydantic.git#egg=wtforms_pydantic
 git+https://github.com/trollfot/horseman.git#egg=horseman
-git+https://github.com/novareto/uvcreha.example.git#egg=uvcreha.example
+-e git+https://github.com/novareto/uvcreha.example.git#egg=uvcreha.example
 -e .
