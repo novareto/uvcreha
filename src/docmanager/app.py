@@ -5,9 +5,9 @@ import horseman.meta
 import horseman.response
 import horseman.http
 from reiter.application.app import Application
+from reiter.application.browser import registries
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
-from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.request import Request
 
@@ -29,9 +29,6 @@ class RESTApplication(Application):
 
 @dataclass
 class Browser(RESTApplication):
-
-    ui: registries.UIRegistry = field(
-        default_factory=registries.UIRegistry)
 
     def check_permissions(self, route, environ):
         if permissions := route.extras.get('permissions'):

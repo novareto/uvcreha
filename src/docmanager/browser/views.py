@@ -1,8 +1,9 @@
 import horseman.response
 import horseman.meta
 from typing import NamedTuple
-from reiter.form import trigger
 from roughrider.workflow import State
+from reiter.form import trigger
+from reiter.application.browser.layout import render_template
 from docmanager.app import browser
 from docmanager.browser.form import FormView
 from docmanager.browser.layout import template, TEMPLATES
@@ -18,9 +19,8 @@ class UserDocument(NamedTuple):
 
 
 @browser.routes.register("/doc")
-@template(TEMPLATES["swagger.pt"], raw=False)
 def doc_swagger(request: Request):
-    return {"url": "/openapi.json"}
+    return render_template(TEMPLATES["swagger.pt"], {"url": "/openapi.json"}
 
 
 @browser.routes.register("/openapi.json")
@@ -43,12 +43,16 @@ def flash(request):
 @browser.route("/")
 class LandingPage(horseman.meta.APIView):
 
-    @template(TEMPLATES["index.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         user = request.user
         flash_messages = request.utilities.get("flash")
         flash_messages.add(body="HELLO WORLD.")
-        return dict(request=request, user=user, view=self)
+        return render_template(
+            TEMPLATES["index.pt"],
+            request=request,
+            user=user,
+            view=self
+        )
 
     def get_files(self, request, key):
         return request.database(File).find(username=key)

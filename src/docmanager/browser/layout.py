@@ -1,9 +1,7 @@
 import pathlib
-import wrapt
 import horseman.response
+from reiter.application.browser import TemplateLoader
 from docmanager.request import Request
-from docmanager.app import browser
-from docmanager.browser import TemplateLoader
 from docmanager.browser.resources import siguvtheme
 
 
@@ -11,61 +9,10 @@ TEMPLATES = TemplateLoader(
     str((pathlib.Path(__file__).parent / "templates").resolve()), ".pt")
 
 
-def template(template, layout_name=None, raw=False):
-
-    @wrapt.decorator
-    def render(endpoint, instance, args, kwargs):
-        result = endpoint(*args, **kwargs)
-        if isinstance(result, horseman.response.Response):
-            return result
-        assert isinstance(result, dict)
-
-        if args:
-            request = args[0]
-        else:
-            request = kwargs["request"]
-
-        if layout_name is not None:
-            layout = request.app.ui.layout(request, layout_name)
-        else:
-            layout = None
-
-        if layout is not None:
-            path = request.environ["PATH_INFO"]
-            baseurl = "{}://{}{}/".format(
-                request.environ["wsgi.url_scheme"],
-                request.environ["HTTP_HOST"],
-                request.environ["SCRIPT_NAME"],
-            )
-            flash_messages = request.utilities.get('flash')
-            content = template.render(macros=layout.macros, **result)
-            body = layout.render(
-                content,
-                path=path,
-                baseurl=baseurl,
-                request=request,
-                context=object(),
-                user=None,
-                messages=flash_messages,
-                view=instance,
-            )
-            if raw:
-                return body
-            return horseman.response.reply(
-                body=body, headers={"Content-Type": "text/html; charset=utf-8"}
-            )
-
-        content = template.render(**result)
-        if raw:
-            return content
-        return horseman.response.reply(
-            body=content, headers={"Content-Type": "text/html; charset=utf-8"}
-        )
-
-    return render
+UI = registries.UIRegistry()
 
 
-@browser.ui.register_layout(Request)
+@UI.register_layout(Request)
 class Layout:
 
     def __init__(self, request, name):
@@ -86,31 +33,31 @@ class Layout:
         return self._template.render(content=content, **ns)
 
 
-@browser.ui.register_slot(request=Request, name="sitecap")
+@UI.register_slot(request=Request, name="sitecap")
 @template(TEMPLATES["sitecap.pt"], raw=True)
 def sitecap(request, name):
     return dict(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="globalmenu")
+@UI.register_slot(request=Request, name="globalmenu")
 @template(TEMPLATES["globalmenu.pt"], raw=True)
 def globalmenu(request, name):
     return dict(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="navbar")
+@UI.register_slot(request=Request, name="navbar")
 @template(TEMPLATES["navbar.pt"], raw=True)
 def navbar(request, name):
     return dict(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="sidebar")
+@UI.register_slot(request=Request, name="sidebar")
 @template(TEMPLATES["sidebar.pt"], raw=True)
 def sidebar(request, name):
     return dict(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="footer")
+@UI.register_slot(request=Request, name="footer")
 @template(TEMPLATES["footer.pt"], raw=True)
 def footer(request, name):
     return dict(request=request)

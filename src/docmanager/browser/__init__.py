@@ -1,35 +1,33 @@
 import logging
 import chameleon.zpt.loader
 from pkg_resources import iter_entry_points
+from reiter.application.response import Response
+from docmanager.browser.layout import UI
 
 
-logger = logging.getLogger()
+DEFAULT_LAYOUT = 'default'
 
 
-def tales_expressions():
-    """Tales registry
-    """
-    expressions = {}
-    for ept in iter_entry_points(group="chameleon.tales"):
-        if ept.name in expressions:
-            continue
-            raise KeyError(
-                "TALES name %r is defined more than once" % ept.name)
-        expressions[ept.name] = ept.load()
-        logger.debug(
-            "Register Chameleon Expression Extension %s" % ept.name)
-    return expressions
+def render_template(
+        template: str, namespace: dict, layout: DEFAULT_LAYOUT,
+        code: HTTPCode = 200, headers: Optional[dict] = None):
 
-
-class TemplateLoader(chameleon.zpt.loader.TemplateLoader):
-
-    def __init__(self, *args, **kwargs):
-        self.tales = tales_expressions()
-        super().__init__(*args, **kwargs)
-
-    def load(self, filename, format=None):
-        template = super().load(filename, format=format)
-        template.expression_types.update(self.tales)
-        return template
-
-    __getitem__ = load
+    if layout is not None:
+        layout = UI.layout(request, layout)
+        content = template.render(macros=layout.macros, **namespace)
+                path = request.environ["PATH_INFO"]
+                baseurl = "{}://{}{}/".format(
+                    request.environ["wsgi.url_scheme"],
+                    request.environ["HTTP_HOST"],
+                    request.environ["SCRIPT_NAME"],
+                )
+                body = layout.render(
+                    content,
+                    path=path,
+                    baseurl=baseurl,
+                    request=request,
+                    context=object(),
+                    user=None,
+                    messages=flash_messages,
+                    view=instance,
+                )
