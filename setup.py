@@ -43,7 +43,6 @@ test_requires = [
     'pyyaml',
     'pytest-cov',
     'reiter.arango[test]',
-    'tox',
 ]
 
 
