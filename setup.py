@@ -40,6 +40,7 @@ test_requires = [
     'pyhamcrest',
     'pytest',
     'pyyaml',
+    'pytest-cov',
     'reiter.arango[test]',
 ]
 
