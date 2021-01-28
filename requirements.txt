@@ -1,0 +1,11 @@
+git+https://github.com/novareto/reiter.arango.git#egg=reiter.arango
+git+https://github.com/novareto/reiter.form.git#egg=reiter.form
+git+https://github.com/novareto/reiter.application.git#egg=reiter.application
+git+https://github.com/trollfot/roughrider.auth.git#egg=roughrider.auth
+git+https://github.com/trollfot/roughrider.workflow.git#egg=roughrider.workflow
+git+https://github.com/trollfot/roughrider.routing.git#egg=roughrider.routing
+git+https://github.com/trollfot/roughrider.predicate.git#egg=roughrider.predicate
+git+https://github.com/novareto/wtforms_pydantic.git#egg=wtforms_pydantic
+git+https://github.com/trollfot/horseman.git#egg=horseman
+-e git+https://github.com/novareto/uvcreha.example.git#egg=uvcreha.example
+-e .
