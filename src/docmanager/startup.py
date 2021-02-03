@@ -11,6 +11,7 @@ from docmanager.auth import Auth
 from docmanager.app import browser, api
 from docmanager.webpush import Webpush
 from docmanager.emailer import SecureMailer
+from docmanager.browser.layout import UI
 
 
 def webpush_plugin(config):
@@ -48,6 +49,7 @@ def create_browser(config, connector, webpush, emailer) -> WSGICallable:
     browser.utilities.register(AMQPEmitter(config.amqp), name="amqp")
     browser.utilities.register(webpush, name="webpush")
     browser.utilities.register(emailer, name="emailer")
+    browser.utilities.register(UI, name="layout")
     return browser
 
 

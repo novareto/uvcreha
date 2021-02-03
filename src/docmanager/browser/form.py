@@ -1,8 +1,9 @@
 import wtforms
 import reiter.form
+from horseman.response import reply
 from horseman.http import Multidict
 from docmanager.request import Request
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import UI, TEMPLATES
 from docmanager.models import Document
 
 
@@ -27,22 +28,23 @@ class Form(reiter.form.Form):
 
 class FormView(reiter.form.FormView):
 
+    template = TEMPLATES["base_form.pt"]
+
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model)
         form.process(data=data, formdata=formdata)
         return form
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         form = self.setupForm()
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return UI.response(
+            self.template,
+            request=request,
+            form=form,
+            view=self,
+            error=None
+        )
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request):
         request.extract()
         return self.process_action(request)
@@ -50,20 +52,18 @@ class FormView(reiter.form.FormView):
 
 class DocFormView(FormView):
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request, **data):
         doc = request.database(Document).fetch(request.route.params['key'])
         if doc.item:
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return UI.response(
+            self.template,
+            form=form,
+            view=self,
+            error=None
+        )
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request, **data):
         request.extract()
         return self.process_action(request)

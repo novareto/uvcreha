@@ -1,6 +1,6 @@
 import pathlib
 import horseman.response
-from reiter.application.browser import TemplateLoader
+from reiter.application.browser import TemplateLoader, registries
 from docmanager.request import Request
 from docmanager.browser.resources import siguvtheme
 
@@ -15,9 +15,10 @@ UI = registries.UIRegistry()
 @UI.register_layout(Request)
 class Layout:
 
+    __slots__ = ('_template',)
+
     def __init__(self, request, name):
         self._template = TEMPLATES["layout.pt"]
-        self._namespace = {'request': request}
 
     @property
     def user(self):
@@ -27,37 +28,31 @@ class Layout:
     def macros(self):
         return self._template.macros
 
-    def render(self, content, **extra):
+    def render(self, content, **namespace):
         siguvtheme.need()
-        ns = {**self._namespace, **extra}
-        return self._template.render(content=content, **ns)
+        return self._template.render(content=content, **namespace)
 
 
 @UI.register_slot(request=Request, name="sitecap")
-@template(TEMPLATES["sitecap.pt"], raw=True)
 def sitecap(request, name):
-    return dict(request=request)
+    return TEMPLATES["sitecap.pt"].render(request=request)
 
 
 @UI.register_slot(request=Request, name="globalmenu")
-@template(TEMPLATES["globalmenu.pt"], raw=True)
 def globalmenu(request, name):
-    return dict(request=request)
+    return TEMPLATES["globalmenu.pt"].render(request=request)
 
 
 @UI.register_slot(request=Request, name="navbar")
-@template(TEMPLATES["navbar.pt"], raw=True)
 def navbar(request, name):
-    return dict(request=request)
+    return TEMPLATES["navbar.pt"].render(request=request)
 
 
 @UI.register_slot(request=Request, name="sidebar")
-@template(TEMPLATES["sidebar.pt"], raw=True)
 def sidebar(request, name):
-    return dict(request=request)
+    return TEMPLATES["sidebar.pt"].render(request=request)
 
 
 @UI.register_slot(request=Request, name="footer")
-@template(TEMPLATES["footer.pt"], raw=True)
 def footer(request, name):
-    return dict(request=request)
+    return TEMPLATES["footer.pt"].render(request=request)

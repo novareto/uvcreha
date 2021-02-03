@@ -2,15 +2,15 @@
 import horseman.response
 import horseman.meta
 from docmanager.app import api
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import UI, TEMPLATES
 from docmanager.request import Request
 from docmanager.browser.openapi import generate_doc
 
 
 @api.route("/doc")
-@template(TEMPLATES["swagger.pt"], raw=False)
 def doc_swagger(request: Request):
-    return {"url": "/openapi.json"}
+    return horseman.response.reply(
+        UI.render(TEMPLATES["swagger.pt"], url="/openapi.json"))
 
 
 @api.route("/openapi.json")
