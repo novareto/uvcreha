@@ -3,7 +3,7 @@ import reiter.form
 from horseman.response import reply
 from horseman.http import Multidict
 from docmanager.request import Request
-from docmanager.browser.layout import UI, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.models import Document
 
 
@@ -37,7 +37,7 @@ class FormView(reiter.form.FormView):
 
     def GET(self, request: Request):
         form = self.setupForm()
-        return UI.response(
+        return request.app.ui.response(
             self.template,
             request=request,
             form=form,
@@ -57,7 +57,7 @@ class DocFormView(FormView):
         if doc.item:
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
-        return UI.response(
+        return request.app.ui.response(
             self.template,
             form=form,
             view=self,

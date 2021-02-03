@@ -5,7 +5,7 @@ from roughrider.workflow import State
 from reiter.form import trigger
 from docmanager.app import browser
 from docmanager.browser.form import FormView
-from docmanager.browser.layout import UI, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.browser.openapi import generate_doc
 from docmanager.models import User, UserPreferences, File, Document
 from docmanager.request import Request
@@ -19,7 +19,7 @@ class UserDocument(NamedTuple):
 
 @browser.routes.register("/doc")
 def doc_swagger(request: Request):
-    return UI.response(
+    return request.app.ui.response(
         TEMPLATES["swagger.pt"],
         request=request,
         url="/openapi.json"
@@ -50,7 +50,7 @@ class LandingPage(horseman.meta.APIView):
         user = request.user
         flash_messages = request.utilities.get("flash")
         flash_messages.add(body="HELLO WORLD.")
-        return UI.response(
+        return request.app.ui.response(
             TEMPLATES["index.pt"],
             request=request,
             user=user,
@@ -70,8 +70,11 @@ class LandingPage(horseman.meta.APIView):
 
 @browser.route("/webpush")
 def webpush(request: Request):
-    return horseman.response.reply(UI.render(
-        TEMPLATES["webpush.pt"], layout_name="default", request=request))
+    return request.app.ui.response(
+        TEMPLATES["webpush.pt"],
+        layout_name="default",
+        request=request
+    )
 
 
 @browser.route("/email_preferences")
@@ -91,7 +94,7 @@ class EditPreferences(FormView):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)
         if not form.validate():
-            return UI.response(
+            return request.app.ui.response(
                 self.template,
                 request=request,
                 form=form,
@@ -105,7 +108,7 @@ class EditPreferences(FormView):
     def GET(self, request: Request):
         preferences = request.user.preferences.dict()
         form = self.setupForm(data=preferences)
-        return UI.response(
+        return request.app.ui.response(
             self.template,
             request=request,
             form=form,

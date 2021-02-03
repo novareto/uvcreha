@@ -7,6 +7,7 @@ version = "0.1"
 install_requires = [
     'bjoern',
     'chameleon',
+    'colorlog',
     'cromlech.jwt',
     'cromlech.session',
     'cromlech.sessions.file',
@@ -40,6 +41,7 @@ test_requires = [
     'pyhamcrest',
     'pytest',
     'pyyaml',
+    'pytest-cov',
     'reiter.arango[test]',
 ]
 
@@ -61,11 +63,13 @@ setup(
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python:: 3 :: Only',
     ],
-    packages=find_packages('src'),
+    packages=find_packages(where='src'),
     package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
+    setup_requires=['pytest-runner'],
+    tests_require=test_requires,
     extras_require={
         'test': test_requires,
     },

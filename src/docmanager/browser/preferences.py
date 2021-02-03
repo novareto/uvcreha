@@ -6,7 +6,7 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from docmanager.app import browser
 from docmanager.browser.form import FormView, Form
-from docmanager.browser.layout import UI, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.models import User, UserPreferences
 from docmanager.request import Request
 from docmanager.workflow import user_workflow
@@ -61,14 +61,13 @@ class MyPreferences(FormView):
         form = self.setupForm(
             UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
-            return horseman.response.reply(UI.render(
+            return request.app.ui.response(
                 TEMPLATES["my_preferences.pt"],
-                layout_name="default",
                 request=request,
                 form=form,
                 tabs=tabs,
                 view=self
-            ))
+            )
 
         user = request.database(User)
         cd = self.get_user_data(request)
@@ -93,13 +92,12 @@ class MyPreferences(FormView):
             )
             for (k, v) in self.tabs.items()
         }
-        return horseman.response.reply(UI.render(
+        return request.app.ui.response(
             TEMPLATES["my_preferences.pt"],
-            layout_name="default",
             request=request,
             tabs=tabs,
             view=self
-        ))
+        )
 
     def POST(self, request: Request, **data):
         request.extract()
