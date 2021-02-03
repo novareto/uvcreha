@@ -5,9 +5,9 @@ import horseman.meta
 import horseman.response
 import horseman.http
 from reiter.application.app import Application
+from reiter.application.browser import registries
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
-from docmanager import registries
 from docmanager.security import SecurityError
 from docmanager.request import Request
 from roughrider.routing.route import NamedRoutes
@@ -30,7 +30,6 @@ class RESTApplication(Application):
 
 @dataclass
 class Browser(RESTApplication):
-
 
     routes: NamedRoutes = field(default_factory=NamedRoutes)
     ui: registries.UIRegistry = field(

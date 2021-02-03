@@ -6,7 +6,7 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from docmanager.app import browser
 from docmanager.browser.form import FormView, Form
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.models import User, UserPreferences
 from docmanager.request import Request
 from docmanager.workflow import user_workflow
@@ -61,12 +61,13 @@ class MyPreferences(FormView):
         form = self.setupForm(
             UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
-            return {
-                "form": form,
-                "view": self,
-                "error": None,
-                "path": request.route.path,
-            }
+            return request.app.ui.response(
+                TEMPLATES["my_preferences.pt"],
+                request=request,
+                form=form,
+                tabs=tabs,
+                view=self
+            )
 
         user = request.database(User)
         cd = self.get_user_data(request)
@@ -83,7 +84,6 @@ class MyPreferences(FormView):
         return horseman.response.Response.create(
             302, headers={"Location": "/"})
 
-    @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         tabs = {
             k: self.setupForm(
@@ -92,9 +92,13 @@ class MyPreferences(FormView):
             )
             for (k, v) in self.tabs.items()
         }
-        return dict(request=request, tabs=tabs, view=self)
+        return request.app.ui.response(
+            TEMPLATES["my_preferences.pt"],
+            request=request,
+            tabs=tabs,
+            view=self
+        )
 
-    @template(TEMPLATES["my_preferences.pt"], layout_name="default", raw=False)
     def POST(self, request: Request, **data):
         request.extract()
         return self.process_action(request)

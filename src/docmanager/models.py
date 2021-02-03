@@ -3,7 +3,7 @@ from typing import List, Optional, Any, ClassVar
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import ArangoModel
-from docmanager.registries import NamedComponents
+from reiter.application.registries import NamedComponents
 
 
 class Message(BaseModel):
