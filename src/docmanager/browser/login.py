@@ -27,25 +27,16 @@ class LoginForm(FormView):
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return horseman.response.reply(UI.render(
-                TEMPLATES["base_form.pt"],
-                layout_name="default",
-                form=form,
-                view=self,
-                error=None
-            ))
+            return {'error': None}
 
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
-            return horseman.response.Response.create(
-                302, headers={"Location": "/"}
-            )
+            return None, 302, {"Location": "/"}
+
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Failed login.')
-        return horseman.response.Response.create(
-            302, headers={"Location": "/login"}
-        )
+        return None, 302, {"Location": "/login"}
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):

@@ -35,35 +35,25 @@ class FormView(reiter.form.FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    def GET(self, request: Request):
+    def GET(self):
         form = self.setupForm()
-        return request.app.ui.response(
-            self.template,
-            request=request,
-            form=form,
-            view=self,
-            error=None
-        )
+        return {'form': form, 'error': None}
 
-    def POST(self, request: Request):
-        request.extract()
-        return self.process_action(request)
+    def POST(self):
+        self.request.extract()
+        return self.process_action(self.request)
 
 
 class DocFormView(FormView):
 
-    def GET(self, request: Request, **data):
-        doc = request.database(Document).fetch(request.route.params['key'])
+    def GET(self):
+        doc = self.request.database(Document).fetch(
+            self.request.route.params['key'])
         if doc.item:
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
-        return request.app.ui.response(
-            self.template,
-            form=form,
-            view=self,
-            error=None
-        )
+        return {'form': form, 'error': None}
 
-    def POST(self, request: Request, **data):
-        request.extract()
+    def POST(self):
+        self.request.extract()
         return self.process_action(request)

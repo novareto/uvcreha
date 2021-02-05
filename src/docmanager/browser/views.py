@@ -3,6 +3,7 @@ import horseman.meta
 from typing import NamedTuple
 from roughrider.workflow import State
 from reiter.form import trigger
+from reiter.view.meta import View
 from docmanager.app import browser
 from docmanager.browser.form import FormView
 from docmanager.browser.layout import TEMPLATES
@@ -44,15 +45,15 @@ def flash(request):
 
 
 @browser.route("/")
-class LandingPage(horseman.meta.APIView):
+class LandingPage(View):
 
-    def GET(self, request: Request):
-        user = request.user
-        flash_messages = request.utilities.get("flash")
+    def GET(self):
+        user = self.request.user
+        flash_messages = self.request.utilities.get("flash")
         flash_messages.add(body="HELLO WORLD.")
-        return request.app.ui.response(
+        return self.request.app.ui.response(
             TEMPLATES["index.pt"],
-            request=request,
+            request=self.request,
             user=user,
             view=self
         )

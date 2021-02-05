@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Optional
-
+import inspect
 import horseman.meta
 import horseman.response
 import horseman.http
+import reiter.view.meta
 from reiter.application.app import Application
 from reiter.application.browser import registries
 from reiter.arango.connector import Connector
@@ -11,6 +12,17 @@ from reiter.arango.validation import ValidationError
 from docmanager.security import SecurityError
 from docmanager.request import Request
 from roughrider.routing.route import NamedRoutes
+
+from horseman.definitions import METHODS
+from horseman.prototyping import WSGICallable, HTTPMethod
+from horseman.meta import Overhead, APIView
+from horseman.http import HTTPError
+
+
+class Routes(NamedRoutes):
+
+    def __init__(self):
+        super().__init__(extractor = reiter.view.meta.routables)
 
 
 @dataclass
@@ -31,7 +43,7 @@ class RESTApplication(Application):
 @dataclass
 class Browser(RESTApplication):
 
-    routes: NamedRoutes = field(default_factory=NamedRoutes)
+    routes: NamedRoutes = field(default_factory=Routes)
     ui: registries.UIRegistry = field(
         default_factory=registries.UIRegistry)
 

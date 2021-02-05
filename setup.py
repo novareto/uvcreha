@@ -24,6 +24,7 @@ install_requires = [
     'reiter.application',
     'reiter.arango',
     'reiter.form',
+    'reiter.view',
     'roughrider.auth',
     'roughrider.predicate',
     'roughrider.routing',
