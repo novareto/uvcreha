@@ -27,12 +27,7 @@ class LoginForm(FormView):
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {
-                "form": form,
-                "view": self,
-                "error": None,
-                "path": request.route.path
-            }
+            return self.namespace(request, form=form, error=None)
 
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:

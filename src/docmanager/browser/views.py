@@ -84,12 +84,7 @@ class EditPreferences(FormView):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)
         if not form.validate():
-            return {
-                "form": form,
-                "view": self,
-                "error": None,
-                "path": request.route.path
-            }
+            return self.namespace(request, form=form, error=None)
 
         user = User(request.db_session)
         user.update(request.user.key, preferences=data.dict())
@@ -99,9 +94,4 @@ class EditPreferences(FormView):
     def GET(self, request: Request):
         preferences = request.user.preferences.dict()
         form = self.setupForm(data=preferences)
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return self.namespace(request, form=form, error=None)

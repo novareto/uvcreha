@@ -35,12 +35,7 @@ class FormView(reiter.form.FormView):
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         form = self.setupForm()
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return self.namespace(request, form=form, error=None)
 
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request):
@@ -56,12 +51,7 @@ class DocFormView(FormView):
         if doc.item:
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return self.namespace(request, form=form, error=None)
 
     @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def POST(self, request: Request, **data):

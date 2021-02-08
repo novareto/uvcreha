@@ -2,6 +2,7 @@ import cgi
 import collections
 import horseman.parsing
 from horseman.meta import Overhead
+from horseman.http import Query
 from docmanager.registries import NamedComponents
 
 
@@ -20,6 +21,7 @@ class Request(Overhead):
         'environ',
         'method',
         'route',
+        'query',
         'utilities',
     )
 
@@ -37,6 +39,7 @@ class Request(Overhead):
             self.content_type = ContentType(ct, *cgi.parse_header(ct))
         else:
             self.content_type = None
+        self.query = Query.from_environ(environ)
 
     @property
     def session(self):
