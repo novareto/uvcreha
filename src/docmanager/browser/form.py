@@ -1,8 +1,9 @@
 import wtforms
 import reiter.form
+from horseman.response import reply
 from horseman.http import Multidict
 from docmanager.request import Request
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.models import Document
 
 
@@ -27,33 +28,32 @@ class Form(reiter.form.Form):
 
 class FormView(reiter.form.FormView):
 
+    template = TEMPLATES["base_form.pt"]
+
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model)
         form.process(data=data, formdata=formdata)
         return form
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def GET(self, request: Request):
+    def GET(self):
         form = self.setupForm()
-        return self.namespace(request, form=form, error=None)
+        return dict(form=form, error=None)
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def POST(self, request: Request):
+    def POST(self):
         request.extract()
-        return self.process_action(request)
+        return self.process_action(self.request)
 
 
 class DocFormView(FormView):
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def GET(self, request: Request, **data):
-        doc = request.database(Document).fetch(request.route.params['key'])
+    def GET(self):
+        doc = self.request.database(Document).fetch(
+            self.request.route.params['key'])
         if doc.item:
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
-        return self.namespace(request, form=form, error=None)
+        return dict(form=form, error=None)
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
-    def POST(self, request: Request, **data):
-        request.extract()
+    def POST(self):
+        self.request.extract()
         return self.process_action(request)

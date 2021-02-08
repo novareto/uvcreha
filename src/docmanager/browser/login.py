@@ -6,7 +6,7 @@ from docmanager.models import User
 from docmanager.request import Request
 from reiter.form import trigger
 from docmanager.browser.form import Form, FormView
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from horseman.http import Multidict
 
 
@@ -27,19 +27,16 @@ class LoginForm(FormView):
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return self.namespace(request, form=form, error=None)
+            return dict(form=form, error=None)
 
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
-            return horseman.response.Response.create(
-                302, headers={"Location": "/"}
-            )
+            return None, 302, {"Location": "/"}
+
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Failed login.')
-        return horseman.response.Response.create(
-            302, headers={"Location": "/login"}
-        )
+        return None, 302, {"Location": "/login"}
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
@@ -63,7 +60,14 @@ class EditPassword(FormView):
     def speichern(view, request, data):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
-            return form
+            return horseman.response.reply(UI.render(
+                TEMPLATES["base_form.pt"],
+                layout_name="default",
+                request=request,
+                form=form,
+                view=self,
+                error=None
+            ))
 
         um = request.database(User)
         um.update(key=request.user.key, **data.form)
@@ -92,16 +96,17 @@ class EditMail(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         userdata = request.user.dict()
         form = self.setupForm(data=userdata)
-        return {
-            "form": form,
-            "view": self,
-            "error": None,
-            "path": request.route.path
-        }
+        return horseman.response.reply(UI.render(
+            TEMPLATES["base_form.pt"],
+            layout_name="default",
+            request=request,
+            form=form,
+            view=self,
+            error=None
+        ))
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, request, data):
@@ -131,9 +136,12 @@ class EditMail(FormView):
 
 @browser.route(
     "/user_preferences", methods=["GET"], permissions={"document.view"})
-@template(TEMPLATES["preferences.pt"], layout_name="default", raw=False)
 def preferences(request: Request):
-    return dict(request=request)
+    return horseman.response.reply(UI.render(
+        TEMPLATES["preferences.pt"],
+        layout_name="default",
+        request=request
+    ))
 
 
 @browser.route('/logout')

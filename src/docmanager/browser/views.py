@@ -1,11 +1,12 @@
 import horseman.response
 import horseman.meta
 from typing import NamedTuple
-from reiter.form import trigger
 from roughrider.workflow import State
+from reiter.form import trigger
+from reiter.view.meta import View
 from docmanager.app import browser
 from docmanager.browser.form import FormView
-from docmanager.browser.layout import template, TEMPLATES
+from docmanager.browser.layout import TEMPLATES
 from docmanager.browser.openapi import generate_doc
 from docmanager.models import User, UserPreferences, File, Document
 from docmanager.request import Request
@@ -18,9 +19,12 @@ class UserDocument(NamedTuple):
 
 
 @browser.routes.register("/doc")
-@template(TEMPLATES["swagger.pt"], raw=False)
 def doc_swagger(request: Request):
-    return {"url": "/openapi.json"}
+    return request.app.ui.response(
+        TEMPLATES["swagger.pt"],
+        request=request,
+        url="/openapi.json"
+    )
 
 
 @browser.routes.register("/openapi.json")
@@ -37,18 +41,22 @@ def openapi(request: Request):
 def flash(request):
     flash_messages = request.utilities.get("flash")
     flash_messages.add(body="HELLO WORLD FROM REDIRECT.")
-    return horseman.response.Response.create(302, headers={"Location": "/"})
+    return horseman.response.redirect("/")
 
 
 @browser.route("/")
-class LandingPage(horseman.meta.APIView):
+class LandingPage(View):
 
-    @template(TEMPLATES["index.pt"], layout_name="default", raw=False)
-    def GET(self, request: Request):
-        user = request.user
-        flash_messages = request.utilities.get("flash")
+    def GET(self):
+        user = self.request.user
+        flash_messages = self.request.utilities.get("flash")
         flash_messages.add(body="HELLO WORLD.")
-        return dict(request=request, user=user, view=self)
+        return self.request.app.ui.response(
+            TEMPLATES["index.pt"],
+            request=self.request,
+            user=user,
+            view=self
+        )
 
     def get_files(self, request, key):
         return request.database(File).find(username=key)
@@ -62,9 +70,12 @@ class LandingPage(horseman.meta.APIView):
 
 
 @browser.route("/webpush")
-@template(TEMPLATES["webpush.pt"], layout_name="default", raw=False)
 def webpush(request: Request):
-    return dict(request=request)
+    return request.app.ui.response(
+        TEMPLATES["webpush.pt"],
+        layout_name="default",
+        request=request
+    )
 
 
 @browser.route("/email_preferences")
@@ -90,7 +101,6 @@ class EditPreferences(FormView):
         user.update(request.user.key, preferences=data.dict())
         return horseman.response.reply(200)
 
-    @template(TEMPLATES["base_form.pt"], layout_name="default", raw=False)
     def GET(self, request: Request):
         preferences = request.user.preferences.dict()
         form = self.setupForm(data=preferences)

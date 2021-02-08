@@ -24,6 +24,7 @@ install_requires = [
     'reiter.application',
     'reiter.arango',
     'reiter.form',
+    'reiter.view',
     'roughrider.auth',
     'roughrider.predicate',
     'roughrider.routing',
@@ -41,8 +42,8 @@ test_requires = [
     'pyhamcrest',
     'pytest',
     'pyyaml',
+    'pytest-cov',
     'reiter.arango[test]',
-    'tox',
 ]
 
 
@@ -74,9 +75,6 @@ setup(
         'test': test_requires,
     },
     entry_points={
-        'chameleon.tales': [
-            'slot = docmanager.browser.slot:SlotExpr',
-        ],
         'fanstatic.libraries': [
             'docmanager = docmanager.browser.resources:library',
         ]

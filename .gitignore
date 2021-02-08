@@ -159,5 +159,8 @@ src/wtforms_pydantic/
 src/reiter.form/
 src/reiter.routing/
 src/roughrider.workflow/
+src/reiter.application/
+src/reiter.arango/
+src/roughrider.predicate/
 
 docs/.DS_Store
