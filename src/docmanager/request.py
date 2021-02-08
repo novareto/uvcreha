@@ -5,7 +5,7 @@ from horseman.http import Query
 from reiter.application.request import Request as BaseRequest
 
 
-class Request(RoutingRequest):
+class Request(BaseRequest):
 
     __slots__ = (
         'query',
