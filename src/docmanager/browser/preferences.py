@@ -29,7 +29,9 @@ class MyPreferences(FormView):
     description = "Edit your preferences."
     action = "preferences"
 
-    def __init__(self, *args, **kwargs):
+    template = TEMPLATES["my_preferences.pt"]
+
+    def update(self):
         self.tabs = {
             "Stammdaten": ("name", "surname", "birthdate"),
             "Benachrichtigungen": (
@@ -61,13 +63,7 @@ class MyPreferences(FormView):
         form = self.setupForm(
             UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
-            return request.app.ui.response(
-                TEMPLATES["my_preferences.pt"],
-                request=request,
-                form=form,
-                tabs=tabs,
-                view=self
-            )
+            return {"tabs": self.tabs, "form": form}
 
         user = request.database(User)
         cd = self.get_user_data(request)
@@ -76,13 +72,11 @@ class MyPreferences(FormView):
         flash_messages = request.utilities.get("flash")
         flash_messages.add(body=("Ihre Angaben wurden erfolgreich "
                                  "gespeichert."))
-        return horseman.response.Response.create(
-            302, headers={"Location": "/"})
+        return self.redirect("/")
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary", order=20)
     def abbrechen(self, request, data):
-        return horseman.response.Response.create(
-            302, headers={"Location": "/"})
+        return self.redirect("/")
 
     def GET(self, request: Request):
         tabs = {
@@ -92,12 +86,7 @@ class MyPreferences(FormView):
             )
             for (k, v) in self.tabs.items()
         }
-        return request.app.ui.response(
-            TEMPLATES["my_preferences.pt"],
-            request=request,
-            tabs=tabs,
-            view=self
-        )
+        return {"tabs": self.tabs}
 
     def POST(self, request: Request, **data):
         request.extract()
@@ -122,17 +111,10 @@ class RegistrationForm(FormView):
     def register(self, request, data):
         form = self.setupForm(data=request.user.dict(), formdata=data.form)
         if not form.validate():
-            return {
-                "form": form,
-                "view": self,
-                "error": None,
-                "path": request.route.path,
-            }
+            return {"form": form}
 
         request.user.email = form.data["email"]
         wf = user_workflow(request.user)
         wf.state = user_workflow.states.active
         request.database.save(request.user)
-
-        return horseman.response.Response.create(
-            302, headers={"Location": "/"})
+        return self.redirect("/")

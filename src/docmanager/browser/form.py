@@ -39,10 +39,6 @@ class FormView(reiter.form.FormView):
         form = self.setupForm()
         return dict(form=form, error=None)
 
-    def POST(self):
-        request.extract()
-        return self.process_action(self.request)
-
 
 class DocFormView(FormView):
 
@@ -53,7 +49,3 @@ class DocFormView(FormView):
             data.update(doc.item.dict())
         form = self.setupForm(data=data)
         return dict(form=form, error=None)
-
-    def POST(self):
-        self.request.extract()
-        return self.process_action(request)

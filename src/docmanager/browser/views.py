@@ -47,16 +47,13 @@ def flash(request):
 @browser.route("/")
 class LandingPage(View):
 
+    template = TEMPLATES["index.pt"]
+
     def GET(self):
         user = self.request.user
         flash_messages = self.request.utilities.get("flash")
         flash_messages.add(body="HELLO WORLD.")
-        return self.request.app.ui.response(
-            TEMPLATES["index.pt"],
-            request=self.request,
-            user=user,
-            view=self
-        )
+        return {"user": user}
 
     def get_files(self, request, key):
         return request.database(File).find(username=key)
@@ -73,7 +70,6 @@ class LandingPage(View):
 def webpush(request: Request):
     return request.app.ui.response(
         TEMPLATES["webpush.pt"],
-        layout_name="default",
         request=request
     )
 
@@ -95,13 +91,13 @@ class EditPreferences(FormView):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)
         if not form.validate():
-            return self.namespace(request, form=form, error=None)
+            return {"form": form}
 
         user = User(request.db_session)
         user.update(request.user.key, preferences=data.dict())
-        return horseman.response.reply(200)
+        return self.redirect("/")
 
     def GET(self, request: Request):
         preferences = request.user.preferences.dict()
         form = self.setupForm(data=preferences)
-        return self.namespace(request, form=form, error=None)
+        return {"form": form}
