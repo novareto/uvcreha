@@ -63,7 +63,7 @@ class MyPreferences(FormView):
         form = self.setupForm(
             UserPreferences, only=self.tabs.get(tab), formdata=data)
         if not form.validate():
-            return self.namespace(tabs=self.tabs, form=form)
+            return {"tabs": self.tabs, "form": form}
 
         user = request.database(User)
         cd = self.get_user_data(request)
@@ -86,7 +86,7 @@ class MyPreferences(FormView):
             )
             for (k, v) in self.tabs.items()
         }
-        return self.namespace(tabs=self.tabs)
+        return {"tabs": self.tabs}
 
     def POST(self, request: Request, **data):
         request.extract()
@@ -111,7 +111,7 @@ class RegistrationForm(FormView):
     def register(self, request, data):
         form = self.setupForm(data=request.user.dict(), formdata=data.form)
         if not form.validate():
-            return self.namespace(form=form, error=None)
+            return {"form": form}
 
         request.user.email = form.data["email"]
         wf = user_workflow(request.user)

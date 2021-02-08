@@ -27,7 +27,7 @@ class LoginForm(FormView):
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return self.namespace(form=form, error=None)
+            return {"form": form}
 
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
@@ -60,7 +60,7 @@ class EditPassword(FormView):
     def speichern(view, request, data):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
-            return self.namespace(form=form, error=None)
+            return {"form": form}
 
         um = request.database(User)
         um.update(key=request.user.key, **data.form)
@@ -90,7 +90,7 @@ class EditMail(FormView):
     def GET(self, request: Request):
         userdata = request.user.dict()
         form = self.setupForm(data=userdata)
-        return self.namespace(form=form, error=None)
+        return {"form": form}
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, request, data):
