@@ -2,8 +2,6 @@ import cgi
 import collections
 import horseman.parsing
 from horseman.meta import Overhead
-from horseman.http import Query
-from docmanager.registries import NamedComponents
 from reiter.application.request import Request as BaseRequest
 
 

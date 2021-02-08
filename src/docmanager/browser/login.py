@@ -27,16 +27,16 @@ class LoginForm(FormView):
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return dict(form=form, error=None)
+            return self.namespace(form=form, error=None)
 
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
-            return None, 302, {"Location": "/"}
+            return self.redirect("/")
 
         flash_messages = request.utilities.get('flash')
         flash_messages.add(body='Failed login.')
-        return None, 302, {"Location": "/login"}
+        return self.redirect("/")
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
@@ -60,23 +60,14 @@ class EditPassword(FormView):
     def speichern(view, request, data):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
-            return horseman.response.reply(UI.render(
-                TEMPLATES["base_form.pt"],
-                layout_name="default",
-                request=request,
-                form=form,
-                view=self,
-                error=None
-            ))
+            return self.namespace(form=form, error=None)
 
         um = request.database(User)
         um.update(key=request.user.key, **data.form)
         flash_messages = request.utilities.get('flash')
         flash_messages.add(
             body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
-        return horseman.response.Response.create(
-            302, headers={"Location": "/%s" % view.action}
-        )
+        return self.redirect("/%s" % view.action)
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, *args):
@@ -99,14 +90,7 @@ class EditMail(FormView):
     def GET(self, request: Request):
         userdata = request.user.dict()
         form = self.setupForm(data=userdata)
-        return horseman.response.reply(UI.render(
-            TEMPLATES["base_form.pt"],
-            layout_name="default",
-            request=request,
-            form=form,
-            view=self,
-            error=None
-        ))
+        return self.namespace(form=form, error=None)
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(form, request, data):
@@ -114,34 +98,29 @@ class EditMail(FormView):
         flash_messages.add(
             body=('Ihre E-Mail Adresse wurde erfolgreich im '
                   'System gespeichert.'))
-        return horseman.response.Response.create(
-            302, headers={"Location": "/"}
-        )
+        return self.redirect("/")
 
     @trigger("speichern", "Speichern")
     def speichern(view, request, data):
         form = view.setupForm(formdata=data.form)
         if not form.validate():
-            return form
+            return self.namespace(form=form, error=None)
         um = request.database.bind(models.User)
         um.update(key=request.user.key, **data.form.dict())
         flash_messages = request.utilities.get('flash')
         flash_messages.add(
             body=('Ihre E-Mail Adresse wurde erfolgreich im '
                   'System gespeichert.'))
-        return horseman.response.Response.create(
-            302, headers={"Location": "/"}
-        )
+        return self.redirect("/")
 
 
 @browser.route(
     "/user_preferences", methods=["GET"], permissions={"document.view"})
 def preferences(request: Request):
-    return horseman.response.reply(UI.render(
+    return request.app.ui.response(
         TEMPLATES["preferences.pt"],
-        layout_name="default",
         request=request
-    ))
+    )
 
 
 @browser.route('/logout')
