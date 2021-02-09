@@ -17,7 +17,7 @@ from roughrider.routing.route import NamedRoutes
 class Routes(NamedRoutes):
 
     def __init__(self):
-        super().__init__(extractor = reiter.view.meta.routables)
+        super().__init__(extractor=reiter.view.meta.routables)
 
 
 @dataclass
