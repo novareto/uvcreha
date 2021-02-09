@@ -57,8 +57,8 @@ class EditPassword(FormView):
         return form
 
     @trigger("speichern", "Speichern", order=1)
-    def speichern(view, request, data):
-        form = view.setupForm(formdata=data.form)
+    def speichern(self, request, data):
+        form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
 
@@ -67,10 +67,10 @@ class EditPassword(FormView):
         flash_messages = request.utilities.get('flash')
         flash_messages.add(
             body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
-        return self.redirect("/%s" % view.action)
+        return self.redirect("/%s" % self.action)
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
-    def abbrechen(form, *args):
+    def abbrechen(self, *args):
         pass
 
 
@@ -93,7 +93,7 @@ class EditMail(FormView):
         return {"form": form}
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
-    def abbrechen(form, request, data):
+    def abbrechen(self, request, data):
         flash_messages = request.utilities.get('flash')
         flash_messages.add(
             body=('Ihre E-Mail Adresse wurde erfolgreich im '
@@ -101,8 +101,8 @@ class EditMail(FormView):
         return self.redirect("/")
 
     @trigger("speichern", "Speichern")
-    def speichern(view, request, data):
-        form = view.setupForm(formdata=data.form)
+    def speichern(self, request, data):
+        form = self.setupForm(formdata=data.form)
         if not form.validate():
             return self.namespace(form=form, error=None)
         um = request.database.bind(models.User)

@@ -1,6 +1,4 @@
 import pydantic
-import horseman.response
-
 from urllib.parse import parse_qs
 from horseman.http import Multidict
 from reiter.form import trigger
@@ -54,7 +52,7 @@ class MyPreferences(FormView):
         return UserPreferences.construct().dict()
 
     @trigger("update", "Speichern", css="btn btn-primary", order=1)
-    def update(self, request, data):
+    def update_action(self, request, data):
         data = data.form
         query_string = parse_qs(request.environ["QUERY_STRING"])
         tab = query_string.get("tab", " ")[0]
@@ -79,13 +77,6 @@ class MyPreferences(FormView):
         return self.redirect("/")
 
     def GET(self, request: Request):
-        tabs = {
-            k: self.setupForm(
-                UserPreferences, formdata=None,
-                data=self.get_user_data(request), only=v
-            )
-            for (k, v) in self.tabs.items()
-        }
         return {"tabs": self.tabs}
 
     def POST(self, request: Request, **data):

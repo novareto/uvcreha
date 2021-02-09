@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
-import inspect
+
 import horseman.meta
 import horseman.response
 import horseman.http
@@ -12,11 +12,6 @@ from reiter.arango.validation import ValidationError
 from docmanager.security import SecurityError
 from docmanager.request import Request
 from roughrider.routing.route import NamedRoutes
-
-from horseman.definitions import METHODS
-from horseman.prototyping import WSGICallable, HTTPMethod
-from horseman.meta import Overhead, APIView
-from horseman.http import HTTPError
 
 
 class Routes(NamedRoutes):

@@ -1,8 +1,6 @@
 import wtforms
 import reiter.form
-from horseman.response import reply
 from horseman.http import Multidict
-from docmanager.request import Request
 from docmanager.browser.layout import TEMPLATES
 from docmanager.models import Document
 
@@ -46,6 +44,8 @@ class DocFormView(FormView):
         doc = self.request.database(Document).fetch(
             self.request.route.params['key'])
         if doc.item:
-            data.update(doc.item.dict())
+            data = doc.item.dict()
+        else:
+            data = {}
         form = self.setupForm(data=data)
         return dict(form=form, error=None)

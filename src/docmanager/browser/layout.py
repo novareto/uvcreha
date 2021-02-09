@@ -1,6 +1,5 @@
 import pathlib
-import horseman.response
-from reiter.application.browser import TemplateLoader, registries
+from reiter.application.browser import TemplateLoader
 from docmanager.request import Request
 from docmanager.browser.resources import siguvtheme
 from docmanager.app import browser

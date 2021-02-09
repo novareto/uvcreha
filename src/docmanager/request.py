@@ -1,6 +1,3 @@
-import cgi
-import horseman.parsing
-from horseman.meta import Overhead
 from horseman.http import Query
 from reiter.application.request import Request as BaseRequest
 
