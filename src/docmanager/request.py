@@ -29,4 +29,4 @@ class Request(BaseRequest):
     def database(self):
         if self._db is None:
             self._db = self.app.connector.get_database()
-            return self._db
+        return self._db
