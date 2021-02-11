@@ -1,5 +1,8 @@
 app:
 
+  factories:
+    user: ${class:docmanager.models.User
+
   session:
     cache: ${path:sessions}
     cookie_name: docmanager.cookie

@@ -31,12 +31,14 @@ def session_middleware(config) -> WSGICallable:
 
 
 def start(config):
+    from typing import Type
     import bjoern
     import importscan
     import docmanager
     import docmanager.mq
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
+    from zope.dottedname import resolve
 
     importscan.scan(docmanager)
 
@@ -83,8 +85,13 @@ def resolve_path(path: str) -> str:
     return str(path.resolve())
 
 
+def resolve_class(path: str) -> Type:
+    return resolve.resolve(path)
+
+
 if __name__ == "__main__":
     OmegaConf.register_resolver("path", resolve_path)
+    OmegaConf.register_resolver("class", resolve_class)
     baseconf = OmegaConf.load('config.yaml')
     override = OmegaConf.from_cli()
     config = OmegaConf.merge(baseconf, override)

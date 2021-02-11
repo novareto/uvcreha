@@ -33,6 +33,7 @@ install_requires = [
     'wrapt',
     'wtforms',
     'wtforms_pydantic',
+    'zope.dottedname',
 ]
 
 
