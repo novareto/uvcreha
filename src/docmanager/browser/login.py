@@ -23,7 +23,7 @@ class LoginForm(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Speichern", order=1)
+    @trigger("speichern", "Speichern", order=1, css="btn btn-primary")
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():

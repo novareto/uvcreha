@@ -37,9 +37,9 @@ def create_api(config, connector, webpush, emailer) -> WSGICallable:
 
 
 def create_browser(config, connector, webpush, emailer) -> WSGICallable:
+    User = config.app.factories.user
     browser.connector = connector
     browser.config.update(config.app)
-
     db = connector.get_database()
     auth = Auth(db(User), config.app.env)
     browser.utilities.register(auth, name="authentication")
