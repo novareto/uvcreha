@@ -4,10 +4,12 @@ import functools
 import pathlib
 import contextlib
 import colorlog
+from typing import Type
 from fanstatic import Fanstatic
 from omegaconf import OmegaConf
 from reiter.application.startup import environment, make_logger
 from horseman.prototyping import WSGICallable
+from zope.dottedname import resolve
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -31,14 +33,12 @@ def session_middleware(config) -> WSGICallable:
 
 
 def start(config):
-    from typing import Type
     import bjoern
     import importscan
     import docmanager
     import docmanager.mq
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
-    from zope.dottedname import resolve
 
     importscan.scan(docmanager)
 
