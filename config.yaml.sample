@@ -1,7 +1,7 @@
 app:
 
   factories:
-    user: ${class:docmanager.models.User
+    user: ${class:docmanager.models.User}
 
   session:
     cache: ${path:sessions}
