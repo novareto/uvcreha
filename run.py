@@ -33,11 +33,18 @@ def session_middleware(config) -> WSGICallable:
 
 
 def start(config):
+    # Dramatiq
+    import dramatiq
+    from dramatiq.brokers.rabbitmq import RabbitmqBroker
+    broker = RabbitmqBroker(host="localhost", virtual_host="/")
+    broker.declare_queue("default")
+    dramatiq.set_broker(broker)
+
+
     import bjoern
     import importscan
     import docmanager
     import docmanager.mq
-    import docmanager.tasks
     import docmanager.tasker
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
@@ -64,16 +71,8 @@ def start(config):
     apps.browser.utilities.register(tasker, name="tasker")
     apps.api.utilities.register(tasker, name="tasker")
 
-    # Dramatiq
-    import dramatiq
-    from dramatiq.results import Results
-    from dramatiq.brokers.rabbitmq import RabbitmqBroker
-    from dramatiq.brokers.redis import RedisBroker
-    from dramatiq.results.backends import RedisBackend
-
-    broker = RabbitmqBroker(url=config.amqp.url)
-    dramatiq.set_broker(broker)
-    dramatiq_worker = dramatiq.Worker(broker)
+    # Dramatiq worker
+    dramatiq_worker = dramatiq.Worker(broker, queues=['default'])
 
     try:
         AMQPworker.start()

@@ -6,7 +6,6 @@ import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.models import User, File
-from docmanager.tasks import test
 
 
 async def create(data):
@@ -14,7 +13,7 @@ async def create(data):
     print('Asyncy', data)
 
 
-@dramatiq.actor(max_age=3000)
+@dramatiq.actor
 def create_task(data):
     time.sleep(2)
     print('Rabbity', data)
