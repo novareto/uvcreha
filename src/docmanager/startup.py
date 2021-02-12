@@ -1,10 +1,12 @@
 import typing
+from celery import Celery
 
 from horseman.prototyping import WSGICallable
 from reiter.arango.connector import Connector
 from reiter.application.app import Application
 
 import docmanager.plugins
+import docmanager.api.user
 from docmanager.models import User
 from docmanager.mq import AMQPEmitter
 from docmanager.auth import Auth
@@ -60,10 +62,11 @@ class Applications(typing.NamedTuple):
         connector = Connector(**config.arango)
         webpush = webpush_plugin(config.webpush)
         emailer = SecureMailer(config.emailer)
-
         apps = cls(
-            api=create_api(config, connector, webpush, emailer),
-            browser=create_browser(config, connector, webpush, emailer)
+            api=create_api(
+                config, connector, webpush, emailer),
+            browser=create_browser(
+                config, connector, webpush, emailer)
         )
         docmanager.plugins.load(logger=logger)
         return apps

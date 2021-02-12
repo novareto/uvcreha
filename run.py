@@ -37,6 +37,8 @@ def start(config):
     import importscan
     import docmanager
     import docmanager.mq
+    import docmanager.tasks
+    import docmanager.tasker
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
 
@@ -56,9 +58,27 @@ def start(config):
     app['/api'] = apps.api
 
     # Serving the app
-    AMQPworker = docmanager.mq.Worker(app, config.amqp)
+    AMQPworker = docmanager.mq.Worker(apps, config.amqp)
+    tasker = docmanager.tasker.Tasker(apps)
+
+    apps.browser.utilities.register(tasker, name="tasker")
+    apps.api.utilities.register(tasker, name="tasker")
+
+    # Dramatiq
+    import dramatiq
+    from dramatiq.results import Results
+    from dramatiq.brokers.rabbitmq import RabbitmqBroker
+    from dramatiq.brokers.redis import RedisBroker
+    from dramatiq.results.backends import RedisBackend
+
+    broker = RabbitmqBroker(url=config.amqp.url)
+    dramatiq.set_broker(broker)
+    dramatiq_worker = dramatiq.Worker(broker)
+
     try:
         AMQPworker.start()
+        tasker.start()
+        dramatiq_worker.start()
 
         if not config.server.socket:
             logger.info(
@@ -78,6 +98,8 @@ def start(config):
         pass
     finally:
         AMQPworker.stop()
+        tasker.stop()
+        dramatiq_worker.stop()
 
 
 def resolve_path(path: str) -> str:

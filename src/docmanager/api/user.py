@@ -1,15 +1,31 @@
+import time
+import asyncio
+import dramatiq
+import logging
 import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.models import User, File
+from docmanager.tasks import test
+
+
+async def create(data):
+    await asyncio.sleep(2)
+    print('Asyncy', data)
+
+
+@dramatiq.actor(max_age=3000)
+def create_task(data):
+    time.sleep(2)
+    print('Rabbity', data)
 
 
 @api.route('/user.add', methods=['POST', 'PUT'], model=User)
 def user_add(request: Request):
     data = request.extract()
-    user, response = request.database(User).create(**data.json)
-    return horseman.response.Response.to_json(
-        201, body={'id': user.username})
+    task = request.app.utilities['tasker'].enqueue(create(data))
+    create_task.send(data)
+    return horseman.response.Response.to_json(201)
 
 
 @api.route('/users/{username}', methods=['GET', ], model=User)
