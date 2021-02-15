@@ -1,7 +1,4 @@
-* Installation
-
-
-* Voraussetzung
+# Voraussetzung
 
 Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha erfolgreich zu Installieren:
 
@@ -11,23 +8,28 @@ Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha 
  - build-essential
  - libxml2-dev
  - libxslt1-dev
+ - cookiecutter
+ - libev-dev
+
 
 Das Nutzen einen virtuellen Python Umgebung ist empfohlen aber kein muss. 
 
-* Cookiecutter
+
+# Aufsetzen eines Projekt's mit cookiecutter
+
 
 Wir nuten das OSS-Tool Cookiecutter um ein Basis Projekt für UVC-Reha anzulegen.
 Cookiecutter can mit dem Python Tool pip installiert werden.
 
 ``` bash 
-   pip install cookiecutter
-'''
+    pip install cookiecutter
+```
 
 
 
-* Installation Projekt
+# Installation Projekt
 
-Das eigentlich Projekt können wir dann wiefolgt Installieren.
+Das eigentlich Projekt können wir dann wiefolgt installieren.
 
 
 ``` bash 
@@ -35,13 +37,14 @@ cookiecutter https://github.com/novareto/uvc_reha_project
 ```
 
 
+Dieses Projekt ist die Grundlage für den Buildout unserer
+neuen Umgebung. Alle Bestandteile des Umgebung können
+in der Datei *buildout.cfg* angepasst werden. 
 
-``` python linenums="1"
-def bubble_sort(items):
-    for i in range(len(items)):
-        for j in range(len(items) - 1 - i):
-            if items[j] > items[j + 1]:
-                items[j], items[j + 1] = items[j + 1], items[j]
-```
+Einstellungen die die Applikation betreffen können in der 
+config.ini vorgenommen werden.
+
+*TODO:* Wir müssen noch festlegen ob wir in der config.ini dokumentieren
+oder ob wir es hier machen.
 
 

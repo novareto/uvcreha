@@ -7,8 +7,8 @@ theme:
   palette:
     primary: indigo 
     accent: indigo
-  logo: 'favicon.png'
-  favicon: 'favicon.png'
+  logo: 'favicon.ico'
+  favicon: 'favicon.ico'
 
 
 nav:
