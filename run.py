@@ -4,10 +4,12 @@ import functools
 import pathlib
 import contextlib
 import colorlog
+from typing import Type
 from fanstatic import Fanstatic
 from omegaconf import OmegaConf
 from reiter.application.startup import environment, make_logger
 from horseman.prototyping import WSGICallable
+from zope.dottedname import resolve
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -31,10 +33,19 @@ def session_middleware(config) -> WSGICallable:
 
 
 def start(config):
+    # Dramatiq
+    import dramatiq
+    from dramatiq.brokers.rabbitmq import RabbitmqBroker
+    broker = RabbitmqBroker(host="localhost", virtual_host="/")
+    broker.declare_queue("default")
+    dramatiq.set_broker(broker)
+
+
     import bjoern
     import importscan
     import docmanager
     import docmanager.mq
+    import docmanager.tasker
     from docmanager.startup import Applications
     from rutter.urlmap import URLMap
 
@@ -54,9 +65,19 @@ def start(config):
     app['/api'] = apps.api
 
     # Serving the app
-    AMQPworker = docmanager.mq.Worker(app, config.amqp)
+    AMQPworker = docmanager.mq.Worker(apps, config.amqp)
+    tasker = docmanager.tasker.Tasker(apps)
+
+    apps.browser.utilities.register(tasker, name="tasker")
+    apps.api.utilities.register(tasker, name="tasker")
+
+    # Dramatiq worker
+    dramatiq_worker = dramatiq.Worker(broker, queues=['default'])
+
     try:
         AMQPworker.start()
+        tasker.start()
+        dramatiq_worker.start()
 
         if not config.server.socket:
             logger.info(
@@ -76,6 +97,8 @@ def start(config):
         pass
     finally:
         AMQPworker.stop()
+        tasker.stop()
+        dramatiq_worker.stop()
 
 
 def resolve_path(path: str) -> str:
@@ -83,8 +106,13 @@ def resolve_path(path: str) -> str:
     return str(path.resolve())
 
 
+def resolve_class(path: str) -> Type:
+    return resolve.resolve(path)
+
+
 if __name__ == "__main__":
     OmegaConf.register_resolver("path", resolve_path)
+    OmegaConf.register_resolver("class", resolve_class)
     baseconf = OmegaConf.load('config.yaml')
     override = OmegaConf.from_cli()
     config = OmegaConf.merge(baseconf, override)

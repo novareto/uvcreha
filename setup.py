@@ -8,6 +8,7 @@ install_requires = [
     'bjoern',
     'chameleon',
     'colorlog',
+    'dramatiq[rabbitmq,redis]',
     'cromlech.jwt',
     'cromlech.session',
     'cromlech.sessions.file',
@@ -33,6 +34,7 @@ install_requires = [
     'wrapt',
     'wtforms',
     'wtforms_pydantic',
+    'zope.dottedname',
 ]
 
 
