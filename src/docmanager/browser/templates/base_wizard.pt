@@ -1,0 +1,29 @@
+<div id="form">
+  <h1 tal:content="view.title" />
+  <p class="lead" tal:content="view.description" />
+  <p class="badge text-end rounded-pill bg-secondary" tal:content="view.counter"></p>
+  <form method="POST" tal:attributes="action view.action" novalidate>
+    <div class="form-group" tal:repeat="field form">
+      <label tal:replace="field.label"> </label>
+      <div tal:content="structure field()"
+           tal:attributes="class field.errors and 'is-invalid' or 'is-valid'"> </div>
+      <div class="invalid-feedback" tal:condition="field.errors">
+        <div tal:repeat="error field.errors">
+          <span tal:content="error" />
+        </div>
+      </div>
+      <small class="form-text text-muted"
+             tal:content="field.description"
+             tal:condition="field.description" />
+    </div>
+    <div class="form-actions">
+      <tal:action repeat="action actions.values()">
+        <button
+            name='form.trigger'
+            tal:attributes="value action.id;
+                            class action.css"
+            type="submit" tal:content="action.title">HTML</button>
+      </tal:action>
+    </div>
+  </form>
+</div>

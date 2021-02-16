@@ -44,6 +44,8 @@ class File(Model):
 
     az: str
     username: str
+    mnr: str
+    vid: str
 
     @property
     def __key__(self):
@@ -92,6 +94,9 @@ class UserPreferences(BaseModel):
 class User(Model):
 
     __collection__ = "users"
+
+    uid: str = Field(
+        title=u"ID", description="Internal User ID")
 
     username: str = Field(
         title="Loginname", description="Bitte geb hier was ein.")
