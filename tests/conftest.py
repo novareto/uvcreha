@@ -164,6 +164,7 @@ def user(db_connector):
 
     # Add the User
     user = User(
+        uid='123',
         username='test',
         password='test',
         permissions=['document.view', 'document.add']

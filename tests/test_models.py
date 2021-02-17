@@ -8,6 +8,7 @@ def test_model_crud(db_connector):
     db = db_connector.get_database()
     wrapper = db(User)
     model = wrapper.model(
+        uid="123",
         username="souheil",
         password="secret",
         email="trollfot@gmail.com"

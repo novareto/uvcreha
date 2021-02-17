@@ -1,5 +1,4 @@
 import typing
-from celery import Celery
 
 from horseman.prototyping import WSGICallable
 from reiter.arango.connector import Connector

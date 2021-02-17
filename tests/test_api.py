@@ -8,9 +8,12 @@ def test_add_user(api_app):
         {"nothing": "at_all"},
         expect_errors=True,
     )
-
     assert resp.json == {
         "errors": [
+            {   'loc': ['uid'],
+                'msg': 'field required',
+                'type': 'value_error.missing',
+            },
             {
                 "loc": ["username"],
                 "msg": "field required",
@@ -33,7 +36,7 @@ def test_add_user_ok(api_app):
     app = TestApp(api_app)
     resp = app.post_json(
         "/user.add",
-        dict(username="cklinger", password="klinger"),
+        dict(uid="12345", username="cklinger", password="klinger"),
         expect_errors=True,
     )
     assert resp.status == "201 Created"
@@ -50,7 +53,9 @@ def test_add_folder(api_app, user):
     app = TestApp(api_app)
     resp = app.put_json(
         f"/users/{user.user.username}/file.add", {
-            'az': "4711"
+            'az': "4711",
+            'mnr': "232",
+            'vid': "33",
         }
     )
     assert resp.status == "201 Created"
@@ -77,7 +82,9 @@ def test_add_file(api_app, user):
 
     resp = app.put_json(
         f"/users/{user.user.username}/file.add", {
-            'az': "1234"
+            'az': "1234",
+            'mnr': '3223',
+            'vid': '23',
         }
     )
     assert resp.status == "201 Created"

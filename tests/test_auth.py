@@ -6,7 +6,7 @@ def test_add_user_ok(api_app, web_app, user):
     browser = TestApp(web_app)
     api = TestApp(api_app)
 
-    ud = dict(username="ck", password="klinger")
+    ud = dict(uid="23", username="ck", password="klinger")
     resp = api.post_json("/user.add", ud, expect_errors=True)
     assert resp.status == "201 Created"
     assert resp.json == {"id": "ck"}
