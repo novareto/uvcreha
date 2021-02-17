@@ -56,10 +56,10 @@ class LandingPage(View):
         return {"user": user}
 
     def get_files(self, request, key):
-        return request.database(File).find(username=key)
+        return request.database(File).find(uid=key)
 
-    def get_documents(self, request, username, az):
-        docs = request.database(Document).find(username=username, az=az)
+    def get_documents(self, request, uid, az):
+        docs = request.database(Document).find(uid=uid, az=az)
         for doc in docs:
             yield UserDocument(
                 item=doc,

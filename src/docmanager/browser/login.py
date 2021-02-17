@@ -19,7 +19,7 @@ class LoginForm(FormView):
     model = models.User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("username", "password"))
+        form = Form.from_model(self.model, only=("loginname", "password"))
         form.process(data=data, formdata=formdata)
         return form
 

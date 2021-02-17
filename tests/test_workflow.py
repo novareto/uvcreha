@@ -8,7 +8,7 @@ def test_workflow_default():
 
     doc = Document(
         az='az',
-        username='user',
+        uid='user',
         body='My document',
         content_type='base_doc',
     )
@@ -33,7 +33,7 @@ def test_workflow_error():
 
     doc = Document(
         az='az',
-        username='user',
+        uid='user',
         body='My document',
         content_type='base_doc',
     )

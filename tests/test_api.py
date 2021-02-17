@@ -15,7 +15,7 @@ def test_add_user(api_app):
                 'type': 'value_error.missing',
             },
             {
-                "loc": ["username"],
+                "loc": ["loginname"],
                 "msg": "field required",
                 "type": "value_error.missing",
             },
@@ -36,15 +36,15 @@ def test_add_user_ok(api_app):
     app = TestApp(api_app)
     resp = app.post_json(
         "/user.add",
-        dict(uid="12345", username="cklinger", password="klinger"),
+        dict(uid="12345", loginname="cklinger", password="klinger"),
         expect_errors=True,
     )
     assert resp.status == "201 Created"
-    assert resp.json == {"id": "cklinger"}
+    assert resp.json == {"id": "12345"}
 
-    resp = app.get("/users/cklinger")
+    resp = app.get("/users/12345")
     assert resp.status == "200 OK"
-    assert resp.json["_key"] == "cklinger"
+    assert resp.json["_key"] == "12345"
 
 
 def test_add_folder(api_app, user):
@@ -52,7 +52,7 @@ def test_add_folder(api_app, user):
 
     app = TestApp(api_app)
     resp = app.put_json(
-        f"/users/{user.user.username}/file.add", {
+        f"/users/{user.user.uid}/file.add", {
             'az': "4711",
             'mnr': "232",
             'vid': "33",
@@ -61,7 +61,7 @@ def test_add_folder(api_app, user):
     assert resp.status == "201 Created"
     assert resp.json["az"] == "4711"
 
-    resp = app.get(f"/users/{user.user.username}/files/4711")
+    resp = app.get(f"/users/{user.user.uid}/files/4711")
     assert resp.status == "200 OK"
     assert resp.json["az"] == "4711"
 
@@ -81,7 +81,7 @@ def test_add_file(api_app, user):
     app = TestApp(api_app)
 
     resp = app.put_json(
-        f"/users/{user.user.username}/file.add", {
+        f"/users/{user.user.uid}/file.add", {
             'az': "1234",
             'mnr': '3223',
             'vid': '23',
@@ -90,7 +90,7 @@ def test_add_file(api_app, user):
     assert resp.status == "201 Created"
 
     resp = app.put_json(
-        f"/users/{user.user.username}/files/1234/doc.add", {
+        f"/users/{user.user.uid}/files/1234/doc.add", {
             'body': "Some Doc",
             'myfield': "",
             'content_type': "event"

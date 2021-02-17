@@ -20,7 +20,7 @@ class Document(Model):
     __collection__ = "documents"
 
     az: str
-    username: str
+    uid: str
     state: str
     content_type: str = None
     state: Optional[str] = None
@@ -43,7 +43,7 @@ class File(Model):
     __collection__ = "files"
 
     az: str = Field(title="Aktenzeigen")
-    username: str = Field(title="Username")
+    uid: str = Field(title="UID")
     mnr: str = Field(title="Mitgliedsnummer")
     vid: str = Field(title="VersichertenfallID")
 
@@ -98,7 +98,7 @@ class User(Model):
     uid: str = Field(
         title=u"ID", description="Internal User ID")
 
-    username: str = Field(
+    loginname: str = Field(
         title="Loginname", description="Bitte geb hier was ein.")
 
     password: SecretStr = Field(
@@ -113,4 +113,4 @@ class User(Model):
 
     @property
     def __key__(self) -> str:
-        return self.username
+        return self.uid

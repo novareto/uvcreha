@@ -17,7 +17,7 @@ class Auth:
 
     def from_credentials(self, credentials: dict):
         return self.binding.find_one(
-            username=credentials['username'],
+            loginname=credentials['loginname'],
             password=credentials['password']
         )
 

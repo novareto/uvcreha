@@ -165,7 +165,7 @@ def user(db_connector):
     # Add the User
     user = User(
         uid='123',
-        username='test',
+        loginname='test',
         password='test',
         permissions=['document.view', 'document.add']
     )
@@ -174,7 +174,7 @@ def user(db_connector):
 
     def login(app):
         response = app.post("/login", {
-            'username': 'test',
+            'loginname': 'test',
             'password': 'test',
             'trigger.speichern': '1',
         })

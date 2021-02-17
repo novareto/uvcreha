@@ -72,9 +72,9 @@
           </thead>
           <tbody>
 
-            <tr tal:repeat="doc view.get_documents(request=request, username=request.user.key, az=file.az)">
+            <tr tal:repeat="doc view.get_documents(request=request, uid=request.user.key, az=file.az)">
               <td tal:content="repeat.doc.number"> </td>
-              <td> <a href="" tal:attributes="href request.app.routes.url_for('event_edit', az=file.az, username=file.username, key=doc.item.key, content_type=doc.item.content_type)" tal:content="doc.item.content_type"> </a> </td>
+              <td> <a href="" tal:attributes="href request.app.routes.url_for('event_edit', az=file.az, uid=file.uid, key=doc.item.key, content_type=doc.item.content_type)" tal:content="doc.item.content_type"> </a> </td>
               <td tal:content="file.creation_date.strftime('%d.%m.%Y %H:%M')"></td>
               <td tal:content="doc.state.identifier"></td>
             </tr>
