@@ -29,7 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install setuptools==51.1.0
-        python bootstrap-buildout.py
+        python -m pip install zc.buildout==3.0a2
         bin/buildout
     - name: Test with pytest
       run: |
