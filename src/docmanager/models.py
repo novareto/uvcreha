@@ -42,10 +42,10 @@ class File(Model):
 
     __collection__ = "files"
 
-    az: str
-    username: str
-    mnr: str
-    vid: str
+    az: str = Field(title="Aktenzeigen")
+    username: str = Field(title="Username")
+    mnr: str = Field(title="Mitgliedsnummer")
+    vid: str = Field(title="VersichertenfallID")
 
     @property
     def __key__(self):
