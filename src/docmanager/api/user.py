@@ -1,20 +1,7 @@
-import time
-import logging
 import horseman.response
 from docmanager.app import api
 from docmanager.request import Request
 from docmanager.models import User, File
-
-
-#async def create(data):
-#    await asyncio.sleep(2)
-#    print('Asyncy', data)
-#
-#
-#@dramatiq.actor
-#def create_task(data):
-#    time.sleep(2)
-#    print('Rabbity', data)
 
 
 @api.route('/user.add', methods=['POST', 'PUT'], model=User)

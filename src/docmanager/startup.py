@@ -6,7 +6,6 @@ from reiter.application.app import Application
 
 import docmanager.plugins
 import docmanager.api.user
-from docmanager.models import User
 from docmanager.mq import AMQPEmitter
 from docmanager.auth import Auth
 from docmanager.app import browser, api
@@ -38,11 +37,10 @@ def create_api(config, connector, webpush, emailer) -> WSGICallable:
 
 
 def create_browser(config, connector, webpush, emailer) -> WSGICallable:
-    User = config.app.factories.user
     browser.connector = connector
     browser.config.update(config.app)
     db = connector.get_database()
-    auth = Auth(db(User), config.app.env)
+    auth = Auth(db(config.app.factories.user), config.app.env)
     browser.utilities.register(auth, name="authentication")
     browser.register_middleware(auth, order=2)
 
