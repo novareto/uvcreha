@@ -58,7 +58,7 @@ class AddForm(ModelForm):
 
 class DefaultView(ModelForm):
 
-    readonly = ...
+    readonly = ...  # represents ALL
 
     def get_initial_data(self):
         context = self.request.database(self.model).find_one(**self.params)
