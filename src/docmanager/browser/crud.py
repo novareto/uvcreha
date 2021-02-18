@@ -1,8 +1,8 @@
+import horseman.response
 from horseman.http import Multidict
 from pydantic import BaseModel
-from typing import ClassVar, Type, Optional, Iterable, Union
+from typing import ClassVar, Type, Optional, Iterable
 from wtforms_pydantic import model_fields
-from wtforms_components import read_only
 from reiter.form import trigger
 from docmanager.browser.form import FormView, Form
 
@@ -27,6 +27,7 @@ class ModelForm(FormView):
         return model_fields(self.model, exclude=exclude, only=only)
 
     def get_fields(self):
+        # Excluding the pure Arango fields.
         return self.fields(exclude=('key', 'id', 'rev', 'creation_date'))
 
     def get_initial_data(self):
