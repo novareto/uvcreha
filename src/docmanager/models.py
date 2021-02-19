@@ -4,6 +4,7 @@ from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import ArangoModel
 from reiter.application.registries import NamedComponents
+from uvc_hdpws.models import Unternehmen, VersichertenFall
 
 
 class Message(BaseModel):
@@ -46,6 +47,9 @@ class File(Model):
     uid: str = Field(title="UID")
     mnr: str = Field(title="Mitgliedsnummer")
     vid: str = Field(title="VersichertenfallID")
+
+    unternehmen: Optional[Unternehmen]
+    versichertenfall: Optional[VersichertenFall]
 
     @property
     def __key__(self):

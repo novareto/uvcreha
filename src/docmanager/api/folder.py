@@ -8,6 +8,10 @@ from docmanager.models import File
 def file_add(request: Request, uid: str):
     data = request.extract()
     item, _ = request.database(File).create(uid=uid, **data.json)
+    import pdb; pdb.set_trace()
+    request.app.notify(
+        "folder_created",
+        request=request, uid=uid, folder=item)
     return horseman.response.Response.from_json(201, body=item.json())
 
 
