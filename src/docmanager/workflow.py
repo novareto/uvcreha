@@ -19,6 +19,8 @@ def ValidUser(item, **namespace):
 
 class UserWorkflow(workflow.Workflow):
 
+    wrapper = ModelWorkflowItem
+
     class states(workflow.WorkflowState):
         pending = 'in Prüfung'
         active = 'Aktiv'
@@ -51,10 +53,10 @@ class UserWorkflow(workflow.Workflow):
         ),
     ))
 
-    wrapper = ModelWorkflowItem
-
 
 class DocumentWorkflow(workflow.Workflow):
+
+    wrapper = ModelWorkflowItem
 
     class states(workflow.WorkflowState):
         inquiry = 'Anfrage'
@@ -74,11 +76,33 @@ class DocumentWorkflow(workflow.Workflow):
         )
     ))
 
+
+class FileWorkflow(workflow.Workflow):
+
     wrapper = ModelWorkflowItem
+
+    class states(workflow.WorkflowState):
+        created = 'Created'
+        validated = 'Validated'
+        closed = 'Closed'
+
+    transitions = workflow.Transitions((
+        workflow.Transition(
+            origin=states.created,
+            target=states.validated,
+            action=workflow.Action('Validate')
+        ),
+        workflow.Transition(
+            origin=states.validated,
+            target=states.closed,
+            action=workflow.Action('Close')
+        )
+    ))
 
 
 document_workflow = DocumentWorkflow('inquiry')
 user_workflow = UserWorkflow('pending')
+file_workflow = FileWorkflow('created')
 
 
 @document_workflow.subscribe('Send')
