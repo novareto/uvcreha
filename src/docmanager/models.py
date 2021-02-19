@@ -46,6 +46,7 @@ class File(Model):
     uid: str = Field(title="UID")
     mnr: str = Field(title="Mitgliedsnummer")
     vid: str = Field(title="VersichertenfallID")
+    state: Optional[str] = None
 
     @property
     def __key__(self):

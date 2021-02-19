@@ -27,8 +27,11 @@ class ModelForm(FormView):
         return model_fields(self.model, exclude=exclude, only=only)
 
     def get_fields(self):
-        # Excluding the pure Arango fields.
-        return self.fields(exclude=('key', 'id', 'rev', 'creation_date'))
+        # Exclude the pure Arango fields.
+        # Exclude the workflow state.
+        return self.fields(
+            exclude=('key', 'id', 'rev', 'creation_date', 'state')
+        )
 
     def get_initial_data(self):
         return {}
