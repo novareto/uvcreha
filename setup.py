@@ -50,13 +50,13 @@ test_requires = [
 
 
 setup(
-    name='docmanager',
+    name='uvcreha',
     version=version,
     author='Novareto GmbH',
     author_email='contact@example.com',
     url='http://www.example.com',
     download_url='',
-    description='Docmanager WebSite',
+    description='Uvcreha WebSite',
     long_description=(open("README.txt").read() + "\n" +
                       open(os.path.join("docs", "HISTORY.txt")).read()),
     license='ZPL',
@@ -78,7 +78,7 @@ setup(
     },
     entry_points={
         'fanstatic.libraries': [
-            'docmanager = docmanager.browser.resources:library',
+            'uvcreha = uvcreha.browser.resources:library',
         ]
     }
 )

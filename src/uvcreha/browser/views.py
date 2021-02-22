@@ -4,18 +4,24 @@ from typing import NamedTuple
 from roughrider.workflow import State
 from reiter.form import trigger
 from reiter.view.meta import View
-from docmanager.app import browser
-from docmanager.browser.form import FormView
-from docmanager.browser.layout import TEMPLATES
-from docmanager.browser.openapi import generate_doc
-from docmanager.models import User, UserPreferences, File, Document
-from docmanager.request import Request
-from docmanager.workflow import document_workflow
+from uvcreha.app import browser
+from uvcreha.browser.form import FormView
+from uvcreha.browser.layout import TEMPLATES
+from uvcreha.browser.openapi import generate_doc
+from uvcreha.models import User, UserPreferences, File, Document
+from uvcreha.request import Request
+from uvcreha.workflow import document_workflow, file_workflow
 
 
 class UserDocument(NamedTuple):
     item: Document
     state: State
+
+
+class UserFile(NamedTuple):
+    item: File
+    state: State
+    url: str
 
 
 @browser.routes.register("/doc")
@@ -55,11 +61,23 @@ class LandingPage(View):
         flash_messages.add(body="HELLO WORLD.")
         return {"user": user}
 
-    def get_files(self, request, key):
-        return request.database(File).find(uid=key)
+    def get_files(self, key):
+        files = self.request.database(File).find(uid=key)
+        for file in files:
+            state = file_workflow(file).state
+            if state is file_workflow.states.created:
+                url = self.request.app.routes.url_for(
+                    'file_register', az=file.az, uid=file.uid)
+            else:
+                url = self.request.app.routes.url_for(
+                    'file_index', az=file.az, uid=file.uid)
+            yield UserFile(
+                item=file,
+                url=url,
+                state=state)
 
-    def get_documents(self, request, uid, az):
-        docs = request.database(Document).find(uid=uid, az=az)
+    def get_documents(self, uid, az):
+        docs = self.request.database(Document).find(uid=uid, az=az)
         for doc in docs:
             yield UserDocument(
                 item=doc,

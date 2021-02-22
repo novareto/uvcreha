@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg py-4">
     <div class="container">
       <a class="navbar-brand" href="" tal:attributes="href '/'">
-        <img src="static/docmanager/bg-etem.svg" alt="">
+        <img src="static/uvcreha/bg-etem.svg" alt="">
       </a>
       <ul class="navbar-nav mr-auto">
         <!--
@@ -14,7 +14,7 @@
         -->
       </ul>
       <div id="sidebar-handle">
-        <img class="icon icon-inline icon-lg" src="static/docmanager/justify.svg" alt="Sign Sidebar" style="margin: -3px 5px 0 0 !important;">
+        <img class="icon icon-inline icon-lg" src="static/uvcreha/justify.svg" alt="Sign Sidebar" style="margin: -3px 5px 0 0 !important;">
         <span>Menü</span>
       </div>
     </div>

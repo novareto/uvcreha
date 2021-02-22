@@ -4,13 +4,13 @@ from horseman.prototyping import WSGICallable
 from reiter.arango.connector import Connector
 from reiter.application.app import Application
 
-import docmanager.plugins
-import docmanager.api.user
-from docmanager.mq import AMQPEmitter
-from docmanager.auth import Auth
-from docmanager.app import browser, api
-from docmanager.webpush import Webpush
-from docmanager.emailer import SecureMailer
+import uvcreha.plugins
+import uvcreha.api.user
+from uvcreha.mq import AMQPEmitter
+from uvcreha.auth import Auth
+from uvcreha.app import browser, api
+from uvcreha.webpush import Webpush
+from uvcreha.emailer import SecureMailer
 
 
 def webpush_plugin(config):
@@ -65,5 +65,5 @@ class Applications(typing.NamedTuple):
             browser=create_browser(
                 config, connector, webpush, emailer)
         )
-        docmanager.plugins.load(logger=logger)
+        uvcreha.plugins.load(logger=logger)
         return apps

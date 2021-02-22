@@ -9,8 +9,8 @@ from reiter.application.app import Application
 from reiter.application.browser import registries
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
-from docmanager.security import SecurityError
-from docmanager.request import Request
+from uvcreha.security import SecurityError
+from uvcreha.request import Request
 from roughrider.routing.route import NamedRoutes
 
 

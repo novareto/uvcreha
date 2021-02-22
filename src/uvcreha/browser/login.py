@@ -1,12 +1,12 @@
 import horseman.response
 
-from docmanager import models
-from docmanager.app import browser
-from docmanager.models import User
-from docmanager.request import Request
+from uvcreha import models
+from uvcreha.app import browser
+from uvcreha.models import User
+from uvcreha.request import Request
 from reiter.form import trigger
-from docmanager.browser.form import Form, FormView
-from docmanager.browser.layout import TEMPLATES
+from uvcreha.browser.form import Form, FormView
+from uvcreha.browser.layout import TEMPLATES
 from horseman.http import Multidict
 
 

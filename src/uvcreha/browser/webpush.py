@@ -2,8 +2,8 @@ import json
 import horseman.meta
 import horseman.response
 from reiter.view.meta import View
-from docmanager.app import browser
-from docmanager.models import User
+from uvcreha.app import browser
+from uvcreha.models import User
 
 
 @browser.route("/webpush/subscription", name="webpush_subscription")

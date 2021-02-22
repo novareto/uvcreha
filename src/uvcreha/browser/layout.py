@@ -1,8 +1,8 @@
 import pathlib
 from reiter.application.browser import TemplateLoader
-from docmanager.request import Request
-from docmanager.browser.resources import siguvtheme
-from docmanager.app import browser
+from uvcreha.request import Request
+from uvcreha.browser.resources import siguvtheme
+from uvcreha.app import browser
 
 
 TEMPLATES = TemplateLoader(

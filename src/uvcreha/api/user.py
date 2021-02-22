@@ -1,7 +1,7 @@
 import horseman.response
-from docmanager.app import api
-from docmanager.request import Request
-from docmanager.models import User, File
+from uvcreha.app import api
+from uvcreha.request import Request
+from uvcreha.models import User, File
 
 
 @api.route('/user.add', methods=['POST', 'PUT'], model=User)

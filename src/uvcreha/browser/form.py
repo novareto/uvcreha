@@ -1,8 +1,8 @@
 import wtforms
 import reiter.form
 from horseman.http import Multidict
-from docmanager.browser.layout import TEMPLATES
-from docmanager.models import Document
+from uvcreha.browser.layout import TEMPLATES
+from uvcreha.models import Document
 
 
 class FormMeta(wtforms.meta.DefaultMeta):

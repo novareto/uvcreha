@@ -61,7 +61,7 @@ class WebpushService {
 
     static async create() {
         const worker = await navigator.serviceWorker.register(
-            "/static/docmanager/sw.js")
+            "/static/uvcreha/sw.js")
         console.log('Service Worker is registered', worker);
         const subscription = await worker.pushManager.getSubscription();
         const service = new WebpushService(worker, subscription)

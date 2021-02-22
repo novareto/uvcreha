@@ -1,5 +1,5 @@
-from docmanager.app import browser
-from docmanager.models import Message
+from uvcreha.app import browser
+from uvcreha.models import Message
 
 
 class SessionMessages:

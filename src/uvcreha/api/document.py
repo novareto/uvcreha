@@ -1,9 +1,9 @@
 import uuid
 import horseman.response
-from docmanager.app import api
-from docmanager.request import Request
-from docmanager.models import Document
-from docmanager.workflow import DocumentWorkflow
+from uvcreha.app import api
+from uvcreha.request import Request
+from uvcreha.models import Document
+from uvcreha.workflow import DocumentWorkflow
 
 
 @api.route("/users/{uid}/files/{fileid}/doc.add", methods=["POST", "PUT"])

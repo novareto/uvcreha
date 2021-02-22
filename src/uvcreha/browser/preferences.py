@@ -2,12 +2,12 @@ import pydantic
 from urllib.parse import parse_qs
 from horseman.http import Multidict
 from reiter.form import trigger
-from docmanager.app import browser
-from docmanager.browser.form import FormView, Form
-from docmanager.browser.layout import TEMPLATES
-from docmanager.models import User, UserPreferences
-from docmanager.request import Request
-from docmanager.workflow import user_workflow
+from uvcreha.app import browser
+from uvcreha.browser.form import FormView, Form
+from uvcreha.browser.layout import TEMPLATES
+from uvcreha.models import User, UserPreferences
+from uvcreha.request import Request
+from uvcreha.workflow import user_workflow
 
 
 class Kontaktdaten(pydantic.BaseModel):

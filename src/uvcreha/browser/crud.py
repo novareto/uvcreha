@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import ClassVar, Type, Optional, Iterable
 from wtforms_pydantic import model_fields
 from reiter.form import trigger
-from docmanager.browser.form import FormView, Form
+from uvcreha.browser.form import FormView, Form
 
 
 class ModelForm(FormView):

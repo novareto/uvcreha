@@ -6,7 +6,7 @@
 from fanstatic import Library, Resource, Group
 
 
-library = Library('docmanager', 'static')
+library = Library('uvcreha', 'static')
 
 custom_css = Resource(
     library, 'siguvtheme.css'

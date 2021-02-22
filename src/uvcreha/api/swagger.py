@@ -1,10 +1,10 @@
 
 import horseman.response
 import horseman.meta
-from docmanager.app import api
-from docmanager.browser.layout import TEMPLATES
-from docmanager.request import Request
-from docmanager.browser.openapi import generate_doc
+from uvcreha.app import api
+from uvcreha.browser.layout import TEMPLATES
+from uvcreha.request import Request
+from uvcreha.browser.openapi import generate_doc
 
 
 @api.route("/doc")
