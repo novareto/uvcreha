@@ -1,5 +1,5 @@
 from webtest import TestApp
-import docmanager.auth
+import uvcreha.auth
 
 
 def test_add_user_ok(api_app, web_app, user):
@@ -12,7 +12,7 @@ def test_add_user_ok(api_app, web_app, user):
     assert resp.json == {"id": "23"}
 
     auth = web_app.utilities.get('authentication')
-    assert isinstance(auth, docmanager.auth.Auth) is True
+    assert isinstance(auth, uvcreha.auth.Auth) is True
 
     user = auth.from_credentials(ud)
     assert user.loginname == "ck"

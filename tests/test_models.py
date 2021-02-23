@@ -1,6 +1,6 @@
 import hamcrest
 from typing import Literal
-from docmanager.models import Document, User
+from uvcreha.models import Document, User
 
 
 def test_model_crud(db_connector):

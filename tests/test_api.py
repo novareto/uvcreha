@@ -25,7 +25,7 @@ def test_add_user(api_app):
                 "type": "value_error.missing",
             },
         ],
-        "name": "docmanager.models.User",
+        "name": "uvcreha.models.User",
         "type": "Model validation",
     }
 
@@ -69,7 +69,7 @@ def test_add_folder(api_app, user):
 def test_add_file(api_app, user):
     from webtest import TestApp
     from pydantic import BaseModel
-    from docmanager.models import Document
+    from uvcreha.models import Document
     from typing import Literal
 
 

@@ -11,12 +11,12 @@ CONFIG = omegaconf.OmegaConf.create('''
 app:
 
   env:
-    session: docmanager.test.session
-    principal: docmanager.test.principal
+    session: uvcreha.test.session
+    principal: uvcreha.test.principal
     user: test.principal
 
   logger:
-    name: docmanager.test.logger
+    name: uvcreha.test.logger
 
   assets:
     compile: True
@@ -63,7 +63,7 @@ def session():
 
 @pytest.fixture(scope="session")
 def db_connector(arango_config):
-    from docmanager.models import User, File, Document
+    from uvcreha.models import User, File, Document
     from reiter.arango.connector import Connector
 
     connector = Connector(**arango_config._asdict())
@@ -80,11 +80,11 @@ def db_connector(arango_config):
 @pytest.fixture(scope="session")
 def api_app(request, db_connector):
     import importscan
-    import docmanager
-    from docmanager.app import api as app
-    from docmanager.models import User, Document, File
+    import uvcreha
+    from uvcreha.app import api as app
+    from uvcreha.models import User, Document, File
 
-    importscan.scan(docmanager)
+    importscan.scan(uvcreha)
 
     app.connector = db_connector
     app.config.update(CONFIG.app)
@@ -97,14 +97,14 @@ def web_app(request, db_connector):
     import colorlog
     import importscan
     import tempfile
-    import docmanager
-    import docmanager.auth
-    import docmanager.flash
-    from docmanager.models import User
-    from docmanager.mq import AMQPEmitter
-    from docmanager.app import browser as app
+    import uvcreha
+    import uvcreha.auth
+    import uvcreha.flash
+    from uvcreha.models import User
+    from uvcreha.mq import AMQPEmitter
+    from uvcreha.app import browser as app
 
-    importscan.scan(docmanager)
+    importscan.scan(uvcreha)
 
     folder = tempfile.TemporaryDirectory()
 
@@ -139,7 +139,7 @@ def web_app(request, db_connector):
 
     # Auth
     db = db_connector.get_database()
-    auth = docmanager.auth.Auth(db(User), CONFIG.app.env)
+    auth = uvcreha.auth.Auth(db(User), CONFIG.app.env)
     app.utilities.register(auth, name="authentication")
 
     # Middlewares
@@ -156,7 +156,7 @@ def web_app(request, db_connector):
 
 @pytest.fixture(scope="session")
 def user(db_connector):
-    from docmanager.models import User
+    from uvcreha.models import User
     from functools import partial
     from collections import namedtuple
 

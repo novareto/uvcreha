@@ -43,15 +43,15 @@ def start(config):
 
     import bjoern
     import importscan
-    import docmanager
-    import docmanager.mq
-    import docmanager.tasker
-    from docmanager.startup import Applications
+    import uvcreha
+    import uvcreha.mq
+    import uvcreha.tasker
+    from uvcreha.startup import Applications
     from rutter.urlmap import URLMap
 
-    importscan.scan(docmanager)
+    importscan.scan(uvcreha)
 
-    logger = make_logger("docmanager")
+    logger = make_logger("uvcreha")
     apps = Applications.from_configuration(config, logger=logger)
 
     apps.browser.register_middleware(
@@ -65,8 +65,8 @@ def start(config):
     app['/api'] = apps.api
 
     # Serving the app
-    AMQPworker = docmanager.mq.Worker(apps, config.amqp)
-    tasker = docmanager.tasker.Tasker(apps)
+    AMQPworker = uvcreha.mq.Worker(apps, config.amqp)
+    tasker = uvcreha.tasker.Tasker(apps)
 
     apps.browser.utilities.register(tasker, name="tasker")
     apps.api.utilities.register(tasker, name="tasker")

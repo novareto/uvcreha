@@ -2,7 +2,7 @@ def test_flash(web_app, session):
 
     request = web_app.request_factory(web_app, {
         "REQUEST_METHOD": "GET",
-        "docmanager.test.session": session
+        "uvcreha.test.session": session
     }, "/")
 
     flash_manager = request.utilities.get('flash')
