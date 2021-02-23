@@ -4,7 +4,7 @@ from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import ArangoModel
 from reiter.application.registries import NamedComponents
-from uvc_hdpws.models import Unternehmen, VersichertenFall
+from uv.models.models import Unternehmen, VersichertenFall
 
 
 class Message(BaseModel):

@@ -31,6 +31,7 @@ install_requires = [
     'roughrider.routing',
     'roughrider.workflow',
     'rutter',
+    'uv.models',
     'wrapt',
     'wtforms',
     'wtforms_pydantic',
