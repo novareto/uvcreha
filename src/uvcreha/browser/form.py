@@ -36,16 +36,3 @@ class FormView(reiter.form.FormView):
     def GET(self):
         form = self.setupForm()
         return dict(form=form, error=None)
-
-
-class DocFormView(FormView):
-
-    def GET(self):
-        doc = self.request.database(Document).fetch(
-            self.request.route.params['key'])
-        if doc.item:
-            data = doc.item.dict()
-        else:
-            data = {}
-        form = self.setupForm(data=data)
-        return dict(form=form, error=None)

@@ -1,0 +1,22 @@
+<h1> Akte </h1>
+
+<ul class="nav justify-content-center">
+  <li class="nav-item">
+    <a class="nav-link active" aria-current="page" href="#">Dokumente</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Versicherten Fall</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Unternehmen</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Meta</a>
+  </li>
+</ul>
+<div class="shadow-sm p-3 mb-5 bg-body rounded">
+  ID: <span tal:content="context.az"> </span> <br>
+  State: <span tal:content="context.state"> </span> <br>
+  Datum: <span tal:content="context.creation_date"> </span>
+
+</div>

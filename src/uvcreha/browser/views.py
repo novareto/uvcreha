@@ -84,6 +84,16 @@ class LandingPage(View):
                 state=document_workflow(doc).state)
 
 
+@browser.route("/users/{uid}/files/{az}", name="file_index")
+class FileIndex(View):
+    template = TEMPLATES["file_view.pt"]
+
+    def GET(self):
+        context = self.request.database(File).find_one(**self.params)
+        return dict(request=self.request, context=context)
+
+
+
 @browser.route("/webpush")
 def webpush(request: Request):
     return request.app.ui.response(
