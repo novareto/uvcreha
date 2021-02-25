@@ -5,14 +5,14 @@ from setuptools import setup, find_packages
 version = "0.1"
 
 install_requires = [
-    'bjoern',
     'chameleon',
     'colorlog',
-    'dramatiq[rabbitmq,redis]',
     'cromlech.jwt',
     'cromlech.session',
     'cromlech.sessions.file',
+    'dramatiq[rabbitmq,redis]',
     'fanstatic',
+    'flatten-dict',
     'horseman',
     'kombu',
     'openapi_schema_pydantic',
