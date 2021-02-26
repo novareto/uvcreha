@@ -8,6 +8,9 @@ from uvcreha.models import User, File
 def user_add(request: Request):
     data = request.extract()
     user, response = request.database(User).create(**data.json)
+    request.app.notify(
+        "user_created",
+        request=request, uid=user.uid, user=user)
     return horseman.response.Response.to_json(
         201, body={'id': user.uid})
 
