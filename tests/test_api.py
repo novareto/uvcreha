@@ -3,6 +3,9 @@ def test_add_user(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
+
+
+
     resp = app.post_json(
         "/user.add",
         {"nothing": "at_all"},
@@ -34,6 +37,14 @@ def test_add_user_ok(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
+    
+    events = []
+    assert len(events) == 0
+
+    @api_app.subscribe("user_created")
+    def handle_add(request, uid, user):
+        events.append(uid)
+
     resp = app.post_json(
         "/user.add",
         dict(uid="12345", loginname="cklinger", password="klinger"),
@@ -41,6 +52,8 @@ def test_add_user_ok(api_app):
     )
     assert resp.status == "201 Created"
     assert resp.json == {"id": "12345"}
+    assert len(events) == 1 
+    assert events[0] == "12345"
 
     resp = app.get("/users/12345")
     assert resp.status == "200 OK"
