@@ -82,21 +82,22 @@ def test_add_file(api_app, user):
 
     resp = app.put_json(
         f"/users/{user.user.uid}/file.add", {
-            'az': "1234",
-            'mnr': '3223',
-            'vid': '23',
+            "az": "1234",
+            "mnr": "3223",
+            "vid": "23",
         }
     )
     assert resp.status == "201 Created"
 
     resp = app.put_json(
         f"/users/{user.user.uid}/files/1234/doc.add", {
-            'body': "Some Doc",
-            'myfield': "",
-            'content_type': "event"
+            "docid": "someid",
+            "body": "Some Doc",
+            "myfield": "",
+            "content_type": "event"
         }
     )
     assert resp.status == "201 Created"
-    assert resp.json['az'] == "1234"
+    assert resp.json["az"] == "1234"
 
-    Document.alternatives.unregister('event')
+    Document.alternatives.unregister("event")

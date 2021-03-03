@@ -1,11 +1,12 @@
 import inspect
 import wtforms
 import reiter.form
+import wtforms_pydantic
 from horseman.http import Multidict
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.models import Document
 from flatten_dict import flatten, unflatten
-from wtforms_pydantic.converter import Converter
+
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -21,7 +22,7 @@ class FormMeta(wtforms.meta.DefaultMeta):
         return field.widget(field, **render_kw)
 
 
-class Form(reiter.form.Form):
+class Form(wtforms_pydantic.Form):
 
     def __init__(self, fields, prefix="", meta=FormMeta()):
         super().__init__(fields, prefix, meta)
@@ -74,7 +75,9 @@ class Composer:
             yield (name, self.field(name))
 
     def form_fields(self, *names):
-        return Converter.convert(dict(self.fields(*names)))
+        return wtforms_pydantic.Converter.convert(
+            dict(self.fields(*names))
+        )
 
     def default_values(self):
         if not inspect.isclass(self.model):

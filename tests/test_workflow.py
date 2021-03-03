@@ -7,6 +7,7 @@ from uvcreha.workflow import DocumentWorkflow, document_workflow, notify_trigger
 def test_workflow_default():
 
     doc = Document(
+        docid="someid",
         az='az',
         uid='user',
         body='My document',
@@ -32,6 +33,7 @@ def test_workflow_default():
 def test_workflow_error():
 
     doc = Document(
+        docid="someid",
         az='az',
         uid='user',
         body='My document',

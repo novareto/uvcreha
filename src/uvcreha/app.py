@@ -51,5 +51,13 @@ class Browser(RESTApplication):
                 raise SecurityError(user, permissions - user.permissions)
 
 
-browser = Browser('Browser Application')
+class Backend(Browser):
+
+    def check_permissions(self, route, environ):
+        # backend specific security check.
+        pass
+
+
 api = RESTApplication('REST Application')
+backend = Backend('Backend Application')
+browser = Browser('Browser Application')

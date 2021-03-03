@@ -20,6 +20,7 @@ class Document(Model):
 
     __collection__ = "documents"
 
+    docid: str
     az: str
     uid: str
     state: str
@@ -28,6 +29,10 @@ class Document(Model):
     item: Optional[Any]
 
     alternatives: ClassVar[Any] = NamedComponents()
+
+    @property
+    def __key__(self):
+        return self.docid
 
     @validator('item', always=True, pre=True)
     def set_item(cls, v, values):
