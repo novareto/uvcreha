@@ -2,7 +2,6 @@
 global settings
 """
 
-from io import StringIO
 import omegaconf
 import pytest
 
@@ -28,6 +27,7 @@ app:
 @pytest.fixture
 def session():
     from cromlech.session import Store, Session
+    from copy import deepcopy
 
     class MemoryStore(Store):
 
@@ -82,7 +82,6 @@ def api_app(request, db_connector):
     import importscan
     import uvcreha
     from uvcreha.app import api as app
-    from uvcreha.models import User, Document, File
 
     importscan.scan(uvcreha)
 
@@ -157,7 +156,6 @@ def web_app(request, db_connector):
 @pytest.fixture(scope="session")
 def user(db_connector):
     from uvcreha.models import User
-    from functools import partial
     from collections import namedtuple
 
     testuser = namedtuple('TestUser', ['user', 'login'])

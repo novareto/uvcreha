@@ -80,6 +80,14 @@ setup(
     entry_points={
         'fanstatic.libraries': [
             'uvcreha = uvcreha.browser.resources:library',
+        ],
+        'reiter.application.modules': [
+            'uvcreha = uvcreha',
+        ],
+        'reiter.application.wsgiapps': [
+            '/ = uvcreha.app:browser',
+            '/api = uvcreha.app:api',
+            '/backend = uvcreha.app:backend'
         ]
     }
 )

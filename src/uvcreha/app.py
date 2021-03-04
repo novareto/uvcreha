@@ -1,17 +1,58 @@
-from dataclasses import dataclass, field
-from typing import Optional
-
+import functools
+import fanstatic
+import cromlech.session
+import cromlech.sessions.file
+import horseman.http
 import horseman.meta
 import horseman.response
-import horseman.http
 import reiter.view.meta
+
+from dataclasses import dataclass, field
+from horseman.prototyping import WSGICallable
 from reiter.application.app import Application
 from reiter.application.browser import registries
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
-from uvcreha.security import SecurityError
-from uvcreha.request import Request
 from roughrider.routing.route import NamedRoutes
+from typing import Optional
+from uvcreha.auth import Auth
+from uvcreha.emailer import SecureMailer
+from uvcreha.mq import AMQPEmitter
+from uvcreha.request import Request
+from uvcreha.security import SecurityError
+from uvcreha.webpush import Webpush
+
+
+def fanstatic_middleware(config) -> WSGICallable:
+    return functools.partial(fanstatic.Fanstatic, **config)
+
+
+def session_middleware(config) -> WSGICallable:
+    handler = cromlech.sessions.file.FileStore(
+        config.session.cache, 3000
+    )
+    manager = cromlech.session.SignedCookieManager(
+        config.session.cookie_secret,
+        handler,
+        cookie=config.session.cookie_name
+    )
+    return cromlech.session.WSGISessionManager(
+        manager, environ_key=config.env.session)
+
+
+def webpush_plugin(config):
+
+    with open(config.private_key) as fd:
+        private_key = fd.readline().strip("\n")
+
+    with open(config.public_key) as fd:
+        public_key = fd.read().strip("\n")
+
+    return Webpush(
+        private_key=private_key,
+        public_key=public_key,
+        claims=config.vapid_claims
+    )
 
 
 class Routes(NamedRoutes):
@@ -34,6 +75,17 @@ class RESTApplication(Application):
         except ValidationError as exc:
             return exc(environ, start_response)
 
+    def configure(self, config):
+        self.config.update(config.app)
+        self.connector = Connector(**config.arango)
+        self.request = self.config.factories.request
+
+        # Utilities
+        webpush = webpush_plugin(config.webpush)
+        emailer = SecureMailer(config.emailer)
+        self.utilities.register(webpush, name="webpush")
+        self.utilities.register(emailer, name="emailer")
+
 
 @dataclass
 class Browser(RESTApplication):
@@ -50,12 +102,56 @@ class Browser(RESTApplication):
             if not permissions.issubset(user.permissions):
                 raise SecurityError(user, permissions - user.permissions)
 
+    def configure(self, config):
+        self.config.update(config.app)
+        self.connector = Connector(**config.arango)
+        self.request = self.config.factories.request
+
+        # utilities
+        db = self.connector.get_database()
+        webpush = webpush_plugin(config.webpush)
+        emailer = SecureMailer(config.emailer)
+        auth = Auth(db(self.config.factories.user), self.config.env)
+
+        self.utilities.register(auth, name="authentication")
+        self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
+        self.utilities.register(webpush, name="webpush")
+        self.utilities.register(emailer, name="emailer")
+
+        # middlewares
+        self.register_middleware(
+            fanstatic_middleware(self.config.assets), order=0)
+
+        self.register_middleware(
+            session_middleware(self.config), order=1)
+
+        self.register_middleware(auth, order=2)
+
 
 class Backend(Browser):
 
     def check_permissions(self, route, environ):
         # backend specific security check.
         pass
+
+    def configure(self, config):
+        self.config.update(config.app)
+        self.connector = Connector(**config.arango)
+        self.request = config.app.factories.request
+
+        # utilities
+        db = self.connector.get_database()
+        auth = Auth(db(self.config.factories.user), self.config.env)
+        self.utilities.register(auth, name="authentication")
+
+        # middlewares
+        self.register_middleware(
+            fanstatic_middleware(self.config.assets), order=0)
+
+        self.register_middleware(
+            session_middleware(self.config), order=1)
+
+        self.register_middleware(auth, order=2)
 
 
 api = RESTApplication('REST Application')

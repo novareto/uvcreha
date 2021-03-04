@@ -2,11 +2,10 @@ import inspect
 import wtforms
 import reiter.form
 import wtforms_pydantic
+from pydantic import create_model
 from horseman.http import Multidict
 from uvcreha.browser.layout import TEMPLATES
-from uvcreha.models import Document
 from flatten_dict import flatten, unflatten
-
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
