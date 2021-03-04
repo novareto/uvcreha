@@ -3,9 +3,9 @@ from typing import Literal
 from uvcreha.models import Document, User
 
 
-def test_model_crud(db_connector):
+def test_model_crud(db_init):
 
-    db = db_connector.get_database()
+    db = db_init.get_database()
     wrapper = db(User)
     model = wrapper.model(
         uid="123456",

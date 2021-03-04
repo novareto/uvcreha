@@ -2,17 +2,29 @@
 global settings
 """
 
+import pathlib
 import omegaconf
 import pytest
+from zope.dottedname import resolve
+
+
+omegaconf.OmegaConf.register_resolver("class", resolve.resolve)
 
 
 CONFIG = omegaconf.OmegaConf.create('''
 app:
 
+  factories:
+    user: ${class:uvcreha.models.User}
+    request: ${class:uvcreha.request.Request}
+
   env:
     session: uvcreha.test.session
-    principal: uvcreha.test.principal
     user: test.principal
+
+  session:
+    cookie_name: uvcreha.cookie
+    cookie_secret: secret
 
   logger:
     name: uvcreha.test.logger
@@ -62,7 +74,7 @@ def session():
 
 
 @pytest.fixture(scope="session")
-def db_connector(arango_config):
+def db_init(arango_config):
     from uvcreha.models import User, File, Document
     from reiter.arango.connector import Connector
 
@@ -78,83 +90,35 @@ def db_connector(arango_config):
 
 
 @pytest.fixture(scope="session")
-def api_app(request, db_connector):
+def api_app(request, arango_config, db_init):
     import importscan
     import uvcreha
     from uvcreha.app import api as app
 
     importscan.scan(uvcreha)
-
-    app.connector = db_connector
-    app.config.update(CONFIG.app)
+    CONFIG['arango'] = arango_config._asdict()
+    app.configure(CONFIG)
     return app
 
 
 @pytest.fixture(scope="session")
-def web_app(request, db_connector):
-    import logging
-    import colorlog
+def web_app(request, arango_config, db_init):
     import importscan
     import tempfile
     import uvcreha
-    import uvcreha.auth
-    import uvcreha.flash
-    from uvcreha.models import User
-    from uvcreha.mq import AMQPEmitter
     from uvcreha.app import browser as app
 
     importscan.scan(uvcreha)
-
+    CONFIG['arango'] = arango_config._asdict()
     folder = tempfile.TemporaryDirectory()
-
-    def session_middleware(config):
-        from pathlib import Path
-        import cromlech.session
-        import cromlech.sessions.file
-
-        handler = cromlech.sessions.file.FileStore(Path(folder.name), 3000)
-        manager = cromlech.session.SignedCookieManager(
-            "secret", handler, cookie="my_sid")
-        return cromlech.session.WSGISessionManager(
-            manager, environ_key=CONFIG.app.env.session)
-
-    def fanstatic_middleware(config):
-        from fanstatic import Fanstatic
-        from functools import partial
-
-        return partial(Fanstatic, **config)
-
-    def make_logger(config) -> logging.Logger:
-        logger = colorlog.getLogger(CONFIG.name)
-        logger.setLevel(logging.DEBUG)
-        return logger
-
-    app.connector = db_connector
-    app.config.update(CONFIG.app)
-
-    # AMQP
-    amqp = AMQPEmitter(CONFIG.amqp)
-    app.utilities.register(amqp, name="amqp")
-
-    # Auth
-    db = db_connector.get_database()
-    auth = uvcreha.auth.Auth(db(User), CONFIG.app.env)
-    app.utilities.register(auth, name="authentication")
-
-    # Middlewares
-    app.register_middleware(
-        fanstatic_middleware(CONFIG.app.assets), order=0)
-    app.register_middleware(
-        session_middleware(CONFIG.app.env), order=1)
-    app.register_middleware(
-        auth, order=2)
-
+    CONFIG.app.session.cache = folder.name
+    app.configure(CONFIG)
     yield app
     folder.cleanup()
 
 
 @pytest.fixture(scope="session")
-def user(db_connector):
+def user(web_app):
     from uvcreha.models import User
     from collections import namedtuple
 
@@ -167,7 +131,7 @@ def user(db_connector):
         password='test',
         permissions=['document.view', 'document.add']
     )
-    db = db_connector.get_database()
+    db = web_app.connector.get_database()
     db.add(user)
 
     def login(app):

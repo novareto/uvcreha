@@ -81,10 +81,13 @@ class RESTApplication(Application):
         self.request = self.config.factories.request
 
         # Utilities
-        webpush = webpush_plugin(config.webpush)
-        emailer = SecureMailer(config.emailer)
-        self.utilities.register(webpush, name="webpush")
-        self.utilities.register(emailer, name="emailer")
+        if config.emailer:
+            emailer = SecureMailer(config.emailer)
+            self.utilities.register(emailer, name="emailer")
+
+        if config.webpush:
+            webpush = webpush_plugin(config.webpush)
+            self.utilities.register(webpush, name="webpush")
 
 
 @dataclass
@@ -109,14 +112,17 @@ class Browser(RESTApplication):
 
         # utilities
         db = self.connector.get_database()
-        webpush = webpush_plugin(config.webpush)
-        emailer = SecureMailer(config.emailer)
         auth = Auth(db(self.config.factories.user), self.config.env)
-
         self.utilities.register(auth, name="authentication")
         self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
-        self.utilities.register(webpush, name="webpush")
-        self.utilities.register(emailer, name="emailer")
+
+        if config.emailer:
+            emailer = SecureMailer(config.emailer)
+            self.utilities.register(emailer, name="emailer")
+
+        if config.webpush:
+            webpush = webpush_plugin(config.webpush)
+            self.utilities.register(webpush, name="webpush")
 
         # middlewares
         self.register_middleware(
