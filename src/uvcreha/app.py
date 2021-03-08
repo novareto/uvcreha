@@ -7,17 +7,17 @@ import horseman.meta
 import horseman.response
 import reiter.view.meta
 
+from typing import Optional
 from dataclasses import dataclass, field
 from horseman.prototyping import WSGICallable
 from reiter.application.app import Application
 from reiter.application.browser import registries
+from reiter.amqp.emitter import AMQPEmitter
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
 from roughrider.routing.route import NamedRoutes
-from typing import Optional
 from uvcreha.auth import Auth
 from uvcreha.emailer import SecureMailer
-from uvcreha.mq import AMQPEmitter
 from uvcreha.request import Request
 from uvcreha.security import SecurityError
 from uvcreha.webpush import Webpush
