@@ -5,8 +5,7 @@ from uvcreha.browser.resources import siguvtheme
 from uvcreha.app import browser
 
 
-TEMPLATES = TemplateLoader(
-    str((pathlib.Path(__file__).parent / "templates").resolve()), ".pt")
+TEMPLATES = TemplateLoader('./templates')
 
 
 @browser.ui.register_layout(Request)

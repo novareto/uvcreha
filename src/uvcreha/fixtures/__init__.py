@@ -1,8 +1,4 @@
 import omegaconf
-from zope.dottedname import resolve
-
-
-omegaconf.OmegaConf.register_resolver("class", resolve.resolve)
 
 
 CONFIG = omegaconf.OmegaConf.create('''
