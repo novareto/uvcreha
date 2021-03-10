@@ -92,7 +92,6 @@ setup(
         'reiter.application.wsgiapps': [
             '/ = uvcreha.app:browser',
             '/api = uvcreha.app:api',
-            '/backend = uvcreha.app:backend'
         ]
     }
 )

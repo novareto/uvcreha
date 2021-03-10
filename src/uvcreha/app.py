@@ -134,32 +134,5 @@ class Browser(RESTApplication):
         self.register_middleware(auth, order=2)
 
 
-class Backend(Browser):
-
-    def check_permissions(self, route, environ):
-        # backend specific security check.
-        pass
-
-    def configure(self, config):
-        self.config.update(config.app)
-        self.connector = Connector(**config.arango)
-        self.request = config.app.factories.request
-
-        # utilities
-        db = self.connector.get_database()
-        auth = Auth(db(self.config.factories.user), self.config.env)
-        self.utilities.register(auth, name="authentication")
-
-        # middlewares
-        self.register_middleware(
-            fanstatic_middleware(self.config.assets), order=0)
-
-        self.register_middleware(
-            session_middleware(self.config), order=1)
-
-        self.register_middleware(auth, order=2)
-
-
 api = RESTApplication('REST Application')
-backend = Backend('Backend Application')
 browser = Browser('Browser Application')

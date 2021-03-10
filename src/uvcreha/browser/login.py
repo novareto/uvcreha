@@ -1,13 +1,12 @@
 import horseman.response
-
+from horseman.http import Multidict
+from reiter.form import trigger
 from uvcreha import models
 from uvcreha.app import browser
-from uvcreha.models import User
-from uvcreha.request import Request
-from reiter.form import trigger
 from uvcreha.browser.form import Form, FormView
 from uvcreha.browser.layout import TEMPLATES
-from horseman.http import Multidict
+from uvcreha.models import User
+from uvcreha.request import Request
 
 
 @browser.route("/login")
@@ -15,8 +14,11 @@ class LoginForm(FormView):
 
     title = "Anmelden"
     description = "Bitte tragen Sie hier Ihre Anmeldeinformationen ein"
-    action = "login"
     model = models.User
+
+    @property
+    def action(self):
+        return self.request.environ['SCRIPT_NAME'] + '/login'
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=("loginname", "password"))
@@ -32,11 +34,14 @@ class LoginForm(FormView):
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
-            return self.redirect("/")
+            return self.redirect(request.environ['SCRIPT_NAME'] + '/')
 
         flash_messages = request.utilities.get('flash')
-        flash_messages.add(body='Failed login.')
-        return self.redirect("/")
+        if flash_messages is not None:
+            flash_messages.add(body='Failed login.')
+        else:
+            print('Warning: flash messages utility is not available.')
+        return self.redirect(request.environ['SCRIPT_NAME'] + '/')
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
