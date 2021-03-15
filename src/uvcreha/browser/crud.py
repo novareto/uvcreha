@@ -49,14 +49,21 @@ class ModelForm(FormView):
 
 class AddForm(ModelForm):
 
+    def get_initial_data(self):
+        return self.request.route.params
+
+    def create(self, data) -> BaseModel:
+        obj, response = self.request.database(self.model).create(
+            **{**self.params, **data.form.dict()}
+        )
+        return obj
+
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        file, response = request.database(self.model).create(
-            **{**self.params, **data.form.dict()}
-        )
+        self.create(data)
         return horseman.response.redirect(self.destination)
 
 
