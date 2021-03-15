@@ -70,9 +70,12 @@ class DefaultView(ModelForm):
 
     readonly = ...  # represents ALL
 
+    def update(self):
+        self.context = self.request.database(
+            self.model).find_one(**self.params)
+
     def get_initial_data(self):
-        context = self.request.database(self.model).find_one(**self.params)
-        return context.dict()
+        return self.context.dict()
 
     def GET(self):
         form = self.setupForm()

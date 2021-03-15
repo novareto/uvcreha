@@ -27,25 +27,25 @@ class Layout:
 
 
 @browser.ui.register_slot(request=Request, name="sitecap")
-def sitecap(request, name):
+def sitecap(request, name, view):
     return TEMPLATES["sitecap.pt"].render(request=request)
 
 
 @browser.ui.register_slot(request=Request, name="globalmenu")
-def globalmenu(request, name):
+def globalmenu(request, name, view):
     return TEMPLATES["globalmenu.pt"].render(request=request)
 
 
 @browser.ui.register_slot(request=Request, name="navbar")
-def navbar(request, name):
+def navbar(request, name, view):
     return TEMPLATES["navbar.pt"].render(request=request)
 
 
 @browser.ui.register_slot(request=Request, name="sidebar")
-def sidebar(request, name):
+def sidebar(request, name, view):
     return TEMPLATES["sidebar.pt"].render(request=request)
 
 
 @browser.ui.register_slot(request=Request, name="footer")
-def footer(request, name):
+def footer(request, name, view):
     return TEMPLATES["footer.pt"].render(request=request)

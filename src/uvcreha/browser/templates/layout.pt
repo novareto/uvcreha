@@ -27,6 +27,7 @@
           <span tal:replace="message.body" />
         </div>
         <div tal:replace="structure content" />
+        <div tal:replace="structure slot: below-content" />
       </div>
     </section>
     <footer id="portal-footer" class="footer mt-auto">
