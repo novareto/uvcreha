@@ -1,7 +1,7 @@
 import horseman.response
 from horseman.http import Multidict
 from pydantic import BaseModel
-from typing import ClassVar, Type, Optional, Iterable
+from typing import ClassVar, Type, Optional, Iterable, Callable
 from wtforms_pydantic import model_fields
 from reiter.form import trigger
 from uvcreha.browser.form import FormView, Form
@@ -11,6 +11,7 @@ class ModelForm(FormView):
     title: str
     model: ClassVar[Type[BaseModel]]
     readonly: Optional[Iterable[str]] = None
+    hook: Optional[Callable] = None
 
     @property
     def action(self):
@@ -52,18 +53,16 @@ class AddForm(ModelForm):
     def get_initial_data(self):
         return self.request.route.params
 
-    def create(self, data) -> BaseModel:
-        obj, response = self.request.database(self.model).create(
-            **{**self.params, **data.form.dict()}
-        )
-        return obj
-
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        self.create(data)
+        obj, response = request.database(self.model).create(
+            **{**self.params, **data.form.dict()}
+        )
+        if self.hook is not None:
+            self.hook(obj)
         return horseman.response.redirect(self.destination)
 
 
@@ -95,9 +94,11 @@ class EditForm(ModelForm):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        user, response = request.database(self.model).update(
+        obj, response = self.request.database(self.model).update(
             **{**self.params, **data.form.dict()}
         )
+        if self.hook is not None:
+            self.hook(obj)
         return horseman.response.redirect(self.destination)
 
     @trigger("delete", "Delete", css="btn btn-danger")
