@@ -1,10 +1,18 @@
 import enum
-from typing import List, Optional, Any, ClassVar
+from typing import Dict, List, Optional, Any, ClassVar, NamedTuple
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import ArangoModel
 from reiter.application.registries import NamedComponents
 from uv.models.models import Unternehmen, VersichertenFall
+
+
+class Brain(NamedTuple):
+    id: str
+    state: str
+    title: str
+    link: str
+    actions: Dict[str, str]
 
 
 class Message(BaseModel):
@@ -124,3 +132,56 @@ class User(Model):
     @property
     def __key__(self) -> str:
         return self.uid
+
+
+class UserBrain(Brain):
+
+    @classmethod
+    def create(cls, obj, request):
+        # we need a state computation
+        return cls(
+            id=obj.__key__,
+            title=obj.loginname,
+            state=obj.state,
+            link=request.route_path('user.view', uid=obj.uid),
+            actions={
+                'Edit': request.route_path(
+                    'user.edit', uid=obj.uid),
+                'New file': request.route_path(
+                    'user.new_file', uid=obj.uid)
+            }
+        )
+
+
+class FileBrain(Brain):
+
+    @classmethod
+    def create(cls, obj, request):
+        return cls(
+            id=obj.__key__,
+            title=f"File {obj.az} ({obj.mnr})",
+            state=obj.state,
+            link=request.route_path('file.view', uid=obj.uid, az=obj.az),
+            actions={
+                'Edit': request.route_path(
+                    'file.edit', uid=obj.uid, az=obj.az),
+                'New document': request.route_path(
+                    'file.new_doc', uid=obj.uid, az=obj.az)
+            }
+        )
+
+
+class DocBrain(Brain):
+
+    @classmethod
+    def create(cls, obj, request):
+        return cls(
+            id=obj.__key__,
+            title=f"Document {obj.az} ({obj.content_type})",
+            state=obj.state,
+            link=request.route_path(
+                'View', uid=obj.uid, az=obj.az, docid=obj.docid),
+            actions={
+                'Edit': request.route_path('doc.edit', uid=obj.uid),
+            }
+        )
