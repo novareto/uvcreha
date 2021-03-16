@@ -51,8 +51,8 @@ class SecureMailer:
         if server.has_extn('STARTTLS'):
             server.starttls()
             server.ehlo()  # re-identify ourselves over TLS connection
-
-        server.login(self.config.user, self.config.password)
+        if self.config.user:
+            server.login(self.config.user, self.config.password)
         try:
             yield functools.partial(
                 server.sendmail, self.config.emitter)
