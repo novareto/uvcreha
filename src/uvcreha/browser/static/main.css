@@ -109,3 +109,24 @@ nav .breadcrumb-item {
 html body #content .container {
     padding: 3rem 0 2rem 0;
 }
+
+span[data-state="inquiry"],
+span[data-state="created"] {
+    color: orange;
+}
+
+span[data-state="sent"],
+span[data-state="pending"] {
+    color: yellow;
+}
+
+span[data-state="validated"],
+span[data-state="approved"],
+span[data-state="active"] {
+    color: green;
+}
+
+span[data-state="inactive"],
+span[data-state="closed"] {
+    color: grey;
+}

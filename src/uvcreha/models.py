@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
 from reiter.arango.model import ArangoModel
 from reiter.application.registries import NamedComponents
 from uv.models.models import Unternehmen, VersichertenFall
+from uvcreha.workflow import user_workflow, document_workflow, file_workflow
 
 
 class Brain(NamedTuple):
@@ -138,11 +139,11 @@ class UserBrain(Brain):
 
     @classmethod
     def create(cls, obj, request):
-        # we need a state computation
+        wf = user_workflow(obj)
         return cls(
             id=obj.__key__,
             title=obj.loginname,
-            state=obj.state,
+            state=wf.state,
             link=request.route_path('user.view', uid=obj.uid),
             actions={
                 'Edit': request.route_path(
@@ -157,10 +158,11 @@ class FileBrain(Brain):
 
     @classmethod
     def create(cls, obj, request):
+        wf = file_workflow(obj)
         return cls(
             id=obj.__key__,
             title=f"File {obj.az} ({obj.mnr})",
-            state=obj.state,
+            state=wf.state,
             link=request.route_path('file.view', uid=obj.uid, az=obj.az),
             actions={
                 'Edit': request.route_path(
@@ -175,13 +177,15 @@ class DocBrain(Brain):
 
     @classmethod
     def create(cls, obj, request):
+        wf = document_workflow(obj)
         return cls(
             id=obj.__key__,
             title=f"Document {obj.az} ({obj.content_type})",
-            state=obj.state,
+            state=wf.state,
             link=request.route_path(
-                'View', uid=obj.uid, az=obj.az, docid=obj.docid),
+                'doc.view', uid=obj.uid, az=obj.az, docid=obj.docid),
             actions={
-                'Edit': request.route_path('doc.edit', uid=obj.uid),
+                'Edit': request.route_path(
+                    'doc.edit', uid=obj.uid, az=obj.az, docid=obj.docid),
             }
         )
