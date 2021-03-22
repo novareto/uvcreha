@@ -1,21 +1,22 @@
 import horseman.response
 from horseman.http import Multidict
-from reiter.form import trigger, FormView
+from reiter.form import trigger
 from reiter.view.meta import View
 from uvcreha.app import browser
-from uvcreha.browser.form import Form
+from uvcreha.browser.form import Form, FormView
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.workflow import DocumentWorkflow, document_workflow
-from ..models import Document
+from ..models import Document, File
 
 
-@browser.route("/users/{uid}/files/{az}/docs/{key}", name="doc.view")
+@browser.route("/users/{uid}/files/{az}/docs/{docid}", name="doc.view")
 class DocumentIndex(View):
-    template = TEMPLATES["index.pt"]
+    template = TEMPLATES["document.pt"]
 
     def GET(self):
-        doc = self.request.database(Document).fetch(self.params['uid'])
-        if doc.state == "Inquiry":
+        doc = self.request.database(Document).fetch(self.params['docid'])
+        wf = document_workflow(doc)
+        if wf.state is document_workflow.states.inquiry:
             return horseman.response.redirect(
                 self.request.app.routes.url_for(
                     "doc.edit", **self.params
@@ -24,7 +25,7 @@ class DocumentIndex(View):
         return dict(request=self.request, document=doc)
 
 
-@browser.route("/users/{uid}/files/{az}/docs/{key}/edit", name="doc.edit"
+@browser.route("/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit"
 )
 class DocumentEditForm(FormView):
 
@@ -33,15 +34,26 @@ class DocumentEditForm(FormView):
     action = "edit"
     model = Document
 
+    def update(self):
+        super().update()
+        self.context = self.request.database(
+            self.model).find_one(**self.params)
+
+    def get_initial_data(self):
+        if self.context.item is not None:
+            return self.context.item.dict()
+        return {}
+
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("name", "surname", "iban"))
+        _type = self.context.alternatives[self.context.content_type]
+        form = Form.from_model(_type, only=("name", "surname", "iban"))
         form.process(data=data, formdata=formdata)
         return form
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         binding = request.database(Document)
-        document = binding.fetch(request.route.params.get("key"))
+        document = binding.fetch(request.route.params.get("docid"))
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {
@@ -53,7 +65,7 @@ class DocumentEditForm(FormView):
         doc_data = data.form.dict()
         form_data = request.route.params
         wf = document_workflow(document, request=request)
-        wf.transition_to(DocumentWorkflow.states.sent)
+        wf.transition_to(document_workflow.states.sent)
         binding.update(
             item=doc_data, state=DocumentWorkflow.states.sent.name, **form_data
         )

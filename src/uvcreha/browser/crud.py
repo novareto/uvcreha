@@ -97,7 +97,8 @@ class EditForm(ModelForm):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        obj, response = self.request.database(self.model).update(
+        obj = self.request.database(self.model).update(
+            self.context.__key__,
             **{**self.params, **data.form.dict()}
         )
         if self.hook is not None:
