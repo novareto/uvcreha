@@ -9,7 +9,7 @@ from uvcreha.workflow import DocumentWorkflow, document_workflow
 from ..models import Document
 
 
-@browser.route("/users/{uid}/files/{az}/docs/{key}", name="index")
+@browser.route("/users/{uid}/files/{az}/docs/{key}", name="doc.view")
 class DocumentIndex(View):
     template = TEMPLATES["index.pt"]
 

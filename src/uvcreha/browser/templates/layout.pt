@@ -18,7 +18,7 @@
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/locale/bootstrap-table-de-DE.js"></script>
     <script>
       function dateFormat(value, row, index) {
-        return moment(value).format('DD/MM/YYYY');
+        return moment(value).format('DD.MM.YYYY');
       }
     </script>
   </head>

@@ -14,9 +14,58 @@
     <a class="nav-link" href="#">Meta</a>
   </li>
 </ul>
+<h2> Akte </h2>
 <div class="shadow-sm p-3 mb-5 bg-body rounded">
   ID: <span tal:content="context.az"> </span> <br>
   State: <span tal:content="context.state"> </span> <br>
   Datum: <span tal:content="context.creation_date"> </span>
+</div>
+
+<div>
+  <h2> Dokumente </h2>
+  <table class="table"
+         data-locale='de-DE'
+         data-search="true"
+         data-toggle="table"
+         data-sort-name="date"
+         data-sort-order="desc"
+         >
+    <thead>
+      <tr>
+        <th data-field="id" data-sortable="true">ID</th>
+        <th data-field="title" data-sortable="true">Title</th>
+        <th data-field="date"
+            data-sortable="true"
+            data-formatter="dateFormat"
+            data-searchable="false">Date</th>
+        <th data-field="state" data-searchable="false">Status</th>
+        <th data-field="actions" data-searchable="false">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="search-results">
+      <tr tal:repeat="brain brains">
+        <td tal:content="brain.id" />
+        <td>
+          <a href=""
+             tal:attributes="href brain.link"
+             tal:content="brain.title" />
+        </td>
+        <td tal:content="brain.date" />
+        <td>
+          <span data-state="${brain.state.name}">
+            ${brain.state.value}
+          </span>
+        </td>
+        <td>
+          <ul class="list-inline">
+            <li tal:repeat="action brain.actions" class="list-inline-item">
+              <a href="${action.url}"
+                 ><i class="${action.css}"> </i>${action.title}</a>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
 </div>

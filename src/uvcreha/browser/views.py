@@ -11,6 +11,7 @@ from uvcreha.browser.openapi import generate_doc
 from uvcreha.models import User, UserPreferences, File, Document
 from uvcreha.request import Request
 from uvcreha.workflow import document_workflow, file_workflow
+from uvcreha import models
 
 
 class UserDocument(NamedTuple):
@@ -94,7 +95,9 @@ class FileIndex(View):
 
     def GET(self):
         context = self.request.database(File).find_one(**self.params)
-        return dict(request=self.request, context=context)
+        request = self.request
+        docs = [models.DocBrain.create(doc, request) for doc in request.database(models.Document).find(uid=context.uid, az=context.az)]
+        return dict(brains=docs, request=self.request, context=context)
 
 
 
