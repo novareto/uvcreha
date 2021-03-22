@@ -13,7 +13,14 @@ class Brain(NamedTuple):
     state: str
     title: str
     link: str
+    date: datetime
     actions: Dict[str, str]
+
+
+class Link(NamedTuple):
+    title: str
+    url: str
+    css: str = ''
 
 
 class Message(BaseModel):
@@ -142,15 +149,20 @@ class UserBrain(Brain):
         wf = user_workflow(obj)
         return cls(
             id=obj.__key__,
+            date=obj.creation_date,
             title=obj.loginname,
             state=wf.state,
             link=request.route_path('user.view', uid=obj.uid),
-            actions={
-                'Edit': request.route_path(
-                    'user.edit', uid=obj.uid),
-                'New file': request.route_path(
-                    'user.new_file', uid=obj.uid)
-            }
+            actions=(
+                Link(title='Edit',
+                     url=request.route_path(
+                         'user.edit', uid=obj.uid),
+                     css='fa fa-edit'),
+                Link(title='New file',
+                     url=request.route_path(
+                         'user.new_file', uid=obj.uid),
+                     css='fa fa-folder'),
+            )
         )
 
 
@@ -161,15 +173,20 @@ class FileBrain(Brain):
         wf = file_workflow(obj)
         return cls(
             id=obj.__key__,
+            date=obj.creation_date,
             title=f"File {obj.az} ({obj.mnr})",
             state=wf.state,
             link=request.route_path('file.view', uid=obj.uid, az=obj.az),
-            actions={
-                'Edit': request.route_path(
-                    'file.edit', uid=obj.uid, az=obj.az),
-                'New document': request.route_path(
-                    'file.new_doc', uid=obj.uid, az=obj.az)
-            }
+            actions=(
+                Link(title="Edit",
+                     url=request.route_path(
+                         'file.edit', uid=obj.uid, az=obj.az),
+                     css='fa fa-edit'),
+                Link(title='New document',
+                     url=request.route_path(
+                         'file.new_doc', uid=obj.uid, az=obj.az),
+                     css='fa fa-file'),
+            )
         )
 
 
@@ -180,12 +197,16 @@ class DocBrain(Brain):
         wf = document_workflow(obj)
         return cls(
             id=obj.__key__,
+            date=obj.creation_date,
             title=f"Document {obj.az} ({obj.content_type})",
             state=wf.state,
             link=request.route_path(
                 'doc.view', uid=obj.uid, az=obj.az, docid=obj.docid),
-            actions={
-                'Edit': request.route_path(
-                    'doc.edit', uid=obj.uid, az=obj.az, docid=obj.docid),
-            }
+            actions=(
+                Link(title='Edit',
+                    url=request.route_path(
+                        'doc.edit',
+                        uid=obj.uid, az=obj.az, docid=obj.docid),
+                    css='fa fa-edit'),
+            )
         )

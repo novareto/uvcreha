@@ -66,8 +66,12 @@ class LandingPage(View):
         for file in files:
             state = file_workflow(file).state
             if state is file_workflow.states.created:
-                url = self.request.app.routes.url_for(
-                    'file_register', az=file.az, uid=file.uid)
+                try:
+                    url = self.request.app.routes.url_for(
+                        'file_register', az=file.az, uid=file.uid)
+                except LookupError:
+                    # We don't have a file register view.
+                    url = None
             else:
                 url = self.request.app.routes.url_for(
                     'file_index', az=file.az, uid=file.uid)

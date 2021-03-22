@@ -91,8 +91,8 @@ div#siguv-navigation li.active .menu-item-title {
 }
 
 div.context-menu {
-    float: right;
-}
+    float: right;}
+css
 
 .form-inline .form-control {
     margin-right: 5px;
@@ -112,21 +112,25 @@ html body #content .container {
 
 span[data-state="inquiry"],
 span[data-state="created"] {
-    color: orange;
+    font-weight: bold;
+    color: #ff8c00;
 }
 
 span[data-state="sent"],
 span[data-state="pending"] {
-    color: yellow;
+    font-weight: bold;
+    color: #eed202;
 }
 
 span[data-state="validated"],
 span[data-state="approved"],
 span[data-state="active"] {
-    color: green;
+    font-weight: bold;
+    color: #66b032;
 }
 
 span[data-state="inactive"],
 span[data-state="closed"] {
+    font-weight: bold;
     color: grey;
 }
