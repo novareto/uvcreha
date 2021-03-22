@@ -17,6 +17,7 @@ nav:
 - Handling: handling.md
 - Development: development.md
 - SMTP: smtp.md
+- AMQP: amqp.md
 
 
 markdown_extensions:
