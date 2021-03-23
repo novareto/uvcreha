@@ -1,0 +1,4 @@
+<main>
+  <h1>Composed page</h1>
+  <section id="composed-page" tal:content="structure innerpage" />
+</main>

@@ -98,10 +98,6 @@ css
     margin-right: 5px;
 }
 
-a:not([href]):not([tabindex]) {
-    color: white;
-}
-
 nav .breadcrumb-item {
     display: inline-block !important;
 }

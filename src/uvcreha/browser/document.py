@@ -3,10 +3,37 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from reiter.view.meta import View
 from uvcreha.app import browser
+from uvcreha.browser.composed import ComposedView
 from uvcreha.browser.form import Form, FormView
 from uvcreha.browser.layout import TEMPLATES
+from uvcreha.browser.crud import ModelForm
 from uvcreha.workflow import DocumentWorkflow, document_workflow
+from wtforms_pydantic import model_fields
 from ..models import Document, File
+
+
+@browser.route("/test")
+class ComposedDocument(ComposedView):
+    template = TEMPLATES["composed.pt"]
+
+    def GET(self):
+        return {'innerpage': self.page.GET()}
+
+
+@ComposedDocument.pages.component('default')
+class DefaultView(View):
+    title = 'Default'
+
+    def GET(self):
+        return 'My default View'
+
+
+@ComposedDocument.pages.component('other')
+class OtherView(View):
+    title = 'Other view'
+
+    def GET(self):
+        return 'My other View'
 
 
 @browser.route("/users/{uid}/files/{az}/docs/{docid}", name="doc.view")
@@ -27,46 +54,34 @@ class DocumentIndex(View):
 
 @browser.route("/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit"
 )
-class DocumentEditForm(FormView):
+class DocumentEditForm(ModelForm):
 
     title = "Form"
     description = "Bitte füllen Sie alle Details"
-    action = "edit"
     model = Document
 
     def update(self):
         super().update()
         self.context = self.request.database(
             self.model).find_one(**self.params)
+        self._type = self.context.alternatives[self.context.content_type]
+        self.subitem = self.context.item or self._type.construct()
 
     def get_initial_data(self):
-        if self.context.item is not None:
-            return self.context.item.dict()
+        if self.subitem is not None:
+            return self.subitem.dict()
         return {}
 
-    def setupForm(self, data={}, formdata=Multidict()):
-        _type = self.context.alternatives[self.context.content_type]
-        form = Form.from_model(_type, only=("name", "surname", "iban"))
-        form.process(data=data, formdata=formdata)
-        return form
+    def fields(self, exclude=(), only=()):
+        return model_fields(self._type, exclude=exclude, only=only)
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
-        binding = request.database(Document)
-        document = binding.fetch(request.route.params.get("docid"))
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {
-                "form": form,
-                "view": self,
-                "error": None,
-                "path": request.route.path,
-            }
-        doc_data = data.form.dict()
-        form_data = request.route.params
-        wf = document_workflow(document, request=request)
-        wf.transition_to(document_workflow.states.sent)
-        binding.update(
-            item=doc_data, state=DocumentWorkflow.states.sent.name, **form_data
-        )
-        return horseman.response.Response.create(302, headers={"Location": "/"})
+            return {"form": form}
+        item_data = self.subitem.dict()
+        item_data.update(data.form.dict())
+        self.request.database(self.model).update(
+            self.context.__key__, item=item_data)
+        return horseman.response.redirect("/")
