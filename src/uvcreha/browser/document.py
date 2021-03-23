@@ -82,7 +82,7 @@ class DocumentEditForm(ModelForm):
             return {"form": form}
         item_data = self.subitem.dict()
         item_data.update(data.form.dict())
-        wf = document_workflow(document, request=request)
+        wf = document_workflow(self.context, request=request)
         wf.transition_to(document_workflow.states.sent)
         self.request.database(self.model).update(
             self.context.__key__,
