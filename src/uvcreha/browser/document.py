@@ -31,7 +31,6 @@ class DocumentEditForm(FormView):
 
     title = "Form"
     description = "Bitte füllen Sie alle Details"
-    action = "edit"
     model = Document
 
     def update(self):
@@ -67,6 +66,6 @@ class DocumentEditForm(FormView):
         wf = document_workflow(document, request=request)
         wf.transition_to(document_workflow.states.sent)
         binding.update(
-            item=doc_data, state=DocumentWorkflow.states.sent.name, **form_data
+            document.docid, item=doc_data, state=DocumentWorkflow.states.sent.name, **form_data
         )
         return horseman.response.Response.create(302, headers={"Location": "/"})
