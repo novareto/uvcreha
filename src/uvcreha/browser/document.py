@@ -7,7 +7,7 @@ from uvcreha.browser.composed import ComposedView
 from uvcreha.browser.form import Form, FormView
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.crud import ModelForm
-from uvcreha.workflow import DocumentWorkflow, document_workflow
+from uvcreha.workflow import document_workflow
 from wtforms_pydantic import model_fields
 from ..models import Document, File
 
@@ -82,6 +82,11 @@ class DocumentEditForm(ModelForm):
             return {"form": form}
         item_data = self.subitem.dict()
         item_data.update(data.form.dict())
+        wf = document_workflow(document, request=request)
+        wf.transition_to(document_workflow.states.sent)
         self.request.database(self.model).update(
-            self.context.__key__, item=item_data)
+            self.context.__key__,
+            item=item_data,
+            state=document_workflow.states.sent.name,
+        )
         return horseman.response.redirect("/")

@@ -31,6 +31,13 @@ class FormView(reiter.form.FormView):
 
     template = TEMPLATES["base_form.pt"]
 
+    @property
+    def action(self):
+        return (
+            self.request.environ['SCRIPT_NAME'] +
+            self.request.route.path
+        )
+
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model)
         form.process(data=data, formdata=formdata)

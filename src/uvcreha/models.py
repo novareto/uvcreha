@@ -36,11 +36,27 @@ class Document(Model):
 
     __collection__ = "documents"
 
-    docid: str
-    az: str
-    uid: str
+    docid: str = Field(
+        title="DocumentID",
+        description="Eindeutige ID des Dokuments"
+    )
+
+    az: str = Field(
+        title="Aktenzeichen",
+        description="Eindeutige ID der Akte"
+    )
+
+    uid: str = Field(
+        title="UID Versicherter",
+        description="Eindeutige ID des Versicherten"
+    )
     state: str
-    content_type: str = None
+    content_type: str = Field(
+        title="Dokumentart",
+        description="Bitte wählen Sie eine Dokumentart",
+        default=None
+    )
+
     state: Optional[str] = None
     item: Optional[Any]
 
@@ -64,10 +80,10 @@ class File(Model):
 
     __collection__ = "files"
 
-    az: str = Field(title="Aktenzeigen")
-    uid: str = Field(title="UID")
-    mnr: str = Field(title="Mitgliedsnummer")
-    vid: str = Field(title="VersichertenfallID")
+    uid: str = Field(title="UID", description="Interne ID des Benutzers")
+    az: str = Field(title="Aktenzeichen", description="Aktenzeichen des entsprechenden Falls")
+    mnr: str = Field(title="Mitgliedsnummer", description="Mitgliedsnummer des Unternehmens")
+    vid: str = Field(title="Versichertenfall ID", description="ID des Versichertenfalls")
     state: Optional[str] = None
 
     unternehmen: Optional[Unternehmen]
@@ -125,10 +141,10 @@ class User(Model):
         title=u"ID", description="Internal User ID")
 
     loginname: str = Field(
-        title="Loginname", description="Bitte geb hier was ein.")
+        title="Loginname", description="Bitte tragen Sie hier den Loginnamen ein.")
 
     password: SecretStr = Field(
-        title="Passwort", description="Bitte geb das PW ein.")
+        title="Passwort", description="Bitte tragen Sie hier das Kennwort ein.")
 
     email: Optional[EmailStr] = Field(
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
@@ -154,11 +170,11 @@ class UserBrain(Brain):
             state=wf.state,
             link=request.route_path('user.view', uid=obj.uid),
             actions=(
-                Link(title='Edit',
+                Link(title='Bearbeiten',
                      url=request.route_path(
                          'user.edit', uid=obj.uid),
                      css='fa fa-edit'),
-                Link(title='New file',
+                Link(title='Akte anlegen',
                      url=request.route_path(
                          'user.new_file', uid=obj.uid),
                      css='fa fa-folder'),
@@ -178,11 +194,11 @@ class FileBrain(Brain):
             state=wf.state,
             link=request.route_path('file.view', uid=obj.uid, az=obj.az),
             actions=(
-                Link(title="Edit",
+                Link(title="Bearbeiten",
                      url=request.route_path(
                          'file.edit', uid=obj.uid, az=obj.az),
                      css='fa fa-edit'),
-                Link(title='New document',
+                Link(title='Dokument anlegen',
                      url=request.route_path(
                          'file.new_doc', uid=obj.uid, az=obj.az),
                      css='fa fa-file'),
@@ -203,7 +219,7 @@ class DocBrain(Brain):
             link=request.route_path(
                 'doc.view', uid=obj.uid, az=obj.az, docid=obj.docid),
             actions=(
-                Link(title='Edit',
+                Link(title='Bearbeiten',
                     url=request.route_path(
                         'doc.edit',
                         uid=obj.uid, az=obj.az, docid=obj.docid),
