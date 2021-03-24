@@ -16,6 +16,8 @@ nav:
 - Installation: installation.md
 - Handling: handling.md
 - Development: development.md
+- Views: views.md
+- Forms: forms.md
 - SMTP: smtp.md
 - AMQP: amqp.md
 

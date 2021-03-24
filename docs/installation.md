@@ -2,7 +2,7 @@
 
 Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha erfolgreich zu Installieren:
 
- - Python > 3.6 (pip & setuptools)
+ - Python > 3.8 (pip & setuptools)
  - ArangoDB bzw. Relationales DB-System
  - GIT
  - build-essential
@@ -11,6 +11,11 @@ Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha 
  - cookiecutter
  - libev-dev
  - python-virtualenv
+
+
+```bash
+   apt-get install 
+```
 
 
 Das Nutzen einen virtuellen Python Umgebung ist empfohlen aber kein muss. 
@@ -34,9 +39,9 @@ Bevor wir das cookiecutter Projekt installieren führe ich zunächst einen upgra
 
 
 ``` bash 
-    bin/pip install --upgrade pip
-    bin/pip install --upgrade setuptools==51.1.0
-    bin/pip install cookiecutter
+bin/pip install --upgrade pip
+bin/pip install --upgrade setuptools==51.1.0
+bin/pip install cookiecutter
 ```
 
 
@@ -47,8 +52,15 @@ Das eigentlich Projekt können wir dann wiefolgt installieren.
 
 
 ``` bash 
-   cookiecutter https://github.com/novareto/uvc_reha_project 
+bin/cookiecutter https://github.com/novareto/uvc_reha_project 
 ```
+
+Anschließend können wir in das Verzeichnis wechseln, und dann wird der
+
+``` 
+bin/buildout
+```
+
 
 
 Dieses Projekt ist die Grundlage für den Buildout unserer
@@ -65,13 +77,14 @@ oder ob wir es hier machen.
 
 Informationen für die ArangoDB kann über folgende Seite aufgerufen werden:
 
-https://www.arangodb.com/download-major/ubuntu/
+[Installation ArangoDB](https://www.arangodb.com/download-major/ubuntu/)
 
 
 
 # Schlüssel für Push Notifications
 
 ``` bash
+mkdir identitis
 cd identities
 ../bin/py ../parts/omelette/py_vapid/main.py
 ../bin/py ../parts/omelette/py_vapid/main.py --sign claim.json

@@ -9,17 +9,18 @@ Der WSGI-WebServer bjoern ist der Standard-Webserver für die Entwicklung
 unserer Applikationen.
 
 # Start bjoern
-  ```bash
-    ./bin/py scripts/run.py
-  ```
+
+```bash
+./bin/start http config.yaml
+```
 
 Wenn wir zusätzlich mit einer AMQP-Queue kommunizieren möchten können wir
 den Dienst wiefolgt starten
 
 # Start MQ 
-  ```bash
-    ./bin/py scripts/runmq.py
-  ```
+```bash
+./bin/start amqp config.yaml
+```
 
 # Supervisor
 
@@ -28,6 +29,6 @@ supervisor zum Einsatz. Starten können wir ihn wie gewohnt mit
 
 # Start supervisor
 
-   ```
+```bash
      ./bin/supervisord
-   ```
+```
