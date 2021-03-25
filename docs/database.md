@@ -14,6 +14,9 @@ Im Anschluss ist es Sinnvoll einen eigenen Benutzer für unser Projekt zu erstel
 Bitte achtet darauf, dass Ihr den Benutzer im Anschluss daran "Managment Rechte" vergebt.
 
 
+![Screenshot](images/permisson_arango_user.png "Permission ArangoDB")
+
+
 Nun könnt Ihr eine Datenbank anlegen.
 
 
