@@ -1,17 +1,21 @@
 # Datenbank
 
-Momentan nutzen wir die Datenbank ArangoDB als Datenspeichern. Natürlich ist
-es möglich die Datenbank gegen eine RDB auszutauschen.
+Momentan nutzen wir die Datenbank ArangoDB als Datenspeicher zur Speicherung der Daten im JSON-Format. 
+Natürlich ist es später möglich, die Datenbank gegen ein Relationales Datenbank-Mangement-System (RDBMS) 
+auszutauschen.
+
+Nach erfolgreicher Installation der Datenbank können wir uns am Web-Interface der Datenbank anmelden. 
+Das Webinterface der Datenbank wird standardmäßig über den Port: 8529 auf dem loclhost geöffnet.
+
+```bash
+   http://localhost:8529
+```
+
+[Link nach localhost:8529](http://localhost:8529)
 
 
-Nach erfolgreicher Installation der Datenbank können wir uns am Web-Interface
-der Datenbank anmelden.
-
-[WebInterface](http://localhost:8529)
-
-
-Im Anschluss ist es Sinnvoll einen eigenen Benutzer für unser Projekt zu erstellen.
-Bitte achtet darauf, dass Ihr den Benutzer im Anschluss daran "Managment Rechte" vergebt.
+Im Anschluss daran ist es notwendig einen eigenen Benutzer für das neue Projekt zu erstellen.
+Dabei ist zu beachten, dass der Benutzer im Anschluss "Managment Rechte" erhält. 
 
 
 ![Screenshot](images/permisson_arango_user.png "Permission ArangoDB")
@@ -25,5 +29,3 @@ In der Datenbank müssen wir anschließend drei Collections anlegen
  - users
  - files
  - documents
-
-
