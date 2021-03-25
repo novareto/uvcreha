@@ -8,6 +8,18 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha.models import User, UserPreferences
 from uvcreha.request import Request
 from uvcreha.workflow import user_workflow
+from uvcreha.browser.composed import ComposedView
+from reiter.view.meta import View
+
+from pydantic import BaseModel
+from uvcreha.browser.form import FormView
+from reiter.form import trigger
+
+
+class Person(BaseModel):
+
+    name: str
+    age: int
 
 
 class Kontaktdaten(pydantic.BaseModel):
@@ -20,7 +32,46 @@ class Account(pydantic.BaseModel):
     iban: str
 
 
+
 @browser.route("/preferences")
+class ComposedDocument(ComposedView):
+    template = TEMPLATES["composed.pt"]
+
+    def GET(self):
+        return {'innerpage': self.page.GET()}
+
+
+@ComposedDocument.pages.component('default')
+class DefaultView(View):
+    title = 'Stammdaten'
+
+    def GET(self):
+        return 'Stammdaten'
+
+
+@ComposedDocument.pages.component('datenschutz')
+class Datenschutz(View):
+    title = 'Datenschutz'
+
+    def GET(self):
+        return 'Datenschutz'
+
+
+@ComposedDocument.pages.component('email')
+class EMail(FormView):
+    title = 'E-Mail'
+    description = "Description"
+    model = Person
+
+    @trigger(title="Speichern", id="save")
+    def handel_save(self, request, data):
+        form = self.setupForm(formdata=data.form)
+        if not form.validate():
+            return {"form": form}
+        return {"form": form}
+
+
+#@browser.route("/preferences")
 class MyPreferences(FormView):
 
     title = "E-Mail Adresse ändern"
