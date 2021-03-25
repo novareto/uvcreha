@@ -14,6 +14,8 @@ Im Anschluss ist es Sinnvoll einen eigenen Benutzer für unser Projekt zu erstel
 Bitte achtet darauf, dass Ihr den Benutzer im Anschluss daran "Managment Rechte" vergebt.
 
 
+
+
 ![Screenshot](images/permisson_arango_user.png "Permission ArangoDB")
 
 
@@ -27,3 +29,12 @@ In der Datenbank müssen wir anschließend drei Collections anlegen
  - documents
 
 
+Die Verbindungsparameter müssen anschließend alle in die config.yaml eingetragen werden.
+
+``` bash
+arango:
+  user: root
+  password: siguv
+  database: docmanager
+  url: http://127.0.0.1:8529
+```
