@@ -50,7 +50,7 @@ class Document(Model):
         title="UID Versicherter",
         description="Eindeutige ID des Versicherten"
     )
-    state: str
+    state: str = document_workflow.default_state.name
     content_type: str = Field(
         title="Dokumentart",
         description="Bitte wählen Sie eine Dokumentart",
@@ -84,7 +84,7 @@ class File(Model):
     az: str = Field(title="Aktenzeichen", description="Aktenzeichen des entsprechenden Falls")
     mnr: str = Field(title="Mitgliedsnummer", description="Mitgliedsnummer des Unternehmens")
     vid: str = Field(title="Versichertenfall ID", description="ID des Versichertenfalls")
-    state: Optional[str] = None
+    state: str = file_workflow.default_state.name
 
     unternehmen: Optional[Unternehmen]
     versichertenfall: Optional[VersichertenFall]
@@ -149,7 +149,7 @@ class User(Model):
     email: Optional[EmailStr] = Field(
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
 
-    state: Optional[str] = None
+    state: str = user_workflow.default_state.name
     permissions: Optional[List] = ['document.view']
     preferences: Optional[UserPreferences]
 

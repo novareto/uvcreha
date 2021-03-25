@@ -26,13 +26,12 @@ class ComposedView(View, metaclass=ComposedViewMeta):
         self.page.update()
 
     def __call__(self):
+        self.update()
         raw = self.request.query.bool('raw', default=False)
+        body = self.page(raw=True, layout=None)
         if raw:
-            self.update()
-            if worker := getattr(self.page, self.method, None):
-                return self.render(worker())
-            raise HTTPError(405)
-        return super().__call__()
+            return Response.create(200, body=body)
+        return self.render({'innerpage': body})
 
 
 @browser.ui.register_slot(

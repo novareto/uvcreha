@@ -1,5 +1,6 @@
 import pydantic
 from urllib.parse import parse_qs
+from horseman.response import Response
 from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
@@ -32,13 +33,17 @@ class Account(pydantic.BaseModel):
     iban: str
 
 
-
 @browser.route("/preferences")
 class ComposedDocument(ComposedView):
     template = TEMPLATES["composed.pt"]
 
     def GET(self):
-        return {'innerpage': self.page.GET()}
+        # allowed method
+        pass
+
+    def POST(self):
+        # allowed method
+        pass
 
 
 @ComposedDocument.pages.component('default')
@@ -63,8 +68,15 @@ class EMail(FormView):
     description = "Description"
     model = Person
 
+    @property
+    def action(self):
+        return (
+            self.request.environ['SCRIPT_NAME'] +
+            self.request.route.path + '?page=email'
+        )
+
     @trigger(title="Speichern", id="save")
-    def handel_save(self, request, data):
+    def handle_save(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
