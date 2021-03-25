@@ -14,6 +14,7 @@ theme:
 nav:
 - Übersicht: index.md
 - Installation: installation.md
+- Datenbank: database.md
 - Handling: handling.md
 - Development: development.md
 - Views: views.md
