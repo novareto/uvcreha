@@ -31,11 +31,7 @@
     </header>
     <section id="content" class="container">
       <div class="content container">
-        <div tal:condition="exists: messages"
-             tal:repeat="message messages"
-             class="mt-4 mb-4 alert alert-${message.type}">
-          <span tal:replace="message.body" />
-        </div>
+        <div tal:replace="structure slot: site-messages" />
         <div tal:replace="structure slot: above-content" />
         <div tal:replace="structure content" />
         <div tal:replace="structure slot: below-content" />
