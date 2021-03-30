@@ -128,7 +128,11 @@ class UserPreferences(BaseModel):
         description="Telefonnummer"
     )
 
-    messaging_type: MessagingType = MessagingType.email
+    messaging_type: List[MessagingType] = Field(
+        default=MessagingType.email,
+        title="Benachrichtigungen",
+        description="Bitte wählen Sie eine/oder mehrere Arten der Benachrichtiung aus"
+    )
     webpush_subscription: Optional[str] = ""
     webpush_activated: Optional[bool] = False
 

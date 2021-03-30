@@ -17,10 +17,10 @@
         <div class="menu-section-title">Links</div>
         <div class="menu-section-content">
           <a href="/logout">
-            <span class="menu-item-title"> Logout </span>
+            <span class="menu-item-title"> <i class="fas fa-lock-open"></i> Logout </span>
           </a>
           <a href="/preferences">
-            <span class="menu-item-title"> Einstellungen </span>
+            <span class="menu-item-title"> <i class="fas fa-cog"></i> Einstellungen </span>
           </a>
         </div>
       </div>

@@ -5,7 +5,7 @@
        href="${basepage}?page=${key}"
        hx-get="${basepage}?raw=true&page=${key}"
        hx-swap="innerHTML"
-       hx-target="#composed-page">${title}</a>
+       hx-target="#composed-page"> ${title}</a>
   </li>
 </ul>
 <ul metal:define-macro="vertical-nav" class="nav nav-tabs flex-column">
