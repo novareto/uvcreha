@@ -23,6 +23,7 @@ install_requires = [
     'reiter.amqp',
     'reiter.application',
     'reiter.arango',
+    'reiter.events',
     'reiter.form',
     'reiter.view',
     'roughrider.auth',
