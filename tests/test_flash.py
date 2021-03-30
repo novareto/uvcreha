@@ -2,6 +2,7 @@ def test_flash(web_app, session):
 
     request = web_app.request_factory(web_app, {
         "REQUEST_METHOD": "GET",
+        "SCRIPT_NAME": 'flash_test',
         "uvcreha.test.session": session
     }, "/")
 

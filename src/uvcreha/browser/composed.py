@@ -16,6 +16,16 @@ class ComposedViewMeta(type):
 
 
 class ComposedView(View, metaclass=ComposedViewMeta):
+    template = TEMPLATES["composed.pt"]
+    navs = TEMPLATES["composed_navs.pt"]
+
+    def GET(self):
+        # allowed method
+        pass
+
+    def POST(self):
+        # allowed method
+        pass
 
     def update(self):
         name = self.request.query.get('page', default="default")
@@ -31,13 +41,16 @@ class ComposedView(View, metaclass=ComposedViewMeta):
         body = self.page(raw=True, layout=None)
         if raw:
             return Response.create(200, body=body)
-        return self.render({'innerpage': body})
+        pages = [(key, view.title) for key, view in self.pages.items()]
+        return self.render(
+                {'innerpage': body, 
+                 'view': self, 'local_macros': self.navs.macros, 'pages': pages, 'basepage': self.request.route.path})
 
 
-@browser.ui.register_slot(
-    request=Request, view=ComposedView, name="above-content")
-def composedpages(request, name, view):
-    pages = [(key, view.title) for key, view in view.pages.items()]
-    return TEMPLATES["pages.pt"].render(
-        request=request, pages=pages, basepage=request.route.path
-    )
+#@browser.ui.register_slot(
+#    request=Request, view=ComposedView, name="above-content")
+#def composedpages(request, name, view):
+#    pages = [(key, view.title) for key, view in view.pages.items()]
+#    return TEMPLATES["composed_navs.pt"].render(
+#        request=request, pages=pages, basepage=request.route.path
+#    )

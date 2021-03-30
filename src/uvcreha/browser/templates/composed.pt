@@ -1,4 +1,6 @@
 <main>
-  <h1>Composed page</h1>
-  <section id="composed-page" tal:content="structure innerpage" />
+  <h1 tal:content="view.title"></h1>
+  <p class="lead" tal:content="view.description"></p>
+  <div metal:use-macro="local_macros['horizontal_nav']"> </div>
+  <section id="composed-page" class="p-3" tal:content="structure innerpage" />
 </main>

@@ -17,56 +17,61 @@ from uvcreha.browser.form import FormView
 from reiter.form import trigger
 
 
-class Person(BaseModel):
-
-    name: str
-    age: int
-
-
-class Kontaktdaten(pydantic.BaseModel):
-    name: str
-    surname: str
-
-
-class Account(pydantic.BaseModel):
-    name: str
-    iban: str
-
-
 @browser.route("/preferences")
 class ComposedDocument(ComposedView):
-    template = TEMPLATES["composed.pt"]
-
-    def GET(self):
-        # allowed method
-        pass
-
-    def POST(self):
-        # allowed method
-        pass
+    title = "Einstellungen"
+    description = "Beschreibung"
 
 
 @ComposedDocument.pages.component('default')
 class DefaultView(View):
-    title = 'Stammdaten'
+    title = 'Einstellungen'
 
     def GET(self):
-        return 'Stammdaten'
+        return 'Auf den Tabs hier haben Sie die Möglichkeit Einstellungen vorzunehmen'
 
 
-@ComposedDocument.pages.component('datenschutz')
-class Datenschutz(View):
-    title = 'Datenschutz'
+@ComposedDocument.pages.component('stammdaten')
+class Stammdaten(FormView):
+    title = 'Stammedaten'
+    description = "Stammdaten"
+    model = UserPreferences
 
-    def GET(self):
-        return 'Datenschutz'
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = Form.from_model(self.model, only=('name', 'surname', 'birthdate'))
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @property
+    def action(self):
+        return (
+            self.request.environ['SCRIPT_NAME'] +
+            self.request.route.path + '?page=stammdaten'
+        )
+
+    @trigger(title="Speichern", id="save", css="btn btn-primary")
+    def handle_save(self, request, data):
+        form = self.setupForm(formdata=data.form)
+        if not form.validate():
+            return {"form": form}
+        binding = self.request.database(User)
+        import pdb; pdb.set_trace()
+        binding.update(self.request.user.key, preferences=data.form.dict())
+        return {"form": form}
 
 
 @ComposedDocument.pages.component('email')
 class EMail(FormView):
     title = 'E-Mail'
-    description = "Description"
-    model = Person
+    description = "EMail-Adresse"
+    model = User 
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = Form.from_model(self.model, only=('email',))
+        data['email'] = self.request.user.email
+        form.process(data=data, formdata=formdata)
+        return form
 
     @property
     def action(self):
@@ -75,11 +80,43 @@ class EMail(FormView):
             self.request.route.path + '?page=email'
         )
 
-    @trigger(title="Speichern", id="save")
+    @trigger(title="Speichern", id="save", css="btn btn-primary")
     def handle_save(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
+        binding = self.request.database(self.model)
+        binding.update(self.request.user.key, **data.form.dict())
+        self.request.utilities['flash'].add('Ihre E-Mail Adresse wurde geändert')
+        return {"form": form}
+
+
+@ComposedDocument.pages.component('password')
+class Password(FormView):
+    title = 'Passwort'
+    description = "Passwort"
+    model = User 
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        form = Form.from_model(self.model, only=('password',))
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @property
+    def action(self):
+        return (
+            self.request.environ['SCRIPT_NAME'] +
+            self.request.route.path + '?page=password'
+        )
+
+    @trigger(title="Speichern", id="save", css="btn btn-primary")
+    def handle_save(self, request, data):
+        form = self.setupForm(formdata=data.form)
+        if not form.validate():
+            return {"form": form}
+        binding = self.request.database(self.model)
+        binding.update(self.request.user.key, **data.form.dict())
+        self.request.utilities['flash'].add('Ihr Passwort wurde erfolgreich geändert')
         return {"form": form}
 
 
