@@ -6,6 +6,12 @@ from pydantic import create_model
 from horseman.http import Multidict
 from uvcreha.browser.layout import TEMPLATES
 from flatten_dict import flatten, unflatten
+from wtforms import widgets, SelectMultipleField
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -13,8 +19,12 @@ class FormMeta(wtforms.meta.DefaultMeta):
     locales = ['de_DE', 'de']
 
     def render_field(inst, field, render_kw):
-        if isinstance(field, wtforms.fields.core.BooleanField):
+        if isinstance(field, MultiCheckboxField):
             class_ = "form-check"
+        elif isinstance(field, wtforms.fields.core.BooleanField):
+            class_ = "form-check"
+        elif isinstance(field, wtforms.fields.core.SelectFieldBase._Option):
+            class_ = "form-check-input"
         else:
             class_ = "form-control"
         if field.errors:
