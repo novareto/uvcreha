@@ -134,5 +134,5 @@ class Browser(RESTApplication):
         self.register_middleware(auth, order=2)
 
 
-api = RESTApplication('REST Application')
-browser = Browser('Browser Application')
+api = RESTApplication(name='REST Application')
+browser = Browser(name='Browser Application')
