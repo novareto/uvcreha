@@ -46,6 +46,16 @@ def sidebar(request, name, view):
     return TEMPLATES["sidebar.pt"].render(request=request)
 
 
+@browser.ui.register_slot(request=Request, name="site-messages")
+def messages(request, name, view):
+    utility = request.utilities.get('flash')
+    if utility is not None:
+        messages = list(utility)
+    else:
+        messages = []
+    return TEMPLATES["messages.pt"].render(messages=messages)
+
+
 @browser.ui.register_slot(request=Request, name="footer")
 def footer(request, name, view):
     return TEMPLATES["footer.pt"].render(request=request)

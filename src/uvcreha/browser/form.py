@@ -10,6 +10,8 @@ from flatten_dict import flatten, unflatten
 
 class FormMeta(wtforms.meta.DefaultMeta):
 
+    locales = ['de_DE', 'de']
+
     def render_field(inst, field, render_kw):
         if isinstance(field, wtforms.fields.core.BooleanField):
             class_ = "form-check"

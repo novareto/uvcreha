@@ -1,0 +1,5 @@
+<div tal:condition="messages"
+     tal:repeat="message messages"
+     class="mt-4 mb-4 alert alert-${message.type}">
+  <span tal:replace="message.body" />
+</div>
