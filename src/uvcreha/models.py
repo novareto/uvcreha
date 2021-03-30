@@ -128,8 +128,8 @@ class UserPreferences(BaseModel):
         description="Telefonnummer"
     )
 
-    messaging_type: List[MessagingType] = Field(
-        default=MessagingType.email,
+    messaging_type: Optional[List[MessagingType]] = Field(
+        default=[MessagingType.email],
         title="Benachrichtigungen",
         description="Bitte wählen Sie eine/oder mehrere Arten der Benachrichtiung aus"
     )
