@@ -4,6 +4,7 @@ from horseman.response import Response
 from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
+from uvcreha.browser.crud import ModelForm
 from uvcreha.browser.form import FormView, Form
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.models import User, UserPreferences, MessagingType
@@ -136,20 +137,27 @@ def messaging_types(field, **opts):
 
 
 @ComposedDocument.pages.component('benachrichtigungen')
-class Notifications(FormView):
+class Notifications(ModelForm):
     title = 'Benachrichtigungen'
     description = "Benachrichtigungen"
     model = UserPreferences
 
-    def get_fields(self):
-        return model_fields(self.model, only=('messaging_type',))
+    def update(self):
+        if self.request.user.preferences is not None:
+            self.preferences = self.request.user.preferences
+        else:
+            self.preferences = self.model.construct()
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def get_fields(self):
+        return self.fields(only=('messaging_type',))
+
+    def get_form(self):
         fields = self.get_fields()
-        form = Form.from_fields(
+        return Form.from_fields(
             fields, enforce={'messaging_type': messaging_types})
-        form.process(data=data, formdata=formdata)
-        return form
+
+    def get_initial_data(self):
+        return self.preferences.dict()
 
     @property
     def action(self):
@@ -163,9 +171,12 @@ class Notifications(FormView):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
+        self.preferences.messaging_type = form.data['messaging_type']
         binding = self.request.database(User)
-        binding.update(self.request.user.key, preferences=data.form.dict())
-        self.request.utilities['flash'].add('Ihr Passwort wurde erfolgreich geändert')
+        binding.update(
+            self.request.user.key, preferences=self.preferences.dict())
+        self.request.utilities['flash'].add(
+            'Ihr Passwort wurde erfolgreich geändert')
         return {"form": form}
 
 

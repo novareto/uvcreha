@@ -34,14 +34,16 @@ class ModelForm(FormView):
             exclude=('key', 'id', 'rev', 'creation_date', 'state')
         )
 
+    def get_form(self):
+        return Form.from_fields(self.get_fields())
+
     def get_initial_data(self):
         return {}
 
     def setupForm(self, data=None, formdata=Multidict()):
+        form = self.get_form()
         if data is None:
             data = self.get_initial_data()
-        fields = self.get_fields()
-        form = Form.from_fields(fields)
         form.process(data=data, formdata=formdata)
         if self.readonly is not None:
             form.readonly(self.readonly)
