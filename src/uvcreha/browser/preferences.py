@@ -8,15 +8,16 @@ from uvcreha.browser.form import Composer
 from uvcreha.browser.form import FormView, Form
 from uvcreha.browser.crud import ModelForm
 from uvcreha.browser.layout import TEMPLATES
-from uvcreha.models import User, UserPreferences
+from uvcreha.models import User, UserPreferences, MessagingType
 from uvcreha.request import Request
 from uvcreha.workflow import user_workflow
 from uvcreha.browser.composed import ComposedView
 from reiter.view.meta import View
-
 from pydantic import BaseModel
-from uvcreha.browser.form import FormView
+from uvcreha.browser.form import FormView, MultiCheckboxField
 from reiter.form import trigger
+from wtforms_pydantic import model_fields
+from wtforms_pydantic.converter import EnumField
 
 
 @browser.route("/preferences")
@@ -66,7 +67,7 @@ class Stammdaten(FormView):
 class EMail(FormView):
     title = 'E-Mail'
     description = "EMail-Adresse"
-    model = User 
+    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=('email',))
@@ -96,7 +97,7 @@ class EMail(FormView):
 class Password(FormView):
     title = 'Passwort'
     description = "Passwort"
-    model = User 
+    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(self.model, only=('password',))
@@ -121,14 +122,34 @@ class Password(FormView):
         return {"form": form}
 
 
+def messaging_types(field, **opts):
+    types = [(v.value, EnumField._escape(v.value)) for v in MessagingType]
+    def coerce(name):
+        if isinstance(name, MessagingType):
+            return name
+        try:
+            return MessagingType[name]
+        except KeyError:
+            raise ValueError(name)
+
+    return MultiCheckboxField(
+        'Select your favored messaging medium',
+        choices=types, coerce=coerce, **opts)
+
+
 @ComposedDocument.pages.component('benachrichtigungen')
 class Notifications(FormView):
     title = 'Benachrichtigungen'
     description = "Benachrichtigungen"
     model = UserPreferences
 
+    def get_fields(self):
+        return model_fields(self.model, only=('messaging_type',))
+
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=('messaging_type',))
+        fields = self.get_fields()
+        form = Form.from_fields(
+            fields, enforce={'messaging_type': messaging_types})
         form.process(data=data, formdata=formdata)
         return form
 
