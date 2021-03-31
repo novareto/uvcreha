@@ -120,6 +120,14 @@ class UserPreferences(BaseModel):
 
     datenschutz: Optional[bool] = Field(
         title="Datenschutz",
+        description="Bitte bestätigen Sie hier, dass Sie die Ausführungen zum Datenschutz\
+                gelesen und akzeptiert haben.",
+        default=False
+    )
+
+    teilnahme: Optional[bool] = Field(
+        title="Teilnahme",
+        description="Bitte bestätigen Sie uns hier die Teilnahme am Online-Verfahren.",
         default=False
     )
 

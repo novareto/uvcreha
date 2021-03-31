@@ -5,7 +5,8 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.browser.crud import ModelForm
-from uvcreha.browser.form import FormView, Form
+from uvcreha.browser.form import Composer, FormView, Form
+from uvcreha.browser.crud import ModelForm
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.models import User, UserPreferences, MessagingType
 from uvcreha.request import Request
@@ -181,14 +182,29 @@ class Notifications(ModelForm):
 
 
 @browser.route("/register")
-class RegistrationForm(FormView):
+class RegistrationForm(ModelForm):
 
-    title = "Registration"
-    description = "Finish your registration"
+    title = "Registrierung"
+    description = "Bitte vervollständigen Sie Ihre Registrierung."
     action = "/register"
     model = User
 
-    def setupForm(self, data={}, formdata=Multidict()):
+
+    def update(self):
+        self.context = self.request.database(User).find_one(uid=self.request.user.key)
+        self.composer = Composer(self.context)
+
+    def get_fields(self):
+        return dict(self.composer.fields(
+            'email',
+            'preferences.datenschutz',
+            'preferences.teilnahme'
+        ))
+
+    def get_initial_data(self):
+        return self.composer.default_values()
+
+    def isetupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(
             self.model, only=("email",), email={"required": True})
         form.process(data=data, formdata=formdata)
@@ -199,8 +215,9 @@ class RegistrationForm(FormView):
         form = self.setupForm(data=request.user.dict(), formdata=data.form)
         if not form.validate():
             return {"form": form}
-
         request.user.email = form.data["email"]
+        request.user.preferences.datenschutz = form.data["preferences.datenschutz"]
+        request.user.preferences.teilnahme = form.data["preferences.teilnahme"]
         wf = user_workflow(request.user)
         wf.state = user_workflow.states.active
         request.database.save(request.user)
