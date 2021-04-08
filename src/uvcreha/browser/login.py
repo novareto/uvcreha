@@ -21,7 +21,7 @@ class LoginForm(FormView):
         return self.request.environ['SCRIPT_NAME'] + '/login'
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("loginname", "password"))
+        form = Form.from_model(self.model, include=("loginname", "password"))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -57,7 +57,7 @@ class EditPassword(FormView):
     model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("password"))
+        form = Form.from_model(self.model, include=("password"))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -88,7 +88,7 @@ class EditMail(FormView):
     model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=("email"))
+        form = Form.from_model(self.model, include=("email"))
         form.process(data=data, formdata=formdata)
         return form
 

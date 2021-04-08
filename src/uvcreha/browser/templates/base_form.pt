@@ -1,7 +1,10 @@
 <div id="form">
   <h1 tal:content="view.title" />
   <p class="lead" tal:content="view.description" />
-  <form method="POST" tal:attributes="action view.action" novalidate>
+  <form method="post"
+        enctype="multipart/form-data"
+        tal:attributes="action view.action"
+        novalidate>
     <div class="form-group" tal:repeat="field form">
       <label tal:replace="field.label"> </label>
       <div tal:content="structure field()"

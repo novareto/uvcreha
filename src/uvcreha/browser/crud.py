@@ -24,8 +24,8 @@ class ModelForm(FormView):
     def destination(self):
         return self.request.environ['SCRIPT_NAME'] + '/'
 
-    def fields(self, exclude=(), only=()):
-        return model_fields(self.model, exclude=exclude, only=only)
+    def fields(self, exclude=(), include=()):
+        return model_fields(self.model, exclude=exclude, include=include)
 
     def get_fields(self):
         # Exclude the pure Arango fields.

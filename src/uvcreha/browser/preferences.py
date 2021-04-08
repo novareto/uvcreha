@@ -17,7 +17,6 @@ from pydantic import BaseModel
 from uvcreha.browser.form import FormView, MultiCheckboxField
 from reiter.form import trigger
 from wtforms_pydantic import model_fields
-from wtforms_pydantic.converter import EnumField
 
 
 @browser.route("/preferences")
@@ -42,7 +41,7 @@ class Stammdaten(FormView):
 
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=('name', 'surname', 'birthdate'))
+        form = Form.from_model(self.model, include=('name', 'surname', 'birthdate'))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -70,7 +69,7 @@ class EMail(FormView):
     model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=('email',))
+        form = Form.from_model(self.model, include=('email',))
         data['email'] = self.request.user.email
         form.process(data=data, formdata=formdata)
         return form
@@ -100,7 +99,7 @@ class Password(FormView):
     model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, only=('password',))
+        form = Form.from_model(self.model, include=('password',))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -122,21 +121,6 @@ class Password(FormView):
         return {"form": form}
 
 
-def messaging_types(field, **opts):
-    types = [(v.value, EnumField._escape(v.value)) for v in MessagingType]
-    def coerce(name):
-        if isinstance(name, MessagingType):
-            return name
-        try:
-            return MessagingType[name]
-        except KeyError:
-            raise ValueError(name)
-
-    return MultiCheckboxField(
-        'Select your favored messaging medium',
-        choices=types, coerce=coerce, **opts)
-
-
 @ComposedDocument.pages.component('benachrichtigungen')
 class Notifications(ModelForm):
     title = 'Benachrichtigungen'
@@ -150,12 +134,7 @@ class Notifications(ModelForm):
             self.preferences = self.model.construct()
 
     def get_fields(self):
-        return self.fields(only=('messaging_type',))
-
-    def get_form(self):
-        fields = self.get_fields()
-        return Form.from_fields(
-            fields, enforce={'messaging_type': messaging_types})
+        return self.fields(include=('messaging_type',))
 
     def get_initial_data(self):
         return self.preferences.dict()
@@ -206,7 +185,7 @@ class RegistrationForm(ModelForm):
 
     def isetupForm(self, data={}, formdata=Multidict()):
         form = Form.from_model(
-            self.model, only=("email",), email={"required": True})
+            self.model, include=("email",), email={"required": True})
         form.process(data=data, formdata=formdata)
         return form
 

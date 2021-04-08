@@ -3,10 +3,11 @@ import wtforms
 import reiter.form
 import wtforms_pydantic
 from pydantic import create_model
-from horseman.http import Multidict
-from uvcreha.browser.layout import TEMPLATES
 from flatten_dict import flatten, unflatten
+from horseman.http import Multidict
 from wtforms import widgets, SelectMultipleField
+from wtforms_components import read_only
+from uvcreha.browser.layout import TEMPLATES
 
 
 class MultiCheckboxField(SelectMultipleField):
@@ -37,6 +38,14 @@ class Form(wtforms_pydantic.Form):
 
     def __init__(self, fields, prefix="", meta=FormMeta()):
         super().__init__(fields, prefix, meta)
+
+    def readonly(self, names):
+        if names is ...:
+            self._fields = {name: read_only(field)
+                            for name, field in self._fields.items()}
+        else:
+            for key in names:
+                self._fields[key] = read_only(self._fields[key])
 
 
 class FormView(reiter.form.FormView):
