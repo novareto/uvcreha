@@ -13,6 +13,7 @@ from horseman.prototyping import WSGICallable
 from reiter.application.app import Application
 from reiter.application.browser import registries
 from reiter.amqp.emitter import AMQPEmitter
+from roughrider.storage.meta import StorageCenter
 from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
 from roughrider.routing.route import NamedRoutes
@@ -115,6 +116,7 @@ class Browser(RESTApplication):
         auth = Auth(db(self.config.factories.user), self.config.env)
         self.utilities.register(auth, name="authentication")
         self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
+        self.utilities.register(StorageCenter(), name="storage")
 
         if config.emailer:
             emailer = SecureMailer(config.emailer)

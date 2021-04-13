@@ -16,8 +16,15 @@ class Auth:
         self.config = config
 
     def from_credentials(self, credentials: dict):
-        return self.binding.find_one(
+        # We use either loginname or email
+        user = self.binding.find_one(
             loginname=credentials['loginname'],
+            password=credentials['password']
+        )
+        if user is not None:
+            return user
+        return self.binding.find_one(
+            email=credentials['loginname'],
             password=credentials['password']
         )
 
