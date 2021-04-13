@@ -1,6 +1,6 @@
 from uvcreha.app import browser, api
 from uvcreha.models import User, MessagingType
-from reiter.events.dispatcher import Dispatcher
+from roughrider.events.dispatcher import Dispatcher
 
 
 class MessageCenter(Dispatcher):
