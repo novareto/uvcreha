@@ -20,6 +20,7 @@ install_requires = [
     'python-arango',
     'pywebpush',
     'reg',
+    'fs',
     'reiter.amqp',
     'reiter.application',
     'reiter.arango',

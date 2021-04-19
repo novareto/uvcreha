@@ -1,3 +1,5 @@
+import json
+import jsonschema
 import horseman.response
 from horseman.http import Multidict
 from reiter.form import trigger
@@ -9,7 +11,7 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.crud import ModelForm
 from uvcreha.workflow import document_workflow
 from wtforms_pydantic import model_fields
-from ..models import Document, File
+from ..models import Document, File, JSONSchemaRegistry
 
 
 @browser.route("/test")
@@ -54,39 +56,32 @@ class DocumentIndex(View):
 
 @browser.route("/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit"
 )
-class DocumentEditForm(ModelForm):
-
+class DocumentEditForm(View):
+    template = TEMPLATES["jsonform.pt"]
     title = "Form"
     description = "Bitte füllen Sie alle Details"
-    model = Document
 
     def update(self):
-        super().update()
-        self.context = self.request.database(
-            self.model).find_one(**self.params)
-        self._type = self.context.alternatives[self.context.content_type]
-        self.subitem = self.context.item or self._type.construct()
+        self.context = self.request.database(Document).find_one(
+            **self.params)
 
-    def get_initial_data(self):
-        if self.subitem is not None:
-            return self.subitem.dict()
-        return {}
+    def GET(self):
+        return {
+            'schemaURL': self.request.route_path(
+                'jsonschema', schema=self.context.content_type),
+            'targetURL': self.request.route.path,
+            'data': json.dumps(self.context.item or {})
+        }
 
-    def fields(self, exclude=(), only=()):
-        return model_fields(self._type, exclude=exclude, only=only)
-
-    @trigger("speichern", "Speichern", css="btn btn-primary")
-    def speichern(self, request, data):
-        form = self.setupForm(formdata=data.form)
-        if not form.validate():
-            return {"form": form}
-        item_data = self.subitem.dict()
-        item_data.update(data.form.dict())
-        wf = document_workflow(self.context, request=request)
-        wf.transition_to(document_workflow.states.sent)
-        self.request.database(self.model).update(
-            self.context.__key__,
-            item=item_data,
-            state=document_workflow.states.sent.name,
-        )
-        return horseman.response.redirect("/")
+    def POST(self):
+        data = self.request.extract()
+        formdata = data.form.dict()
+        schema = JSONSchemaRegistry[self.context.content_type]
+        jsonschema.validate(instance=formdata, schema=schema)
+        print(formdata)
+        return {
+            'schemaURL': self.request.route_path(
+                'jsonschema', schema=self.context.content_type),
+            'targetURL': self.request.route.path,
+            'data': formdata
+        }

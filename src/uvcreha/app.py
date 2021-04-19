@@ -7,8 +7,10 @@ import horseman.meta
 import horseman.response
 import reiter.view.meta
 
+import json
 from typing import Optional
 from dataclasses import dataclass, field
+from fs.osfs import OSFS
 from horseman.prototyping import WSGICallable
 from reiter.application.app import Application
 from reiter.application.browser import registries
@@ -22,6 +24,7 @@ from uvcreha.emailer import SecureMailer
 from uvcreha.request import Request
 from uvcreha.security import SecurityError
 from uvcreha.webpush import Webpush
+from uvcreha.models import JSONSchemaRegistry
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -110,6 +113,14 @@ class Browser(RESTApplication):
         self.config.update(config.app)
         self.connector = Connector(**config.arango)
         self.request = self.config.factories.request
+
+        # register JSON schemas
+        with OSFS(config.app.storage.schemas) as fs:
+            for schema in fs.listdir('/'):
+                if schema.endswith('.json'):
+                    with fs.open(schema) as fd:
+                        data = json.load(fd)
+                        JSONSchemaRegistry.register(data, data['name'])
 
         # utilities
         db = self.connector.get_database()

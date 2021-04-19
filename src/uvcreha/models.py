@@ -1,4 +1,5 @@
 import enum
+import jsonschema
 from typing import Dict, List, Optional, Any, ClassVar, NamedTuple
 from datetime import datetime, date
 from pydantic import BaseModel, Field, SecretStr, EmailStr, validator
@@ -6,6 +7,9 @@ from reiter.arango.model import ArangoModel
 from reiter.application.registries import NamedComponents
 from uv.models.models import Unternehmen, VersichertenFall
 from uvcreha.workflow import user_workflow, document_workflow, file_workflow
+
+
+JSONSchemaRegistry = NamedComponents()
 
 
 class Brain(NamedTuple):
@@ -58,9 +62,7 @@ class Document(Model):
     )
 
     state: Optional[str] = None
-    item: Optional[Any]
-
-    alternatives: ClassVar[Any] = NamedComponents()
+    item: Optional[dict] = None
 
     @property
     def __key__(self):
@@ -69,11 +71,13 @@ class Document(Model):
     @validator('item', always=True, pre=True)
     def set_item(cls, v, values):
         if v:
-            model_class = cls.alternatives.get(values['content_type'])
-            if model_class is None:
+            schema = JSONSchemaRegistry.get(values['content_type'])
+            if schema is None:
                 raise KeyError(
                     f'Unknown document type: {values["content_type"]}.')
-            return model_class(**v)
+            instance = dict(**v)
+            jsonschema.validate(instance=instance, schema=schema)
+            return instance
 
 
 class File(Model):
@@ -161,7 +165,7 @@ class User(Model):
     email: Optional[EmailStr] = Field(
         title="E-Mail", description="Bitte geben Sie die E-Mail ein")
 
-    state: str = user_workflow.default_state.name
+    state: Optional[str] = user_workflow.default_state.name
     permissions: Optional[List] = ['document.view']
     preferences: Optional[UserPreferences]
 

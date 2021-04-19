@@ -1,0 +1,33 @@
+<article>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/brutusin.json-forms/1.6.3/css/brutusin-json-forms.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/3.3.4/underscore.string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/brutusin.json-forms/1.6.3/js/brutusin-json-forms.min.js"></script>
+  <script>
+    $(document).ready(function() {
+        var container = document.getElementById('myform');
+        var BrutusinForms = brutusin["json-forms"];
+        var bf = null;
+
+        $("button#submit").click(function() {
+            if (bf.validate() === true) {
+                const data = bf.getData();
+                console.log(data);
+                $.post('${targetURL}', data,  function(data, status) {
+                    alert("Data: " + data + "\nStatus: " + status);
+                });
+            } else {
+                alert('Form is invalid, please correct.');
+            }
+        });
+
+        $.ajax({
+            url: '${schemaURL}', success: function(schema) {
+                bf = BrutusinForms.create(schema);
+                bf.render(container, ${data});
+            }
+        });
+    });
+  </script>
+  <div id="myform"></div>
+  <button id="submit">Submit</button>
+</article>
