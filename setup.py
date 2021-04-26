@@ -13,6 +13,7 @@ install_requires = [
     'fanstatic',
     'flatten-dict',
     'horseman',
+    'jsonschema',
     'openapi_schema_pydantic',
     'orjson',
     'py-vapid',

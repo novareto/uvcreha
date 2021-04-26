@@ -1,4 +1,4 @@
-from horseman.prototyping import Environ
+from horseman.types import Environ
 from horseman.response import Response
 from uvcreha.workflow import user_workflow
 
