@@ -1,4 +1,7 @@
 import enum
+import pyotp
+import base64
+import hashlib
 import jsonschema
 from typing import Dict, List, Optional, Any, ClassVar, NamedTuple
 from datetime import datetime, date
@@ -172,6 +175,26 @@ class User(Model):
     @property
     def __key__(self) -> str:
         return self.uid
+
+    @property
+    def shared_key(self):
+        key = hashlib.sha256(
+            self.uid.encode('utf-8')
+        )
+        key.update(
+            self.loginname.encode('utf-8')
+        )
+        return base64.b32encode(key.digest())
+
+    @property
+    def TOTP(self):
+        return pyotp.TOTP(
+            self.shared_key,
+            digits=8,
+            digest='sha256',
+            name=self.loginname,
+            interval=60
+        )
 
 
 class UserBrain(Brain):

@@ -1,30 +1,19 @@
+from horseman.http import Multidict
+from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.browser.form import FormView, FormMeta
-from horseman.http import Multidict
-import horseman.response
 from uvcreha.models import User
+import horseman.response
 import wtforms
-from reiter.form import trigger
 
 
-def user_totp_validator(username):
+def user_totp_validator(totp):
 
     def validate_totp(form, field):
-        totp = browser.utilities['totp']
-        if not totp.challenge(field.data, username):
+        if not totp.verify(field.data, valid_window=1):
             raise wtforms.ValidationError('Invalid token.')
 
     return validate_totp
-
-
-class TwoFAVerification(wtforms.form.Form):
-
-    Meta = FormMeta
-
-    def validate_name(form, field):
-
-        if len(field.data) > 50:
-            raise ValidationError('Name must be less than 50 characters')
 
 
 @browser.route("/2FA")
@@ -37,7 +26,7 @@ class TwoFA(FormView):
     def setupForm(self, data={}, formdata=Multidict()):
         form = wtforms.form.BaseForm({
             'token': wtforms.fields.StringField('Token', [
-                user_totp_validator(self.request.user.loginname)
+                user_totp_validator(self.request.user.TOTP)
             ])
         })
         form.process(data=data, formdata=formdata)
@@ -59,8 +48,7 @@ class TwoFA(FormView):
 
     @trigger("request", "Request token", css="btn btn-primary")
     def request_token(self, request, data):
-        token = request.app.utilities['totp'].generate(
-            request.user.loginname)
+        token = request.user.TOTP.now()
         print(token)
         form = self.setupForm()
         return {'form': form}
