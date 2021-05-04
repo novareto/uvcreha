@@ -1,5 +1,6 @@
 import json
 import jsonschema
+import wtforms
 import horseman.response
 from horseman.http import Multidict
 from reiter.form import trigger
@@ -11,6 +12,7 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.crud import ModelForm
 from uvcreha.workflow import document_workflow
 from wtforms_pydantic import model_fields
+from jsonschema_wtforms import Form as JSONForm
 from ..models import Document, File, JSONSchemaRegistry
 
 
@@ -85,3 +87,30 @@ class DocumentEditForm(View):
             'targetURL': self.request.route.path,
             'data': formdata
         }
+
+@browser.route("/users/{uid}/files/{az}/docs/{docid}/edit_direct", name="doc.edit_direct")
+class DocumentDirectEditForm(FormView):
+    title = "Form"
+    description = "Bitte füllen Sie alle Details"
+
+    def update(self):
+        self.context = self.request.database(Document).find_one(
+            **self.params)
+
+    def setupForm(self, data={}, formdata=Multidict()):
+        schema = JSONSchemaRegistry[self.context.content_type]
+        form = JSONForm.from_schema(schema)
+        if data is None:
+            if self.context.item:
+                data = self.context.item.dict()
+
+        form.process(data=data, formdata=formdata)
+        return form
+
+    @trigger("speichern", "Speichern", css="btn btn-primary")
+    def speichern(self, request, data):
+        formdata = data.form.dict()
+        schema = JSONSchemaRegistry[self.context.content_type]
+        jsonschema.validate(instance=formdata, schema=schema)
+        print(formdata)
+        return horseman.response.redirect(self.destination)

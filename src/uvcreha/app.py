@@ -19,6 +19,7 @@ from reiter.arango.connector import Connector
 from reiter.arango.validation import ValidationError
 from roughrider.routing.route import NamedRoutes
 from roughrider.storage.meta import StorageCenter
+from roughrider.token.hmac_factories import TOTTokenFactory
 from uvcreha.auth import Auth
 from uvcreha.emailer import SecureMailer
 from uvcreha.models import JSONSchemaRegistry
@@ -128,6 +129,7 @@ class Browser(RESTApplication):
         self.utilities.register(auth, name="authentication")
         self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
         self.utilities.register(StorageCenter(), name="storage")
+        self.utilities.register(TOTTokenFactory(), name="totp")
 
         if config.emailer:
             emailer = SecureMailer(config.emailer)
