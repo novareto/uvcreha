@@ -25,6 +25,12 @@ from uvcreha.models import JSONSchemaRegistry
 from uvcreha.request import Request
 from uvcreha.security import SecurityError
 from uvcreha.webpush import Webpush
+from repoze.vhm.middleware import VHMExplicitFilter
+
+
+
+def repoze_filter(config) -> WSGICallable:
+    return functools.partial(VHMExplicitFilter, **config)
 
 
 def fanstatic_middleware(config) -> WSGICallable:
@@ -138,13 +144,15 @@ class Browser(RESTApplication):
             self.utilities.register(webpush, name="webpush")
 
         # middlewares
-        self.register_middleware(
-            fanstatic_middleware(self.config.assets), order=0)
+        self.register_middleware(repoze_filter(self.config.vhm), order=5)
 
         self.register_middleware(
-            session_middleware(self.config), order=1)
+            fanstatic_middleware(self.config.assets), order=10)
 
-        self.register_middleware(auth, order=2)
+        self.register_middleware(
+            session_middleware(self.config), order=20)
+
+        self.register_middleware(auth, order=30)
 
 
 api = RESTApplication(name='REST Application')

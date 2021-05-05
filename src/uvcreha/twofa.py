@@ -1,7 +1,7 @@
 from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
-from uvcreha.browser.form import FormView, FormMeta
+from uvcreha.browser.form import FormMeta, FormView, FormMeta
 from uvcreha.models import User
 import horseman.response
 import wtforms
@@ -19,6 +19,9 @@ def user_totp_validator(totp):
 @browser.route("/2FA")
 class TwoFA(FormView):
 
+    title = "Überprüfung"
+    description = "Bitte geben Sie Ihre SMS TAN ein"
+
     @property
     def action(self):
         return self.request.environ['SCRIPT_NAME'] + '/2FA'
@@ -28,15 +31,18 @@ class TwoFA(FormView):
             'token': wtforms.fields.StringField('Token', [
                 user_totp_validator(self.request.user.TOTP)
             ])
-        })
+        }, meta=FormMeta())
         form.process(data=data, formdata=formdata)
         return form
 
     def GET(self):
         form = self.setupForm()
+        token = self.request.user.TOTP.now()
+        print(token)
         return {'form': form}
 
-    @trigger("validate", "Validate", css="btn btn-primary")
+
+    @trigger("validate", "Überprüfen", css="btn btn-primary")
     def validate(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
@@ -46,7 +52,7 @@ class TwoFA(FormView):
         auth.validate_twoFA(self.request.environ)
         return horseman.response.redirect('/')
 
-    @trigger("request", "Request token", css="btn btn-primary")
+    @trigger("request", "Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):
         token = request.user.TOTP.now()
         print(token)

@@ -41,7 +41,7 @@ class LoginForm(FormView):
             flash_messages.add(body='Failed login.')
         else:
             print('Warning: flash messages utility is not available.')
-        return self.redirect(request.environ['SCRIPT_NAME'] + '/')
+        return self.redirect(request.environ['SCRIPT_NAME'] + '/2FA')
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):

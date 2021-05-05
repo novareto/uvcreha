@@ -102,11 +102,16 @@ class FileIndex(View):
 
 
 @browser.route("/webpush")
-def webpush(request: Request):
-    return request.app.ui.response(
-        TEMPLATES["webpush.pt"],
-        request=request
-    )
+class Webpush(View):
+    template = TEMPLATES["webpush.pt"]
+
+    def GET(self):
+        return dict(request=self.request)
+
+    def POST(self):
+        wp = self.request.app.utilities['webpush']
+        wp.send(message="klaus", token=self.request.user.preferences.webpush_subscription)
+        return dict(success='ok')
 
 
 @browser.route("/email_preferences")

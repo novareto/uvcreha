@@ -4,6 +4,7 @@ import horseman.response
 from reiter.view.meta import View
 from uvcreha.app import browser
 from uvcreha.models import User
+from uvcreha.browser.layout import TEMPLATES
 
 
 @browser.route("/webpush/subscription", name="webpush_subscription")
@@ -12,7 +13,7 @@ class Webpush(View):
     def GET(self):
         """get vapid public key
         """
-        webpush = self.request.app.plugins.get("webpush")
+        webpush = self.request.app.utilities['webpush']
         return horseman.response.Response.to_json(
             200,
             body={
