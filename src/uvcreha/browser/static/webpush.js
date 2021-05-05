@@ -15,10 +15,43 @@ function urlB64ToUint8Array(base64String) {
     return outputArray;
 }
 
-class WebpushService {
 
-    button;
-    text;
+class EventEmitter {
+    constructor() {
+        this.events = {};
+    }
+    on(event, listener) {
+        if (typeof this.events[event] !== 'object') {
+            this.events[event] = [];
+        }
+        this.events[event].push(listener);
+        return () => this.removeListener(event, listener);
+    }
+    removeListener(event, listener) {
+        if (typeof this.events[event] === 'object') {
+            const idx = this.events[event].indexOf(listener);
+            if (idx > -1) {
+                this.events[event].splice(idx, 1);
+            }
+        }
+    }
+    emit(event, ...args) {
+        if (typeof this.events[event] === 'object') {
+            this.events[event].forEach(
+                listener => listener.apply(this, args));
+        }
+    }
+    once(event, listener) {
+        const remove = this.on(event, (...args) => {
+            remove();
+            listener.apply(this, args);
+        });
+    }
+};
+
+
+class WebpushService extends EventEmitter {
+
     worker;
     is_subscribed = false
 
@@ -38,6 +71,10 @@ class WebpushService {
 	localStorage.setItem('webpush.token', value);
     }
 
+    get denied() {
+        return Notification.permission === 'denied'
+    }
+
     constructor(worker, subscription) {
         this.worker = worker;
 	this.is_subscribed = !(subscription === null);
@@ -46,16 +83,6 @@ class WebpushService {
 	} else {
 	    console.log('User is NOT subscribed.');
 	}
-        this.text = document.querySelector('.js-subscription-details');
-        this.button = document.querySelector('.js-push-btn');
-        this.button.addEventListener('click', function() {
-	    this.button.disabled = true;
-	    if (this.is_subscribed) {
-	        this.unsubscribe();
-	    } else {
-	        this.subscribe();
-	    }
-        }.bind(this));
         console.log("The Webpush Service is active");
     }
 
@@ -66,27 +93,7 @@ class WebpushService {
         const subscription = await worker.pushManager.getSubscription();
         const service = new WebpushService(worker, subscription)
         await service.update_serverside_subscription(subscription);
-        await service.update_button();
         return service
-    }
-
-    async update_button() {
-        try {
-            if (Notification.permission === 'denied') {
-	        this.button.textContent = 'Push Messaging Blocked.';
-	        this.button.disabled = true;
-	        await this.update_serverside_subscription(null);
-	        return;
-            }
-            if (this.is_subscribed) {
-	        this.button.textContent = 'Disable Push Messaging';
-            } else {
-	        this.button.textContent = 'Enable Push Messaging';
-            }
-            this.button.disabled = false;
-        } catch(error) {
-            console.error(error);
-        }
     }
 
     async update_serverside_subscription(subscription) {
@@ -102,19 +109,17 @@ class WebpushService {
         });
 
         if (response.ok) {
-                console.log("success");
+            console.log("success");
         } else {
             console.log("failure", response);
-        }
-
-        if (subscription) {
-	    this.text.classList.remove('is-invisible');
-        } else {
-	    this.text.classList.add('is-invisible');
         }
     }
 
     async subscribe() {
+        if (this.denied) {
+            await this.update_serverside_subscription(null);
+            return false;
+        }
         const subscription = await this.worker.pushManager.subscribe({
 	    userVisibleOnly: true,
 	    applicationServerKey: this.pubkey
@@ -123,17 +128,20 @@ class WebpushService {
 	await this.update_serverside_subscription(subscription);
         this.token = JSON.stringify(subscription);
 	this.is_subscribed = true;
-	await this.update_button();
+        this.emit('subscribed');
+        return true;
     }
 
     async unsubscribe() {
-        var service = this;
-        const subscription = await this.worker.pushManager.getSubscription();
-        subscription.unsubscribe();
-	await this.update_serverside_subscription(null);
-	console.log('User is unsubscribed.');
-	this.is_subscribed = false;
-	await this.update_button();
+        if (this.is_subscribed) {
+            const subscription = await this.worker.pushManager.getSubscription();
+            subscription.unsubscribe();
+	    await this.update_serverside_subscription(null);
+	    console.log('User is unsubscribed.');
+	    this.is_subscribed = false;
+	    this.emit('unsubscribed');
+        }
+        return true;
     }
 
     async push_message(message) {
@@ -153,6 +161,7 @@ class WebpushService {
         if (response.ok) {
             let json = await response.json();
             console.log("success", json);
+            this.emit('message pushed', message);
         } else {
             console.log("failure", response);
         }
