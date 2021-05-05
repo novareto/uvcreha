@@ -1,21 +1,20 @@
 import pydantic
 from urllib.parse import parse_qs
-from horseman.response import Response
 from horseman.http import Multidict
+from horseman.response import Response
+from pydantic import BaseModel
 from reiter.form import trigger
+from reiter.view.meta import View
 from uvcreha.app import browser
+from uvcreha.browser.composed import ComposedView
 from uvcreha.browser.crud import ModelForm
 from uvcreha.browser.form import Composer, FormView, Form
-from uvcreha.browser.crud import ModelForm
+from uvcreha.browser.form import MultiCheckboxField
 from uvcreha.browser.layout import TEMPLATES
+from uvcreha.browser.resources import webpush_subscription
 from uvcreha.models import User, UserPreferences, MessagingType
 from uvcreha.request import Request
 from uvcreha.workflow import user_workflow
-from uvcreha.browser.composed import ComposedView
-from reiter.view.meta import View
-from pydantic import BaseModel
-from uvcreha.browser.form import FormView, MultiCheckboxField
-from reiter.form import trigger
 from wtforms_pydantic import model_fields
 
 
@@ -128,6 +127,7 @@ class Notifications(ModelForm):
     model = UserPreferences
 
     def update(self):
+        webpush_subscription.need()
         if self.request.user.preferences is not None:
             self.preferences = self.request.user.preferences
         else:

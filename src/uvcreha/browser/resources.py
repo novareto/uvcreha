@@ -28,6 +28,10 @@ application_webpush = Resource(
     library, 'webpush.js'
 )
 
+webpush_subscription = Resource(
+    library, 'webpush_subscription.js', depends=[application_webpush]
+)
+
 bootstrap_css = Resource(
     library, 'uvc_serviceportal_bootstrap.css',
     compiler="sass", source="scss/siguv.scss"
