@@ -23,6 +23,7 @@ install_requires = [
     'python-arango',
     'pywebpush',
     'reg',
+    'repoze.vhm',
     'reiter.amqp',
     'reiter.application',
     'reiter.arango',
