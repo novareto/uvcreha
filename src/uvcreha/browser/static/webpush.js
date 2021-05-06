@@ -76,6 +76,7 @@ class WebpushService extends EventEmitter {
     }
 
     constructor(worker, subscription) {
+        super();
         this.worker = worker;
 	this.is_subscribed = !(subscription === null);
 	if (this.is_subscribed) {

@@ -38,6 +38,7 @@ install_requires = [
     'uv.models',
     'wrapt',
     'pyotp',
+    'qrcode[pil]',
     'wtforms',
     'wtforms_components',
     'wtforms_pydantic',

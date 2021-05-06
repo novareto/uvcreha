@@ -10,7 +10,7 @@ class UserFormIndex(DefaultView):
 
     def get_fields(self):
         return self.fields(
-            only=("uid", "loginname", "password", "email")
+            include=("uid", "loginname", "password", "email")
         )
 
 
@@ -22,5 +22,5 @@ class EditUserForm(EditForm):
 
     def get_fields(self):
         return self.fields(
-            only=("uid", "loginname", "password", "email")
+            include=("uid", "loginname", "password", "email")
         )
