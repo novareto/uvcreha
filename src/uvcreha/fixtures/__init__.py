@@ -23,4 +23,14 @@ app:
     compile: True
     recompute_hashes: True
     bottom: True
+
+  storage:
+    schemas: /tmp/tt
+
+  twilio:
+     account_sid: AC0194a64ae983e980a03a0be66073d639
+     auth_token: 847502a1b6aabd837be20326993b2ecd
+
+  vhm:
+     host: http://locahost:8080
 ''')

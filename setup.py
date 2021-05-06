@@ -36,6 +36,7 @@ install_requires = [
     'roughrider.storage',
     'roughrider.workflow',
     'rutter',
+    'twilio',
     'uv.models',
     'wrapt',
     'pyotp',

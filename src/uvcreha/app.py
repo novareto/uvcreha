@@ -26,7 +26,7 @@ from uvcreha.request import Request
 from uvcreha.security import SecurityError
 from uvcreha.webpush import Webpush
 from repoze.vhm.middleware import VHMExplicitFilter
-
+from twilio.rest import Client
 
 
 def repoze_filter(config) -> WSGICallable:
@@ -65,6 +65,10 @@ def webpush_plugin(config):
     )
 
 
+def twilio_plugin(config):
+    return Client(config.account_sid, config.auth_token)
+
+
 class Routes(NamedRoutes):
 
     def __init__(self):
@@ -98,6 +102,10 @@ class RESTApplication(Application):
         if config.webpush:
             webpush = webpush_plugin(config.webpush)
             self.utilities.register(webpush, name="webpush")
+
+        if config.twilio:
+            twilio = twilio_plugin(config.twilio)
+            self.utilities.register(twilio, 'twilio')
 
 
 @dataclass
@@ -142,6 +150,10 @@ class Browser(RESTApplication):
         if config.webpush:
             webpush = webpush_plugin(config.webpush)
             self.utilities.register(webpush, name="webpush")
+
+        if config.app.twilio:
+            twilio = twilio_plugin(config.app.twilio)
+            self.utilities.register(twilio, 'twilio')
 
         # middlewares
         self.register_middleware(repoze_filter(self.config.vhm), order=5)
