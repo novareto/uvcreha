@@ -5,16 +5,17 @@ from uvcreha.workflow import user_workflow
 
 class Auth:
 
+    twoFA: bool
     unprotected: set = {'/login', '/webpush'}
     forbidden_states: set = {
         user_workflow.states.inactive,
         user_workflow.states.closed
     }
-    TwoFA: bool = True
 
-    def __init__(self, binding, config):
+    def __init__(self, binding, config, twoFA: bool = True):
         self.binding = binding
         self.config = config
+        self.twoFA = twoFA
 
     def from_credentials(self, credentials: dict):
         # We use either loginname or email
@@ -45,11 +46,11 @@ class Auth:
 
     def check_twoFA(self, environ: Environ):
         session = environ[self.config.session]
-        return session.get('TwoFA', False)
+        return session.get('twoFA', False)
 
     def validate_twoFA(self, environ: Environ):
         session = environ[self.config.session]
-        session['TwoFA'] = True
+        session['twoFA'] = True
 
     def __call__(self, app):
 
@@ -72,7 +73,7 @@ class Auth:
                         )(environ, start_response)
                 elif state in self.forbidden_states:
                     return Response.create(403)(environ, start_response)
-                if self.TwoFA and not self.check_twoFA(environ):
+                if self.twoFA and not self.check_twoFA(environ):
                     if environ['PATH_INFO'] != '/2FA':
                         # We could generate the TOTP as soon as we reach here
                         # app.notify('2FA', app, user)

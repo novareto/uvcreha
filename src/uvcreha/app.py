@@ -129,16 +129,21 @@ class Browser(RESTApplication):
         self.request = self.config.factories.request
 
         # register JSON schemas
-        with OSFS(config.app.storage.schemas) as fs:
-            for schema in fs.listdir('/'):
-                if schema.endswith('.json'):
-                    with fs.open(schema) as fd:
-                        data = json.load(fd)
-                        JSONSchemaRegistry.register(data, data['name'])
+        if config.app.storage.schemas:
+            with OSFS(config.app.storage.schemas) as fs:
+                for schema in fs.listdir('/'):
+                    if schema.endswith('.json'):
+                        with fs.open(schema) as fd:
+                            data = json.load(fd)
+                            JSONSchemaRegistry.register(data, data['name'])
 
         # utilities
         db = self.connector.get_database()
-        auth = Auth(db(self.config.factories.user), self.config.env)
+        auth = Auth(
+            db(self.config.factories.user),
+            self.config.env,
+            twoFA=self.config.authentication.twoFA or False
+        )
         self.utilities.register(auth, name="authentication")
         self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
         self.utilities.register(StorageCenter(), name="storage")

@@ -3,9 +3,6 @@ def test_add_user(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
-
-
-
     resp = app.post_json(
         "/user.add",
         {"nothing": "at_all"},
@@ -37,7 +34,7 @@ def test_add_user_ok(api_app):
     from webtest import TestApp
 
     app = TestApp(api_app)
-    
+
     events = []
     assert len(events) == 0
 
@@ -52,7 +49,7 @@ def test_add_user_ok(api_app):
     )
     assert resp.status == "201 Created"
     assert resp.json == {"id": "12345"}
-    assert len(events) == 1 
+    assert len(events) == 1
     assert events[0] == "12345"
 
     resp = app.get("/users/12345")
@@ -82,14 +79,15 @@ def test_add_folder(api_app, user):
 def test_add_file(api_app, user):
     from webtest import TestApp
     from pydantic import BaseModel
-    from uvcreha.models import Document
+    from uvcreha.models import Document, JSONSchemaRegistry
     from typing import Literal
 
 
-    @Document.alternatives.component('event')
     class Event(BaseModel):
         myfield: str
 
+
+    JSONSchemaRegistry.register(Event.schema(), 'event')
 
     app = TestApp(api_app)
 
@@ -113,4 +111,4 @@ def test_add_file(api_app, user):
     assert resp.status == "201 Created"
     assert resp.json["az"] == "1234"
 
-    Document.alternatives.unregister("event")
+    del JSONSchemaRegistry['event']
