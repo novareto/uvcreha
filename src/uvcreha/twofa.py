@@ -1,10 +1,14 @@
 from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
+from uvcreha.request import Request
 from uvcreha.browser.form import FormMeta, FormView, FormMeta
 from uvcreha.models import User
 import horseman.response
 import wtforms
+import qrcode
+from io import BytesIO
+import base64
 
 
 def user_totp_validator(totp):
@@ -55,6 +59,26 @@ class TwoFA(FormView):
     @trigger("request", "Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):
         token = request.user.TOTP.now()
+        request.app.notify("2FA", request, token)
         print(token)
         form = self.setupForm()
         return {'form': form}
+
+
+@browser.ui.register_slot(
+    request=Request, name="below-content", view=TwoFA)
+def QRCode(request, name, view):
+    URI = request.user.OTP_URI
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(URI)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f'''<img src="data:image/png;base64,{img_str}" />'''

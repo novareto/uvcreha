@@ -11,16 +11,17 @@ $(document).ready(function() {
     })();
 
     form.addEventListener("submit", function(e) {
+        var result = false;
         const webpush_selected = document.querySelector(
             "div#form > form input[value='webpush']");
         console.log(webpush_selected.checked);
         if (webpush_selected.checked) {
-            let result = webpush_service.subscribe();
+            const result = webpush_service.subscribe();
             if (result === false) {
                 webpush_selected.checked = false;
             }
         } else {
-            let result = webpush_service.unsubscribe();
+            const result = webpush_service.unsubscribe();
         }
         if (result === false) {
             e.preventDefault();

@@ -191,10 +191,14 @@ class User(Model):
         return pyotp.TOTP(
             self.shared_key,
             digits=8,
-            digest='sha256',
+            digest=hashlib.sha256,
             name=self.loginname,
             interval=60
         )
+
+    @property
+    def OTP_URI(self):
+        return self.TOTP.provisioning_uri()
 
 
 class UserBrain(Brain):
