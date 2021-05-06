@@ -1,4 +1,5 @@
 import inspect
+import enum
 import wtforms
 import reiter.form
 import wtforms_pydantic
@@ -8,11 +9,15 @@ from horseman.http import Multidict
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
 from uvcreha.browser.layout import TEMPLATES
+from wtforms_pydantic.field import multiple_converters
 
 
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
+
+
+multiple_converters[enum.Enum] = MultiCheckboxField
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
