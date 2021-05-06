@@ -45,7 +45,6 @@ class TwoFA(FormView):
         print(token)
         return {'form': form}
 
-
     @trigger("validate", "Überprüfen", css="btn btn-primary")
     def validate(self, request, data):
         form = self.setupForm(formdata=data.form)

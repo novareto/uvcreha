@@ -140,9 +140,9 @@ class Browser(RESTApplication):
         # utilities
         db = self.connector.get_database()
         auth = Auth(
-            db(self.config.factories.user),
-            self.config.env,
-            twoFA=self.config.authentication.twoFA or False
+            db(config.app.factories.user),
+            config.app.env,
+            twoFA=config.app.authentication.twoFA or False
         )
         self.utilities.register(auth, name="authentication")
         self.utilities.register(AMQPEmitter(config.amqp), name="amqp")
@@ -161,13 +161,13 @@ class Browser(RESTApplication):
             self.utilities.register(twilio, 'twilio')
 
         # middlewares
-        self.register_middleware(repoze_filter(self.config.vhm), order=5)
+        self.register_middleware(repoze_filter(config.vhm), order=5)
 
         self.register_middleware(
-            fanstatic_middleware(self.config.assets), order=10)
+            fanstatic_middleware(config.app.assets), order=10)
 
         self.register_middleware(
-            session_middleware(self.config), order=20)
+            session_middleware(config.app), order=20)
 
         self.register_middleware(auth, order=30)
 
