@@ -1,23 +1,15 @@
-import inspect
-import enum
 import wtforms
 import reiter.form
-import wtforms_pydantic
-from pydantic import create_model
-from flatten_dict import flatten, unflatten
 from horseman.http import Multidict
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
 from uvcreha.browser.layout import TEMPLATES
-from wtforms_pydantic.field import multiple_converters
+from jsonschema_wtforms import Form as JSONForm
 
 
 class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
-
-
-multiple_converters[enum.Enum] = MultiCheckboxField
 
 
 class FormMeta(wtforms.meta.DefaultMeta):
@@ -39,7 +31,7 @@ class FormMeta(wtforms.meta.DefaultMeta):
         return field.widget(field, **render_kw)
 
 
-class Form(wtforms_pydantic.Form):
+class Form(JSONForm):
 
     def __init__(self, fields, prefix="", meta=FormMeta()):
         super().__init__(fields, prefix, meta)
@@ -65,59 +57,8 @@ class FormView(reiter.form.FormView):
         )
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model)
-        form.process(data=data, formdata=formdata)
-        return form
+        raise NotImplementedError('Subclass needs to implement it.')
 
     def GET(self):
         form = self.setupForm()
         return dict(form=form, error=None)
-
-
-class Composer:
-
-    factory = Form
-
-    def __init__(self, model):
-        self.model = model
-
-    @classmethod
-    def composed_model(cls, name, **objs):
-        fields = {}
-        for name, _type in objs.items():
-            if not inspect.isclass(_type):
-                fields[name] = (_type.__class__, _type)
-            else:
-                fields[name] = (_type, ...)
-        model = create_model(name, **fields)
-        return cls(model)
-
-    def field(self, name, model=None):
-        if model is None:
-            model = self.model
-        stack = name.split('.', 1)
-        if len(stack) == 2:
-            model = model.__fields__[stack[0]].type_
-            return self.field(stack[1], model)
-        else:
-            return model.__fields__[stack[0]]
-
-    def fields(self, *names):
-        for name in names:
-            yield (name, self.field(name))
-
-    def form_fields(self, *names):
-        return wtforms_pydantic.Converter.convert(
-            dict(self.fields(*names))
-        )
-
-    def default_values(self):
-        if not inspect.isclass(self.model):
-            return flatten(self.model.dict(), reducer='dot')
-        return {}
-
-    def form(self, *names):
-        return self.factory(self.form_fields(*names))
-
-    def format(self, data):
-        return unflatten(data, splitter='dot')

@@ -1,71 +1,75 @@
-<h1> Akte </h1>
-
-<ul class="nav justify-content-center">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" href="#">Dokumente</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Versicherten Fall</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Unternehmen</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Meta</a>
-  </li>
-</ul>
-<h2> Akte </h2>
-<div class="shadow-sm p-3 mb-5 bg-body rounded">
-  ID: <span tal:content="context.az"> </span> <br>
-  State: <span tal:content="context.state"> </span> <br>
-  Datum: <span tal:content="context.creation_date"> </span>
-</div>
-
-<div>
-  <h2> Dokumente </h2>
-  <table class="table"
-         data-locale='de-DE'
-         data-search="true"
-         data-toggle="table"
-         data-sort-name="date"
-         data-sort-order="desc"
-         >
-    <thead>
-      <tr>
-        <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="title" data-sortable="true">Title</th>
-        <th data-field="date"
-            data-sortable="true"
-            data-formatter="dateFormat"
+<article>
+  <h1>Akte</h1>
+  <ul class="nav justify-content-center">
+    <li class="nav-item">
+      <a class="nav-link active" aria-current="page" href="#">Dokumente</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Versicherten Fall</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Unternehmen</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Meta</a>
+    </li>
+  </ul>
+  <h2>Akte</h2>
+  <div class="shadow-sm p-3 mb-5 bg-body rounded">
+    ID: <span tal:content="context.id"> </span> <br>
+    State: <span tal:content="context.state.name"> </span> <br>
+    Datum: <span tal:content="context.date"> </span>
+  </div>
+  <section id="documents">
+    <h2>Dokumente</h2>
+    <table class="table"
+           data-locale='de-DE'
+           data-search="true"
+           data-toggle="table"
+           data-sort-name="date"
+           data-sort-order="desc"
+           >
+      <thead>
+        <tr>
+          <th data-field="id" data-sortable="true">ID</th>
+          <th data-field="title" data-sortable="true">Title</th>
+          <th data-field="date"
+              data-sortable="true"
+              data-formatter="dateFormat"
             data-searchable="false">Date</th>
-        <th data-field="state" data-searchable="false">Status</th>
-        <th data-field="actions" data-searchable="false">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="search-results">
-      <tr tal:repeat="brain brains">
-        <td tal:content="brain.id" />
-        <td>
-          <a href=""
-             tal:attributes="href brain.link"
-             tal:content="brain.title" />
-        </td>
-        <td tal:content="brain.date" />
-        <td>
-          <span data-state="${brain.state.name}">
-            ${brain.state.value}
-          </span>
-        </td>
-        <td>
-          <ul class="list-inline">
-            <li tal:repeat="action brain.actions" class="list-inline-item">
-              <a href="${action.url}"
-                 ><i class="${action.css}"> </i>${action.title}</a>
-            </li>
-          </ul>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-</div>
+          <th data-field="state" data-searchable="false">Status</th>
+          <th data-field="actions" data-searchable="false">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="search-results">
+        <tal:document tal:repeat="document documents">
+        <tr tal:define="actions document.get_actions(request)">
+          <td tal:content="document.id" />
+          <td>
+            <a href=""
+               tal:define="(action, url) next(actions)"
+               tal:omit-tag="action is None"
+               tal:attributes="href url"
+               tal:content="document.title" />
+          </td>
+          <td tal:content="document.date" />
+          <td>
+            <span data-state="${document.state.name}">
+              ${document.state.value}
+            </span>
+          </td>
+          <td>
+            <ul class="list-inline">
+              <li class="list-inline-item"
+                  tal:repeat="(action, url) actions">
+                <a href="${url}"
+                   ><i class="${action.css}"> </i>${action.title}</a>
+              </li>
+            </ul>
+          </td>
+        </tr>
+        </tal:document>
+      </tbody>
+    </table>
+  </section>
+</article>

@@ -5,15 +5,11 @@ class ModelWorkflowItem(workflow.WorkflowItem):
 
     @property
     def state(self):
-        return self.workflow.get(self.item.state)
-
-    @state.setter
-    def state(self, state):
-        self.item.state = state.name
+        return self.workflow.get(self.item.get('state'))
 
 
 def ValidUser(item, **namespace):
-    if not item.email:
+    if not item['email']:
         raise workflow.Error(message=f'User {item} needs a valid email.')
 
 

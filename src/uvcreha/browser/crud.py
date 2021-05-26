@@ -1,15 +1,16 @@
+"""Database agnostic CRUD.
+"""
+
 import horseman.response
 from horseman.http import Multidict
-from pydantic import BaseModel
-from typing import ClassVar, Type, Optional, Iterable, Callable
-from wtforms_pydantic import model_fields
+from typing import ClassVar, Type, Optional, Iterable, Callable, Dict, Any
 from reiter.form import trigger
-from uvcreha.browser.form import FormView, Form
+from uvcreha.browser.form import FormView
+from uvcreha.contenttypes import Content
 
 
-class ModelForm(FormView):
+class BaseForm(FormView):
     title: str
-    model: ClassVar[Type[BaseModel]]
     readonly: Optional[Iterable[str]] = None
     hook: Optional[Callable] = None
 
@@ -24,18 +25,8 @@ class ModelForm(FormView):
     def destination(self):
         return self.request.environ['SCRIPT_NAME'] + '/'
 
-    def fields(self, exclude=(), include=()):
-        return model_fields(self.model, exclude=exclude, include=include)
-
-    def get_fields(self):
-        # Exclude the pure Arango fields.
-        # Exclude the workflow state.
-        return self.fields(
-            exclude=('key', 'id', 'rev', 'creation_date', 'state')
-        )
-
     def get_form(self):
-        return Form.from_fields(self.get_fields())
+        raise NotImplementedError('Implement your own.')
 
     def get_initial_data(self):
         return {}
@@ -50,64 +41,59 @@ class ModelForm(FormView):
         return form
 
 
-class AddForm(ModelForm):
+class AddForm(BaseForm):
 
     def get_initial_data(self):
-        return self.request.route.params
+        return self.params
+
+    def create(self, data):
+        raise NotImplementedError('implement in your subclass')
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        obj, response = request.database(self.model).create(
-            **{**self.params, **data.form.dict()}
-        )
+        obj = self.create(data)
         if self.hook is not None:
             self.hook(obj)
         return horseman.response.redirect(self.destination)
 
 
-class DefaultView(ModelForm):
+class DefaultView(BaseForm):
 
     readonly = ...  # represents ALL
 
-    def update(self):
-        self.context = self.request.database(
-            self.model).find_one(**self.params)
-
     def get_initial_data(self):
-        return self.context.dict()
+        raise NotImplementedError('implement in your subclass')
 
     def GET(self):
         form = self.setupForm()
         return {'form': form}
 
 
-class EditForm(ModelForm):
-
-    def update(self):
-        super().update()
-        self.context = self.request.database(
-            self.model).find_one(**self.params)
+class EditForm(BaseForm):
 
     def get_initial_data(self):
-        return self.context.dict()
+        raise NotImplementedError('implement in your subclass')
+
+    def apply(self, data: Dict):
+        raise NotImplementedError('implement in your subclass')
+
+    def remove(self, key: Any):
+        raise NotImplementedError('implement in your subclass')
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {'form': form}
-        obj = self.request.database(self.model).update(
-            self.context.__key__,
-            **{**self.params, **data.form.dict()}
-        )
+        obj = self.apply(data)
         if self.hook is not None:
             self.hook(obj)
         return horseman.response.redirect(self.destination)
 
     @trigger("delete", "Delete", css="btn btn-danger")
     def delete(self, request, data):
-        request.database(self.model).delete(key=self.context.key)
+        self.remove(self.context.metadata.id)
         return horseman.response.redirect(self.destination)

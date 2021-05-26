@@ -3,7 +3,6 @@ import horseman.meta
 import horseman.response
 from reiter.view.meta import View
 from uvcreha.app import browser
-from uvcreha.models import User
 from uvcreha.browser.layout import TEMPLATES
 
 
@@ -30,9 +29,9 @@ class Webpush(View):
         data = self.request.extract()
         token = data.json['subscription']
         self.request.user.preferences.webpush_subscription = json.dumps(token)
-        user = self.request.database(User)
-        user.update(
-            self.request.user.key,
-            preferences=self.request.user.preferences.dict()
-        )
-        return horseman.response.Response.create(200)
+        # user = self.request.database(User)
+        # user.update(
+        #     self.request.user.key,
+        #     preferences=self.request.user.preferences.dict()
+        # )
+        # return horseman.response.Response.create(200)

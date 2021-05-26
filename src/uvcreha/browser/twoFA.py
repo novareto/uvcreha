@@ -3,7 +3,6 @@ from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.request import Request
 from uvcreha.browser.form import FormMeta, FormView, FormMeta
-from uvcreha.models import User
 import horseman.response
 import wtforms
 import qrcode

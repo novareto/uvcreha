@@ -5,8 +5,8 @@ from uvcreha import models
 from uvcreha.app import browser
 from uvcreha.browser.form import Form, FormView
 from uvcreha.browser.layout import TEMPLATES
-from uvcreha.models import User
 from uvcreha.request import Request
+from uvcreha import contenttypes
 
 
 @browser.route("/login")
@@ -14,14 +14,15 @@ class LoginForm(FormView):
 
     title = "Anmelden"
     description = "Bitte tragen Sie hier Ihre Anmeldeinformationen ein"
-    model = models.User
 
     @property
     def action(self):
         return self.request.environ['SCRIPT_NAME'] + '/login'
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, include=("loginname", "password"))
+        ct = contenttypes.registry['user']
+        form = Form.from_schema(
+            ct.schema, include=('loginname', 'password'))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -54,10 +55,10 @@ class EditPassword(FormView):
     title = "Passwort ändern"
     description = "Hier können Sie Ihr Passwort ändern"
     action = "edit_pw"
-    model = User
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, include=("password"))
+        ct = content_types_registry['user']
+        form = Form.from_schema(ct.schema, include=("password"))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -67,8 +68,9 @@ class EditPassword(FormView):
         if not form.validate():
             return {"form": form}
 
-        um = request.database(User)
-        um.update(key=request.user.key, **data.form)
+        ct = content_types_registry['user']
+        um = request.database.bind(ct)
+        um.update(key=request.user.id, **data.form)
         flash_messages = request.utilities.get('flash')
         flash_messages.add(
             body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
@@ -77,55 +79,6 @@ class EditPassword(FormView):
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def abbrechen(self, *args):
         pass
-
-
-@browser.route("/edit_mail", permissions={"document.view"})
-class EditMail(FormView):
-
-    title = "E-Mail Adresse ändern"
-    description = "Hier können Sie Ihre E-Mail Adresse ändern"
-    action = "edit_mail"
-    model = User
-
-    def setupForm(self, data={}, formdata=Multidict()):
-        form = Form.from_model(self.model, include=("email"))
-        form.process(data=data, formdata=formdata)
-        return form
-
-    def GET(self, request: Request):
-        userdata = request.user.dict()
-        form = self.setupForm(data=userdata)
-        return {"form": form}
-
-    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
-    def abbrechen(self, request, data):
-        flash_messages = request.utilities.get('flash')
-        flash_messages.add(
-            body=('Ihre E-Mail Adresse wurde erfolgreich im '
-                  'System gespeichert.'))
-        return self.redirect("/")
-
-    @trigger("speichern", "Speichern")
-    def speichern(self, request, data):
-        form = self.setupForm(formdata=data.form)
-        if not form.validate():
-            return self.namespace(form=form, error=None)
-        um = request.database.bind(models.User)
-        um.update(key=request.user.key, **data.form.dict())
-        flash_messages = request.utilities.get('flash')
-        flash_messages.add(
-            body=('Ihre E-Mail Adresse wurde erfolgreich im '
-                  'System gespeichert.'))
-        return self.redirect("/")
-
-
-@browser.route(
-    "/user_preferences", methods=["GET"], permissions={"document.view"})
-def preferences(request: Request):
-    return request.app.ui.response(
-        TEMPLATES["preferences.pt"],
-        request=request
-    )
 
 
 @browser.route('/logout')

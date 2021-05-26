@@ -1,14 +1,18 @@
-from uvcreha import models
 from uvcreha.app import browser
-from uvcreha.browser.crud import DefaultView, EditForm
+from reiter.view.meta import View
+from uvcreha.browser.layout import TEMPLATES
+from uvcreha import contenttypes
 
 
-@browser.route("/users/{uid}/files/{az}")
-class FileIndex(DefaultView):
-    model = models.File
+@browser.route("/users/{uid}/files/{az}", name="file.view")
+class FileIndex(View):
+    template = TEMPLATES["file_view.pt"]
 
-
-@browser.route("/users/{uid}/files/{az}/edit")
-class FileEdit(EditForm):
-    model = models.File
-    readonly = ('uid', 'az')
+    def GET(self):
+        file_ct = contenttypes.registry['file']
+        doc_ct = contenttypes.registry['document']
+        file = file_ct.bind(self.request.database).find_one(**self.params)
+        docs = doc_ct.bind(self.request.database).find(
+            uid=file.data['uid'], az=file.data['az']
+        )
+        return dict(documents=docs, request=self.request, context=file)

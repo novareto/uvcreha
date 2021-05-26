@@ -1,3 +1,4 @@
+import arango
 import functools
 import fanstatic
 import cromlech.session
@@ -15,13 +16,12 @@ from horseman.types import WSGICallable
 from reiter.amqp.emitter import AMQPEmitter
 from reiter.application.app import Application
 from reiter.application.browser import registries
-from reiter.arango.connector import Connector
-from reiter.arango.validation import ValidationError
 from roughrider.routing.route import NamedRoutes
 from roughrider.storage.meta import StorageCenter
 from uvcreha.auth import Auth
+from uvcreha.database import Connector
 from uvcreha.emailer import SecureMailer
-from uvcreha.models import JSONSchemaRegistry
+from uvcreha import jsonschema
 from uvcreha.request import Request
 from uvcreha.security import SecurityError
 from uvcreha.webpush import Webpush
@@ -82,16 +82,13 @@ class RESTApplication(Application):
     request_factory: horseman.meta.Overhead = Request
 
     def __call__(self, environ, start_response):
-        try:
-            if self._caller is not None:
-                return self._caller(environ, start_response)
-            return super().__call__(environ, start_response)
-        except ValidationError as exc:
-            return exc(environ, start_response)
+        if self._caller is not None:
+            return self._caller(environ, start_response)
+        return super().__call__(environ, start_response)
 
     def configure(self, config):
         self.config.update(config.app)
-        self.connector = Connector(**config.arango)
+        self.connector = Connector.from_config(**config.arango)
         self.request = self.config.factories.request
 
         # Utilities
@@ -125,7 +122,7 @@ class Browser(RESTApplication):
 
     def configure(self, config):
         self.config.update(config.app)
-        self.connector = Connector(**config.arango)
+        self.connector = Connector.from_config(**config.arango)
         self.request = self.config.factories.request
 
         # register JSON schemas
@@ -135,12 +132,11 @@ class Browser(RESTApplication):
                     if schema.endswith('.json'):
                         with fs.open(schema) as fd:
                             data = json.load(fd)
-                            JSONSchemaRegistry.register(data, data['name'])
+                            jsonschema.store.add(
+                                data.get('id', schema), data)
 
-        # utilities
-        db = self.connector.get_database()
         auth = Auth(
-            db(config.app.factories.user),
+            self.connector,
             config.app.env,
             twoFA=config.app.authentication.twoFA or False
         )

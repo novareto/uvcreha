@@ -42,9 +42,11 @@ class ComposedView(View, metaclass=ComposedViewMeta):
         if raw:
             return Response.create(200, body=body)
         pages = [(key, view.title) for key, view in self.pages.items()]
-        return self.render(
-                {'innerpage': body, 
-                 'view': self, 'local_macros': self.navs.macros, 'pages': pages, 'basepage': self.request.route.path})
+        return self.render({
+            'innerpage': body,
+            'view': self, 'local_macros': self.navs.macros,
+            'pages': pages, 'basepage': self.request.route.path
+        })
 
 
 #@browser.ui.register_slot(

@@ -63,13 +63,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr tal:repeat="file view.get_files(key=request.user.key)">
+        <tr tal:repeat="file view.get_files(key=request.user.id)">
           <td>
             <a href=""
-               tal:attributes="href file.url"
-               tal:content="file.item.az" />
+               tal:attributes="href file.actions['default'].resolve(request, file)"
+               tal:content="file.id" />
           </td>
-          <td tal:content="file.item.creation_date" />
+          <td tal:content="file.date" />
           <td tal:content="file.state.value" />
         </tr>
       </tbody>
