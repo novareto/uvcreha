@@ -22,7 +22,6 @@ install_requires = [
     'pyotp',
     'python-arango',
     'pywebpush',
-    'pytest',
     'qrcode[pil]',
     'reg',
     'reiter.amqp',
@@ -87,15 +86,18 @@ setup(
         'test': test_requires,
     },
     entry_points={
-        'fanstatic.libraries': [
-            'uvcreha = uvcreha.browser.resources:library',
+        "pytest11": [
+            "uvcreha = uvcreha.testing:pytest_uvcreha"
         ],
-        'reiter.application.modules': [
-            'uvcreha = uvcreha',
+        "fanstatic.libraries": [
+            "uvcreha = uvcreha.browser.resources:library",
         ],
-        'reiter.application.wsgiapps': [
-            '/ = uvcreha.app:browser',
-            '/api = uvcreha.app:api',
+        "reiter.application.modules": [
+            "uvcreha = uvcreha",
+        ],
+        "reiter.application.wsgiapps": [
+            "/ = uvcreha.app:browser",
+            "/api = uvcreha.app:api",
         ]
     }
 )

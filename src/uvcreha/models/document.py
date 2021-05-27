@@ -3,6 +3,57 @@ from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
 
 
+document_schema = {
+    "id": "Document",
+    "title": "Document",
+    "type": "object",
+    "properties": {
+        "docid": {
+            "title": "DocumentID",
+            "description": "Eindeutige ID des Dokuments",
+            "type": "string"
+        },
+        "az": {
+            "title": "Aktenzeichen",
+            "description": "Eindeutige ID der Akte",
+            "type": "string"
+        },
+        "uid": {
+            "title": "UID Versicherter",
+            "description": "Eindeutige ID des Versicherten",
+            "type": "string"
+        },
+        "creation_date": {
+            "title": "Creation Date",
+            "type": "string",
+            "format": "date-time"
+        },
+        "state": {
+            "title": "State",
+            "type": "string"
+        },
+        "content_type": {
+            "title": "Dokumentart",
+            "description": "Bitte w\u00e4hlen Sie eine Dokumentart",
+            "type": "string"
+        },
+        "item": {
+            "title": "Item",
+            "type": "object",
+            "description": "Depends on the content_type. Shouldn't be exposed in a form."
+        }
+    },
+    "required": [
+        "docid",
+        "az",
+        "uid"
+    ]
+}
+
+
+store.add('Document', document_schema)
+
+
 @registry.factory(
     "document", schema=store.get('Document'), collection="documents")
 class Document(Content):

@@ -3,6 +3,60 @@ from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
 
 
+file_schema = {
+    "id": "File",
+    "title": "File",
+    "type": "object",
+    "properties": {
+        "uid": {
+            "title": "UID",
+            "description": "Interne ID des Benutzers",
+            "type": "string"
+        },
+        "az": {
+            "title": "Aktenzeichen",
+            "description": "Aktenzeichen des entsprechenden Falls",
+            "type": "string"
+        },
+        "mnr": {
+            "title": "Mitgliedsnummer",
+            "description": "Mitgliedsnummer des Unternehmens",
+            "type": "string"
+        },
+        "vid": {
+            "title": "Versichertenfall ID",
+            "description": "ID des Versichertenfalls",
+            "type": "string"
+        },
+        "creation_date": {
+            "title": "Creation Date",
+            "type": "string",
+            "format": "date-time"
+        },
+        "state": {
+            "title": "State",
+            "default": "created",
+            "type": "string"
+        },
+        "unternehmen": {
+            "$ref": "Unternehmen#/"
+        },
+        "versichertenfall": {
+            "$ref": "VersichertenFall#/"
+        }
+    },
+    "required": [
+        "uid",
+        "az",
+        "mnr",
+        "vid"
+    ]
+}
+
+
+store.add('File', file_schema)
+
+
 @registry.factory("file", schema=store.get('File'), collection="files")
 class File(Content):
 

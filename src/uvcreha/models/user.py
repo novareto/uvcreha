@@ -7,6 +7,142 @@ from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
 
 
+user_preferences_schema = {
+    "id": "UserPreferences",
+    "title": "User preferences",
+    "description": "User-based application preferences",
+    "type": "object",
+    "properties": {
+        "name": {
+            "title": "Vorname",
+            "description": "Vorname",
+            "type": "string"
+        },
+        "surname": {
+            "title": "Nachname",
+            "description": "Nachname",
+            "type": "string"
+        },
+        "birthdate": {
+            "title": "Geburtsdatum",
+            "type": "string",
+            "format": "date"
+        },
+        "datenschutz": {
+            "title": "Datenschutz",
+            "description": "Bitte best\u00e4tigen Sie hier, dass Sie die Ausf\u00fchrungen zum Datenschutzgelesen und akzeptiert haben.",
+            "default": False,
+            "type": "boolean"
+        },
+        "teilnahme": {
+            "title": "Teilnahme",
+            "description": "Bitte best\u00e4tigen Sie uns hier die Teilnahme am Online-Verfahren.",
+            "default": False,
+            "type": "boolean"
+        },
+        "mobile": {
+            "title": "Telefonnummer",
+            "description": "Telefonnummer",
+            "type": "string"
+        },
+        "messaging_type": {
+            "title": "Benachrichtigungen",
+            "description": "Bitte w\u00e4hlen Sie eine/oder mehrere Arten der Benachrichtiung aus",
+            "default": [
+                "email"
+            ],
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/MessagingType"
+            }
+        },
+        "webpush_subscription": {
+            "title": "Webpush Subscription",
+            "default": "",
+            "type": "string"
+        },
+        "webpush_activated": {
+            "title": "Webpush Activated",
+            "default": False,
+            "type": "boolean"
+        }
+    },
+    "definitions": {
+        "MessagingType": {
+            "title": "MessagingType",
+            "description": "Messaging system choices.\n    ",
+            "enum": [
+                "email",
+                "webpush"
+            ],
+            "type": "string"
+        }
+    }
+}
+
+
+user_schema = {
+    "id": "User",
+    "title": "User model",
+    "type": "object",
+    "properties": {
+        "uid": {
+            "title": "ID",
+            "description": "Internal User ID",
+            "type": "string"
+        },
+        "loginname": {
+            "title": "Loginname",
+            "description": "Bitte tragen Sie hier den Loginnamen ein.",
+            "type": "string"
+        },
+        "password": {
+            "title": "Passwort",
+            "description": "Bitte tragen Sie hier das Kennwort ein.",
+            "type": "string",
+            "writeOnly": True,
+            "format": "password"
+        },
+        "email": {
+            "title": "E-Mail",
+            "description": "Bitte geben Sie die E-Mail ein",
+            "type": "string",
+            "format": "email"
+        },
+        "creation_date": {
+            "title": "Creation Date",
+            "type": "string",
+            "format": "date-time"
+        },
+        "state": {
+            "title": "State",
+            "default": "pending",
+            "type": "string"
+        },
+        "permissions": {
+            "title": "Permissions",
+            "default": [
+                "document.view"
+            ],
+            "type": "array",
+            "items": {}
+        },
+        "preferences": {
+            "$ref": "UserPreferences/"
+        }
+    },
+    "required": [
+        "uid",
+        "loginname",
+        "password"
+    ]
+}
+
+
+store.add('UserPreferences', user_preferences_schema)
+store.add('User', user_schema)
+
+
 @registry.factory("user", schema=store.get('User'), collection="users")
 class User(Content):
 
