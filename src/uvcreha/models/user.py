@@ -10,12 +10,18 @@ from uvcreha.contenttypes import registry, Content
 @registry.factory("user", schema=store.get('User'), collection="users")
 class User(Content):
 
-    def set_metadata(self, data: dict):
-        wf = user_workflow(data)
-        self.id = data['uid']
-        self.date = data['creation_date']
-        self.title = data['loginname']
-        self.state = wf.state
+    @property
+    def id(self):
+        return self['uid']
+
+    @property
+    def title(self):
+        return self['loginname']
+
+    @property
+    def state(self):
+        wf = user_workflow(self)
+        return wf.state
 
     @property
     def shared_key(self) -> bytes:

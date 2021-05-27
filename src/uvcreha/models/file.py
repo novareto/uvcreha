@@ -6,12 +6,22 @@ from uvcreha.contenttypes import registry, Content
 @registry.factory("file", schema=store.get('File'), collection="files")
 class File(Content):
 
-    def set_metadata(self, data):
-        wf = file_workflow(data)
-        self.id = data['az']
-        self.date = data['creation_date']
-        self.title = f"File {data['az']!r}"
-        self.state = wf.state
+    @property
+    def id(self):
+        return self['az']
+
+    @property
+    def date(self):
+        return self['creation_date']
+
+    @property
+    def title(self):
+        return f"File {data['az']!r}"
+
+    @property
+    def state(self):
+        wf = file_workflow(self)
+        return wf.state
 
 
 @File.actions.register('default', title="View")

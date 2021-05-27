@@ -26,7 +26,8 @@ def test_workflow_default():
     )
 
     wrapper.transition_to(DocumentWorkflow.states.sent)
-    assert doc.state == DocumentWorkflow.states.sent.name
+    assert doc['state'] == DocumentWorkflow.states.sent.name
+    assert doc.state == DocumentWorkflow.states.sent
     assert wrapper.state == DocumentWorkflow.states.sent
 
 

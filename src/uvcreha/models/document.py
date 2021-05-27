@@ -7,12 +7,22 @@ from uvcreha.contenttypes import registry, Content
     "document", schema=store.get('Document'), collection="documents")
 class Document(Content):
 
-    def set_metadata(self, data):
-        wf = document_workflow(data)
-        self.id = data['uid']
-        self.date = data['creation_date']
-        self.title = f"Document {data['az']} ({data['content_type']})"
-        self.state = wf.state
+    @property
+    def id(self):
+        return self['docid']
+
+    @property
+    def date(self):
+        return self['creation_date']
+
+    @property
+    def title(self):
+        return f"Document {self.docid} ({self['content_type']})"
+
+    @property
+    def state(self):
+        wf = document_workflow(self)
+        return wf.state
 
 
 @Document.actions.register('default', title="View")

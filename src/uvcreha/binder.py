@@ -46,16 +46,17 @@ class Binder:
         if (data := collection.get(key)) is not None:
             return self.content_type.factory(data)
 
-    def create(self, key=None, **data) -> Tuple[Content, dict]:
+    def create(self, _key=None, **data) -> Tuple[Content, dict]:
         item = self.content_type.factory.create(data)
         try:
             with transaction(self.db, self.content_type.collection) as txn:
                 collection = txn.collection(self.content_type.collection)
-                if key is not None:
+                if _key is not None:
                     response = collection.insert(
-                        {**item.data, '_key': key})
+                        {**item.data, '_key': _key})
                 else:
                     response = collection.insert(item.data)
+                item.data.update(response)
                 return item, response
         except arango.exceptions.DocumentInsertError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
@@ -72,21 +73,21 @@ class Binder:
         except arango.exceptions.DocumentDeleteError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
 
-    def update(self, key, **data) -> str:
+    def update(self, _key, **data) -> str:
         try:
             with transaction(self.db, self.content_type.collection) as txn:
                 collection = txn.collection(self.content_type.collection)
-                data = {'_key': key, **data}
+                data = {'_key': _key, **data}
                 response = collection.update(data)
                 return response
         except arango.exceptions.DocumentUpdateError as exc:
             raise horseman.http.HTTPError(exc.http_code, exc.message)
 
-    def replace(self, key, **data) -> str:
+    def replace(self, _key, **data) -> str:
         try:
             with transaction(self.db, self.content_type.collection) as txn:
                 collection = txn.collection(self.content_type.collection)
-                data = {'_key': key, **data}
+                data = {'_key': _key, **data}
                 response = collection.replace(data)
                 return response
         except arango.exceptions.DocumentUpdateError as exc:

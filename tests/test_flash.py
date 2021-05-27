@@ -1,6 +1,8 @@
-def test_flash(web_app, session):
+def test_flash(root, session):
 
-    request = web_app.request_factory(web_app, {
+    app = root['/']
+
+    request = app.request_factory(app, {
         "REQUEST_METHOD": "GET",
         "SCRIPT_NAME": 'flash_test',
         "uvcreha.test.session": session
@@ -9,7 +11,7 @@ def test_flash(web_app, session):
     flash_manager = request.utilities.get('flash')
     assert flash_manager is None
 
-    web_app.notify('request_created', web_app, request)
+    app.notify('request_created', app, request)
     flash_manager = request.utilities.get('flash')
     assert flash_manager is not None
 

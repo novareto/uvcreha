@@ -22,6 +22,7 @@ install_requires = [
     'pyotp',
     'python-arango',
     'pywebpush',
+    'pytest',
     'qrcode[pil]',
     'reg',
     'reiter.amqp',
@@ -86,12 +87,6 @@ setup(
         'test': test_requires,
     },
     entry_points={
-        'pytest11': [
-            'websession = uvcreha.fixtures.session',
-            'db_init = uvcreha.fixtures.db',
-            'user = uvcreha.fixtures.user',
-            'app = uvcreha.fixtures.app',
-       ],
         'fanstatic.libraries': [
             'uvcreha = uvcreha.browser.resources:library',
         ],

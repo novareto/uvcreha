@@ -1,30 +1,29 @@
 import hamcrest
 from typing import Literal
-from uvcreha.models import Document, User
+from uvcreha.contenttypes import registry
 
 
 def test_model_crud(db_init):
 
     db = db_init.get_database()
-    wrapper = db(User)
-    model = wrapper.model(
+    user_type = registry['user']
+    wrapper = user_type.bind(db)
+    model = user_type.factory(
         uid="123456",
         loginname="souheil",
         password="secret",
         email="trollfot@gmail.com"
     )
-    assert isinstance(model, User) is True
-    assert model.loginname == "souheil"
-    assert model.password.get_secret_value() == "secret"
+    assert model['loginname'] == "souheil"
+    assert model['password'] == "secret"
 
-    saved_user, response = wrapper.create(**model.dict())
-    assert saved_user.key == '123456'
+    saved_user, response = wrapper.create(_key=model.id, **model)
     assert wrapper.exists('123456') is True
 
-    assert isinstance(saved_user, User) is True
-    saved_user.password = "newpw"
+    assert isinstance(saved_user, user_type.factory) is True
+    saved_user['password'] = "newpw"
 
-    response = db.save(saved_user)
+    response = wrapper.update(**saved_user)
     hamcrest.assert_that(response, hamcrest.has_entries({
         '_id': 'users/123456',
         '_key': '123456',
@@ -32,5 +31,5 @@ def test_model_crud(db_init):
         '_old_rev': hamcrest.instance_of(str)
     }))
 
-    new_user = wrapper.fetch(saved_user.key)
-    assert new_user.password.get_secret_value() == "newpw"
+    new_user = wrapper.fetch(saved_user.id)
+    assert new_user['password'] == "newpw"

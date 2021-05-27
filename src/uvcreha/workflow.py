@@ -7,6 +7,10 @@ class ModelWorkflowItem(workflow.WorkflowItem):
     def state(self):
         return self.workflow.get(self.item.get('state'))
 
+    @state.setter
+    def state(self, wfstate):
+        self.item['state'] = wfstate.name
+
 
 def ValidUser(item, **namespace):
     if not item['email']:
