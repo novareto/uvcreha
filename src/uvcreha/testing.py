@@ -37,17 +37,39 @@ else:
 
     class UVCRehaTestRunner:
 
-        def __init__(self, configfile: pathlib.Path):
+        def __init__(self):
             OmegaConf.register_resolver(
                 "path", resolve_path)
             OmegaConf.register_resolver(
                 "class", zope.dottedname.resolve.resolve)
-            self.config = OmegaConf.load(configfile)
             importscan.scan(uvcreha)
 
+        def pytest_addoption(self, parser):
+            configfile = (
+                pathlib.Path(__file__).parent /
+                pathlib.Path('./testing.yaml')
+            )
+            parser.addoption(
+                "--uvcreha_config", action="store_true",
+                default=configfile,
+                help="uvcreha_config: specify a custom app configuration."
+            )
+
         @pytest.fixture(scope="session")
-        def db_init(self, arango_config):
+        def db_init(self, request, arango_config):
             connector = Connector.from_config(**arango_config._asdict())
+
+            if connector._system.has_database(connector.config.database):
+                connector._system.delete_database(connector.config.database)
+            connector._system.create_database(
+                name=connector.config.database,
+                users=[{
+                    'username': connector.config.user,
+                    'password': connector.config.password,
+                    'active': True
+                }],
+            )
+
             db = connector.get_database()
             for name, ct in registry.items():
                 if ct.collection:
@@ -56,10 +78,10 @@ else:
             for name, ct in registry.items():
                 if ct.collection:
                     db.delete_collection(ct.collection)
+            connector._system.delete_database(connector.config.database)
 
         @pytest.fixture(scope="session")
-        def user(self, arango_config):
-            connector = Connector.from_config(**arango_config._asdict())
+        def user(self, db_init):
             # Add the User
             ct = registry['user']
             user = ct.factory(
@@ -68,7 +90,7 @@ else:
                 password='test',
                 permissions=['document.view', 'document.add']
             )
-            db = connector.get_database()
+            db = db_init.get_database()
             user['_key'] = user['uid']
             db[ct.collection].insert(dict(user))
             yield TestUser(user)
@@ -110,13 +132,14 @@ else:
 
         @pytest.fixture(scope="session")
         def root(self, request, tmp_path_factory, arango_config, db_init):
+            configfile = request.config.getoption("--uvcreha_config")
+            config = OmegaConf.load(configfile)
             arango = OmegaConf.create({'arango': arango_config._asdict()})
-            conf = OmegaConf.merge(self.config, arango)
+            conf = OmegaConf.merge(config, arango)
             folder = tmp_path_factory.mktemp('sessions', numbered=True)
             conf.app.session.cache = str(folder)
             root = setup(conf)
             return root
 
 
-    configfile = pathlib.Path(__file__).parent / pathlib.Path('./testing.yaml')
-    pytest_uvcreha = UVCRehaTestRunner(configfile)
+    pytest_uvcreha = UVCRehaTestRunner()
