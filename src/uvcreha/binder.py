@@ -1,4 +1,5 @@
 import arango
+import horseman.http
 from contextlib import contextmanager
 from typing import NamedTuple, List, Optional, Type, Tuple, Iterable
 from roughrider.contenttypes import ContentType, Content

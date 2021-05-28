@@ -7,6 +7,10 @@ from uvcreha.binder import Binder
 
 class Content(roughrider.contenttypes.Content):
 
+    def get_action(self, request, name):
+        action = self.actions[name]
+        return action, action.resolve(request, self)
+
     def get_actions(self, request):
         default = self.actions.get('default')
         if default is not None:

@@ -80,9 +80,10 @@ class File(Content):
 
 @File.actions.register('default', title="View")
 def view(request, item):
-    if item.state is file_workflow.states.created:
-        return request.route_path(
-            'file.register', uid=item['uid'], az=item['az'])
+    if request.user.title != 'admin':
+        if item.state is file_workflow.states.created:
+            return request.route_path(
+                'file.register', uid=item['uid'], az=item['az'])
     return request.route_path(
         'file.view', uid=item['uid'], az=item['az'])
 

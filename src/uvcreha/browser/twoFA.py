@@ -50,8 +50,8 @@ class TwoFA(FormView):
         if not form.validate():
             return {'form': form}
 
-        auth = request.app.utilities.get("authentication")
-        auth.validate_twoFA(self.request.environ)
+        twoFA = request.app.utilities.get("twoFA")
+        twoFA.validate_twoFA(self.request.environ)
         return horseman.response.redirect('/')
 
     @trigger("request", "Neuen Key anfordern", css="btn btn-primary")

@@ -1,3 +1,4 @@
+import uvcreha.auth.filters
 from omegaconf import OmegaConf
 from rutter.urlmap import URLMap
 from reiter.amqp.emitter import AMQPEmitter
@@ -6,7 +7,9 @@ from uvcreha.app import api, browser
 from uvcreha.emailer import SecureMailer
 from uvcreha.database import Connector
 from uvcreha.auth import Auth
+from uvcreha.auth.utilities import TwoFA
 from uvcreha import plugins
+from uvcreha.workflow import user_workflow
 
 
 def setup(config: OmegaConf):
@@ -16,11 +19,15 @@ def setup(config: OmegaConf):
     browser.connector = Connector.from_config(**config.arango)
     browser.request = config.app.factories.request
 
-    auth = Auth(
-            browser.connector,
-            config.app.env,
-            twoFA=config.app.authentication.twoFA or False
-        )
+    auth = Auth(browser.connector, config.app.env, filters = [
+        uvcreha.auth.filters.security_bypass({'/login', '/webpush'}),
+        uvcreha.auth.filters.secured('/login'),
+        uvcreha.auth.filters.filter_user_state({
+            user_workflow.states.inactive,
+            user_workflow.states.closed
+        }),
+        uvcreha.auth.filters.TwoFA('/2FA'),
+    ])
 
     # middlewares
     browser.register_middleware(
@@ -31,6 +38,7 @@ def setup(config: OmegaConf):
 
     # Utilities
     browser.utilities.register(auth, name="authentication")
+    browser.utilities.register(TwoFA(config.app.env), name="twoFA")
     browser.utilities.register(AMQPEmitter(config.amqp), name="amqp")
     browser.utilities.register(StorageCenter(), name="storage")
 

@@ -38,10 +38,12 @@ else:
     class UVCRehaTestRunner:
 
         def __init__(self):
-            OmegaConf.register_resolver(
-                "path", resolve_path)
-            OmegaConf.register_resolver(
-                "class", zope.dottedname.resolve.resolve)
+            if not OmegaConf.get_resolver('path'):
+                OmegaConf.register_resolver(
+                    "path", resolve_path)
+            if not OmegaConf.get_resolver('class'):
+                OmegaConf.register_resolver(
+                    "class", zope.dottedname.resolve.resolve)
             importscan.scan(uvcreha)
 
         def pytest_addoption(self, parser):

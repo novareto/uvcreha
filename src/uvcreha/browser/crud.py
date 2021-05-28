@@ -1,6 +1,7 @@
 """Database agnostic CRUD.
 """
 
+from abc import abstractmethod
 import horseman.response
 from horseman.http import Multidict
 from typing import ClassVar, Type, Optional, Iterable, Callable, Dict, Any
@@ -12,7 +13,6 @@ from uvcreha.contenttypes import Content
 class BaseForm(FormView):
     title: str
     readonly: Optional[Iterable[str]] = None
-    hook: Optional[Callable] = None
 
     @property
     def action(self):
@@ -25,6 +25,7 @@ class BaseForm(FormView):
     def destination(self):
         return self.request.environ['SCRIPT_NAME'] + '/'
 
+    @abstractmethod
     def get_form(self):
         raise NotImplementedError('Implement your own.')
 
@@ -46,8 +47,10 @@ class AddForm(BaseForm):
     def get_initial_data(self):
         return self.params
 
+    @abstractmethod
     def create(self, data):
-        raise NotImplementedError('implement in your subclass')
+        """Created the object in the DB
+        """
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
@@ -55,8 +58,6 @@ class AddForm(BaseForm):
         if not form.validate():
             return {'form': form}
         obj = self.create(data)
-        if self.hook is not None:
-            self.hook(obj)
         return horseman.response.redirect(self.destination)
 
 
@@ -64,8 +65,9 @@ class DefaultView(BaseForm):
 
     readonly = ...  # represents ALL
 
+    @abstractmethod
     def get_initial_data(self):
-        raise NotImplementedError('implement in your subclass')
+        pass
 
     def GET(self):
         form = self.setupForm()
@@ -74,14 +76,17 @@ class DefaultView(BaseForm):
 
 class EditForm(BaseForm):
 
+    @abstractmethod
     def get_initial_data(self):
-        raise NotImplementedError('implement in your subclass')
+        pass
 
+    @abstractmethod
     def apply(self, data: Dict):
-        raise NotImplementedError('implement in your subclass')
+        pass
 
+    @abstractmethod
     def remove(self, key: Any):
-        raise NotImplementedError('implement in your subclass')
+        pass
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
@@ -89,11 +94,9 @@ class EditForm(BaseForm):
         if not form.validate():
             return {'form': form}
         obj = self.apply(data)
-        if self.hook is not None:
-            self.hook(obj)
         return horseman.response.redirect(self.destination)
 
     @trigger("delete", "Delete", css="btn btn-danger")
     def delete(self, request, data):
-        self.remove(self.context.metadata.id)
+        self.remove(self.context.id)
         return horseman.response.redirect(self.destination)

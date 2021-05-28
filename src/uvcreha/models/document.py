@@ -68,7 +68,7 @@ class Document(Content):
 
     @property
     def title(self):
-        return f"Document {self.docid} ({self['content_type']})"
+        return f"Document {self['docid']} ({self['content_type']})"
 
     @property
     def state(self):
