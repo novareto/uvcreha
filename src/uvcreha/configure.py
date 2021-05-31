@@ -20,7 +20,7 @@ def setup(config: OmegaConf):
     browser.request = config.app.factories.request
 
     auth = Auth(browser.connector, config.app.env, filters = [
-        uvcreha.auth.filters.security_bypass({'/login', '/webpush'}),
+        uvcreha.auth.filters.security_bypass({'/login'}),
         uvcreha.auth.filters.secured('/login'),
         uvcreha.auth.filters.filter_user_state({
             user_workflow.states.inactive,
@@ -59,7 +59,7 @@ def setup(config: OmegaConf):
         browser.utilities.register(webpush, name="webpush")
 
     if config.twilio:
-        twilio = twilio_plugin(config.twilio)
+        twilio = plugins.twilio_plugin(config.twilio)
         api.utilities.register(twilio, 'twilio')
         browser.utilities.register(twilio, 'twilio')
 

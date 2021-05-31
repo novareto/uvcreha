@@ -1,8 +1,5 @@
 app:
 
-  authentication:
-    twoFA: False
-
   factories:
     user: ${class:uvcreha.models.User}
     request: ${class:uvcreha.request.Request}
@@ -27,9 +24,11 @@ app:
     root: ${path:storage}
     schemas: ${path:schemas}
 
-  twilio:
-     account_sid: AC0194a64ae983e980a03a0be66073d639
-     auth_token: 847502a1b6aabd837be20326993b2ecd
 
-  vhm:
-     host: http://localhost
+twilio:
+   account_sid: AC0194a64ae983e980a03a0be66073d639
+   auth_token: 847502a1b6aabd837be20326993b2ecd
+
+
+vhm:
+   host: http://localhost

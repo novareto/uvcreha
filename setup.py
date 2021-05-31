@@ -20,7 +20,7 @@ install_requires = [
     'orjson',
     'py-vapid',
     'pyotp',
-    'python-arango',
+    'python-arango >= 7.1.0',
     'pywebpush',
     'qrcode[pil]',
     'reg',
