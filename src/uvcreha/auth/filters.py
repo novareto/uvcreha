@@ -28,6 +28,14 @@ def filter_user_state(forbidden_states: Set[WorkflowState]) -> Filter:
     return _filter
 
 
+def user_register(state: WorkflowState, url: str) -> Filter:
+    def _filter(environ, caller, user):
+        if user.state == state:
+            return Response.redirect(url)
+        return None  # Continue the chain
+    return _filter
+
+
 def TwoFA(path: str) -> Filter:
     def _filter(environ, caller, user):
         if environ['PATH_INFO'] == path:
