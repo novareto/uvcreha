@@ -28,10 +28,12 @@ def filter_user_state(forbidden_states: Set[WorkflowState]) -> Filter:
     return _filter
 
 
-def user_register(state: WorkflowState, url: str) -> Filter:
+def user_register(state: WorkflowState, path: str) -> Filter:
     def _filter(environ, caller, user):
-        if user.state == state:
-            return Response.redirect(url)
+        if environ['PATH_INFO'] == path:
+            return caller
+        if user.state is state:
+            return Response.redirect(path)
         return None  # Continue the chain
     return _filter
 
