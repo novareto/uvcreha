@@ -3,7 +3,7 @@ from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
 
 
-document_schema = {
+store.add('Document', {
     "id": "Document",
     "title": "Document",
     "type": "object",
@@ -51,10 +51,7 @@ document_schema = {
         "az",
         "uid"
     ]
-}
-
-
-store.add('Document', document_schema)
+})
 
 
 @registry.factory(

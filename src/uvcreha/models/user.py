@@ -6,7 +6,7 @@ from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
 
 
-user_preferences_schema = {
+store.add('UserPreferences', {
     "id": "UserPreferences",
     "title": "User preferences",
     "description": "User-based application preferences",
@@ -87,10 +87,10 @@ user_preferences_schema = {
             "type": "string"
         }
     }
-}
+})
 
 
-user_schema = {
+store.add('User', {
     "id": "User",
     "title": "User model",
     "type": "object",
@@ -145,11 +145,7 @@ user_schema = {
         "loginname",
         "password"
     ]
-}
-
-
-store.add('UserPreferences', user_preferences_schema)
-store.add('User', user_schema)
+})
 
 
 @registry.factory("user", schema=store.get('User'), collection="users")
