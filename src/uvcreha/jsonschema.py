@@ -1,5 +1,4 @@
 from typing import Dict, Any
-from urllib.parse import urlparse
 from json_ref_dict.ref_dict import RefDict
 from json_ref_dict.loader import get_document
 

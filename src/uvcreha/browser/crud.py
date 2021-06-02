@@ -4,10 +4,9 @@
 from abc import abstractmethod
 import horseman.response
 from horseman.http import Multidict
-from typing import ClassVar, Type, Optional, Iterable, Callable, Dict, Any
+from typing import Optional, Iterable, Dict, Any
 from reiter.form import trigger
 from uvcreha.browser.form import FormView
-from uvcreha.contenttypes import Content
 
 
 class BaseForm(FormView):
@@ -58,6 +57,7 @@ class AddForm(BaseForm):
         if not form.validate():
             return {'form': form}
         obj = self.create(data)
+        print(obj)
         return horseman.response.redirect(self.destination)
 
 
@@ -94,6 +94,7 @@ class EditForm(BaseForm):
         if not form.validate():
             return {'form': form}
         obj = self.apply(data)
+        print(obj)
         return horseman.response.redirect(self.destination)
 
     @trigger("delete", "Delete", css="btn btn-danger")

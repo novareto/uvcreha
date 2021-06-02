@@ -1,11 +1,8 @@
-from typing import ClassVar
 from horseman.http import HTTPError
 from horseman.response import Response
 from reiter.application.registries import NamedComponents
 from reiter.view.meta import View
-from uvcreha.app import browser
 from uvcreha.browser.layout import TEMPLATES
-from uvcreha.request import Request
 
 
 class ComposedViewMeta(type):
@@ -49,10 +46,10 @@ class ComposedView(View, metaclass=ComposedViewMeta):
         })
 
 
-#@browser.ui.register_slot(
-#    request=Request, view=ComposedView, name="above-content")
-#def composedpages(request, name, view):
-#    pages = [(key, view.title) for key, view in view.pages.items()]
-#    return TEMPLATES["composed_navs.pt"].render(
-#        request=request, pages=pages, basepage=request.route.path
-#    )
+# @browser.ui.register_slot(
+#     request=Request, view=ComposedView, name="above-content")
+# def composedpages(request, name, view):
+#     pages = [(key, view.title) for key, view in view.pages.items()]
+#     return TEMPLATES["composed_navs.pt"].render(
+#         request=request, pages=pages, basepage=request.route.path
+#     )

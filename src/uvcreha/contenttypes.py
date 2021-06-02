@@ -48,8 +48,7 @@ class ContentTypesRegistry(roughrider.contenttypes.Registry):
             name: str,
             schema: Dict,
             factory: Content,
-            collection: str = None
-    ):
+            collection: str = None):
         self.register(
             name, ContentType(
                 schema=schema, factory=factory, collection=collection))

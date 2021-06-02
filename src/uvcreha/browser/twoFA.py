@@ -2,7 +2,7 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.request import Request
-from uvcreha.browser.form import FormMeta, FormView, FormMeta
+from uvcreha.browser.form import FormMeta, FormView
 import horseman.response
 import wtforms
 import qrcode

@@ -1,4 +1,3 @@
-import enum
 import pyotp
 import base64
 import hashlib
@@ -30,13 +29,20 @@ user_preferences_schema = {
         },
         "datenschutz": {
             "title": "Datenschutz",
-            "description": "Bitte best\u00e4tigen Sie hier, dass Sie die Ausf\u00fchrungen zum Datenschutzgelesen und akzeptiert haben.",
+            "description": (
+                "Bitte best\u00e4tigen Sie hier, dass Sie "
+                "die Ausf\u00fchrungen zum Datenschutzgelesen und "
+                "akzeptiert haben."
+            ),
             "default": False,
             "type": "boolean"
         },
         "teilnahme": {
             "title": "Teilnahme",
-            "description": "Bitte best\u00e4tigen Sie uns hier die Teilnahme am Online-Verfahren.",
+            "description": (
+                "Bitte best\u00e4tigen Sie uns hier die Teilnahme "
+                "am Online-Verfahren."
+            ),
             "default": False,
             "type": "boolean"
         },
@@ -47,7 +53,10 @@ user_preferences_schema = {
         },
         "messaging_type": {
             "title": "Benachrichtigungen",
-            "description": "Bitte w\u00e4hlen Sie eine/oder mehrere Arten der Benachrichtiung aus",
+            "description": (
+                "Bitte w\u00e4hlen Sie eine/oder mehrere Arten der "
+                "Benachrichtiung aus"
+            ),
             "default": [
                 "email"
             ],
@@ -70,7 +79,7 @@ user_preferences_schema = {
     "definitions": {
         "MessagingType": {
             "title": "MessagingType",
-            "description": "Messaging system choices.\n    ",
+            "description": "Messaging system choices.",
             "enum": [
                 "email",
                 "webpush"

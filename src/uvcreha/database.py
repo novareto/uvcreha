@@ -1,8 +1,6 @@
 import arango
 import orjson
-import horseman.http
-from functools import lru_cache
-from typing import NamedTuple, List, Optional, Type, Tuple
+from typing import NamedTuple
 
 
 class Config(NamedTuple):

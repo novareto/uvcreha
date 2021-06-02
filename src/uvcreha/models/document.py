@@ -40,7 +40,10 @@ document_schema = {
         "item": {
             "title": "Item",
             "type": "object",
-            "description": "Depends on the content_type. Shouldn't be exposed in a form."
+            "description": (
+                "Depends on the content_type. Shouldn't be "
+                "exposed in a form."
+            )
         }
     },
     "required": [

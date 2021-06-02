@@ -1,7 +1,6 @@
 from horseman.http import Multidict
 from uvcreha.app import browser
 from reiter.form import trigger
-from uvcreha.request import Request
 from uvcreha.browser.form import Form, FormView
 from uvcreha import jsonschema, contenttypes
 

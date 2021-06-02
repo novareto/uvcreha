@@ -19,7 +19,7 @@ def setup(config: OmegaConf):
     browser.connector = Connector.from_config(**config.arango)
     browser.request = config.app.factories.request
 
-    auth = Auth(browser.connector, config.app.env, filters = [
+    auth = Auth(browser.connector, config.app.env, filters=[
         uvcreha.auth.filters.security_bypass({'/login'}),
         uvcreha.auth.filters.secured('/login'),
         uvcreha.auth.filters.filter_user_state({

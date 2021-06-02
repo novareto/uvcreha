@@ -1,4 +1,3 @@
-import pathlib
 from reiter.application.browser import TemplateLoader
 from uvcreha.request import Request
 from uvcreha.browser.resources import siguvtheme

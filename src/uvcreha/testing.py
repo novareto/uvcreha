@@ -3,7 +3,6 @@ try:
 except ImportError:
     pass
 else:
-    import json
     import pathlib
     import importscan
     import zope.dottedname.resolve

@@ -3,7 +3,6 @@ import horseman.meta
 import horseman.response
 from reiter.view.meta import View
 from uvcreha.app import browser
-from uvcreha.browser.layout import TEMPLATES
 
 
 @browser.route("/webpush/subscription", name="webpush_subscription")

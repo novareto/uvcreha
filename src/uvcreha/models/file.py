@@ -70,7 +70,7 @@ class File(Content):
 
     @property
     def title(self):
-        return f"File {data['az']!r}"
+        return f"File {self['az']!r}"
 
     @property
     def state(self):
