@@ -5,7 +5,7 @@ from reiter.amqp.emitter import AMQPEmitter
 from roughrider.storage.meta import StorageCenter
 from uvcreha.app import api, browser
 from uvcreha.emailer import SecureMailer
-from uvcreha.database import Connector
+from reiter.arango.connector import Connector
 from uvcreha.auth import Auth
 from uvcreha.auth.utilities import TwoFA
 from uvcreha import plugins

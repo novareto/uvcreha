@@ -8,23 +8,15 @@ import horseman.meta
 import horseman.response
 import reiter.view.meta
 
-import json
 from typing import Optional
 from dataclasses import dataclass, field
-from fs.osfs import OSFS
 from horseman.types import WSGICallable
-from reiter.amqp.emitter import AMQPEmitter
 from reiter.application.app import Application
 from reiter.application.browser import registries
 from roughrider.routing.route import NamedRoutes
-from roughrider.storage.meta import StorageCenter
-from uvcreha.auth import Auth
-from uvcreha.database import Connector
-from uvcreha.emailer import SecureMailer
-from uvcreha import jsonschema
 from uvcreha.request import Request
 from uvcreha.security import SecurityError
-from uvcreha.webpush import Webpush
+from reiter.arango.connector import Connector
 
 
 class Routes(NamedRoutes):
@@ -38,12 +30,6 @@ class RESTApplication(Application):
 
     connector: Optional[Connector] = None
     request_factory: horseman.meta.Overhead = Request
-
-    def __call__(self, environ, start_response):
-        environ['app'] = self
-        if self._caller is not None:
-            return self._caller(environ, start_response)
-        return super().__call__(environ, start_response)
 
 
 @dataclass

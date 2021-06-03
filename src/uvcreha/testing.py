@@ -11,7 +11,7 @@ else:
     from cromlech.session import Store, Session
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
-    from uvcreha.database import Connector
+    from reiter.arango.connector import Connector
     from uvcreha.configure import setup
 
 

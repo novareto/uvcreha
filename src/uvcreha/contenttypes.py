@@ -2,10 +2,12 @@ import jsonschema_rs
 import roughrider.contenttypes
 from typing import Optional, Dict, Any
 from roughrider.contenttypes import Action
-from uvcreha.binder import Binder
+import reiter.arango.meta
+from reiter.arango.binding import Binder
 
 
-class Content(roughrider.contenttypes.Content):
+class Content(
+        reiter.arango.meta.Content, roughrider.contenttypes.Content):
 
     def get_action(self, request, name):
         action = self.actions[name]
@@ -39,7 +41,7 @@ class ContentType(roughrider.contenttypes.ContentType):
         validator.validate(data)  # may raise jsonschema_rs ValidationError
 
     def bind(self, db: Any):
-        return Binder(db=db, content_type=self)
+        return Binder(db=db, content=self)
 
 
 class ContentTypesRegistry(roughrider.contenttypes.Registry):
