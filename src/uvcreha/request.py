@@ -4,7 +4,7 @@ from reiter.application.request import Request as BaseRequest
 
 class Request(BaseRequest):
 
-    __slots__ = ('query', '_db')
+    __slots__ = ("query", "_db")
 
     def __init__(self, app, environ, route):
         super().__init__(app, environ, route)
@@ -12,17 +12,12 @@ class Request(BaseRequest):
         self.query = Query.from_environ(environ)
 
     @property
-    def session(self):
-        return self.environ.get(self.app.config.env.session)
-
-    @property
     def user(self):
-        return self.environ.get(self.app.config.env.user)
+        return self.app.utilities["authentication"].identify(self.environ)
 
     @property
     def database(self):
-        """Lazy database access.
-        """
+        """Lazy database access."""
         if self._db is None:
-            self._db = self.app.connector.get_database()
+            self._db = self.app.utilities["arango"].get_database()
         return self._db

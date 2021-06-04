@@ -1,7 +1,6 @@
-def test_flash(root, session):
+def test_flash(webapp, session):
 
-    app = root['/']
-
+    app = webapp.__wrapped__
     request = app.request_factory(app, {
         "REQUEST_METHOD": "GET",
         "SCRIPT_NAME": 'flash_test',

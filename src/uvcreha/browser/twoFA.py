@@ -1,6 +1,6 @@
 from horseman.http import Multidict
 from reiter.form import trigger
-from uvcreha.app import browser
+from uvcreha.app import browser, ui
 from uvcreha.request import Request
 from uvcreha.browser.form import FormMeta, FormView
 import horseman.response
@@ -11,15 +11,14 @@ import base64
 
 
 def user_totp_validator(totp):
-
     def validate_totp(form, field):
         if not totp.verify(field.data, valid_window=1):
-            raise wtforms.ValidationError('Invalid token.')
+            raise wtforms.ValidationError("Invalid token.")
 
     return validate_totp
 
 
-@browser.route("/2FA")
+@browser.register("/2FA")
 class TwoFA(FormView):
 
     title = "Überprüfung"
@@ -27,14 +26,17 @@ class TwoFA(FormView):
 
     @property
     def action(self):
-        return self.request.environ['SCRIPT_NAME'] + '/2FA'
+        return self.request.environ["SCRIPT_NAME"] + "/2FA"
 
     def setupForm(self, data={}, formdata=Multidict()):
-        form = wtforms.form.BaseForm({
-            'token': wtforms.fields.StringField('Token', [
-                user_totp_validator(self.request.user.TOTP)
-            ])
-        }, meta=FormMeta())
+        form = wtforms.form.BaseForm(
+            {
+                "token": wtforms.fields.StringField(
+                    "Token", [user_totp_validator(self.request.user.TOTP)]
+                )
+            },
+            meta=FormMeta(),
+        )
         form.process(data=data, formdata=formdata)
         return form
 
@@ -42,17 +44,17 @@ class TwoFA(FormView):
         form = self.setupForm()
         token = self.request.user.TOTP.now()
         print(token)
-        return {'form': form}
+        return {"form": form}
 
     @trigger("validate", "Überprüfen", css="btn btn-primary")
     def validate(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {'form': form}
+            return {"form": form}
 
         twoFA = request.app.utilities.get("twoFA")
         twoFA.validate_twoFA(self.request.environ)
-        return horseman.response.redirect('/')
+        return horseman.response.redirect("/")
 
     @trigger("request", "Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):
@@ -60,11 +62,10 @@ class TwoFA(FormView):
         request.app.notify("2FA", request, token)
         print(token)
         form = self.setupForm()
-        return {'form': form}
+        return {"form": form}
 
 
-@browser.ui.register_slot(
-    request=Request, name="below-content", view=TwoFA)
+@ui.register_slot(request=Request, name="below-content", view=TwoFA)
 def QRCode(request, name, view):
     URI = request.user.OTP_URI
     qr = qrcode.QRCode(
@@ -75,8 +76,8 @@ def QRCode(request, name, view):
     )
     qr.add_data(URI)
     qr.make(fit=True)
-    img = qr.make_image(fill='black', back_color='white')
+    img = qr.make_image(fill="black", back_color="white")
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    return f'''<img src="data:image/png;base64,{img_str}" />'''
+    return f"""<img src="data:image/png;base64,{img_str}" />"""

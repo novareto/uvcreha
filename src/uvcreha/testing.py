@@ -3,7 +3,7 @@ try:
 except ImportError:
     pass
 else:
-    import pathlib
+    from pathlib import Path
     import importscan
     import zope.dottedname.resolve
     import uvcreha
@@ -12,48 +12,37 @@ else:
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
     from reiter.arango.connector import Connector
-    from uvcreha.configure import setup
-
-
-    def resolve_path(path: str) -> str:
-        path = pathlib.Path(path)
-        return str(path.resolve())
+    from reiter.startup.parser import get_project
 
 
     class TestUser:
-
         def __init__(self, user):
             self.user = user
 
         def login(self, app):
-            response = app.post("/login", {
-                'loginname': self.user['loginname'],
-                'password': self.user['password'],
-                'form.trigger': 'trigger.speichern',
-            })
+            response = app.post(
+                "/login",
+                {
+                    "loginname": self.user["loginname"],
+                    "password": self.user["password"],
+                    "form.trigger": "trigger.speichern",
+                },
+            )
             return response
 
 
     class UVCRehaTestRunner:
 
         def __init__(self):
-            if not OmegaConf.get_resolver('path'):
-                OmegaConf.register_resolver(
-                    "path", resolve_path)
-            if not OmegaConf.get_resolver('class'):
-                OmegaConf.register_resolver(
-                    "class", zope.dottedname.resolve.resolve)
             importscan.scan(uvcreha)
 
         def pytest_addoption(self, parser):
-            configfile = (
-                pathlib.Path(__file__).parent /
-                pathlib.Path('./testing.yaml')
-            )
+            configfile = Path(__file__).parent / Path("./testing.yaml")
             parser.addoption(
-                "--uvcreha_config", action="store_true",
+                "--uvcreha_config",
+                action="store_true",
                 default=configfile,
-                help="uvcreha_config: specify a custom app configuration."
+                help="uvcreha_config: specify a custom app configuration.",
             )
 
         @pytest.fixture(scope="session")
@@ -64,11 +53,13 @@ else:
                 connector._system.delete_database(connector.config.database)
             connector._system.create_database(
                 name=connector.config.database,
-                users=[{
-                    'username': connector.config.user,
-                    'password': connector.config.password,
-                    'active': True
-                }],
+                users=[
+                    {
+                        "username": connector.config.user,
+                        "password": connector.config.password,
+                        "active": True,
+                    }
+                ],
             )
 
             db = connector.get_database()
@@ -84,24 +75,22 @@ else:
         @pytest.fixture(scope="session")
         def user(self, db_init):
             # Add the User
-            ct = registry['user']
+            ct = registry["user"]
             user = ct.factory(
-                uid='123',
-                loginname='test',
-                password='test',
-                permissions=['document.view', 'document.add']
+                uid="123",
+                loginname="test",
+                password="test",
+                permissions=["document.view", "document.add"],
             )
             db = db_init.get_database()
-            user['_key'] = user['uid']
+            user["_key"] = user["uid"]
             db[ct.collection].insert(dict(user))
             yield TestUser(user)
             db[ct.collection].delete(dict(user))
 
         @pytest.fixture
         def session(self):
-
             class MemoryStore(Store):
-
                 def __init__(self):
                     self._store = {}
 
@@ -112,8 +101,7 @@ else:
                     print('Session "%s" was accessed' % sid)
 
                 def get(self, sid):
-                    """We return a copy, to avoid mutability by reference.
-                    """
+                    """We return a copy, to avoid mutability by reference."""
                     data = self._store.get(sid)
                     if data is not None:
                         return deepcopy(data)
@@ -129,18 +117,28 @@ else:
                 def delete(self, sid):
                     del self._store[sid]
 
-            return Session('a sid', MemoryStore(), new=True)
+            return Session("a sid", MemoryStore(), new=True)
 
         @pytest.fixture(scope="session")
-        def root(self, request, tmp_path_factory, arango_config, db_init):
+        def project(self, request, tmp_path_factory, arango_config, db_init):
             configfile = request.config.getoption("--uvcreha_config")
-            config = OmegaConf.load(configfile)
-            arango = OmegaConf.create({'arango': arango_config._asdict()})
-            conf = OmegaConf.merge(config, arango)
-            folder = tmp_path_factory.mktemp('sessions', numbered=True)
-            conf.app.session.cache = str(folder)
-            root = setup(conf)
-            return root
+            folder = tmp_path_factory.mktemp("sessions", numbered=True)
+            override = OmegaConf.create({
+                "components": {
+                    "session": {
+                        "config": {
+                            "cache": str(folder)
+                        }
+                    },
+                    "arango": {
+                        "config": arango_config._asdict()
+                    }
+                }
+            })
+            return get_project(configfile, override)
 
+        @pytest.fixture(scope="session")
+        def webapp(self, project):
+            return project.apps['browser']
 
     pytest_uvcreha = UVCRehaTestRunner()

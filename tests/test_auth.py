@@ -2,9 +2,10 @@ from webtest import TestApp as WebApp
 import uvcreha.auth
 
 
-def test_add_user_ok(root, user):
-    app = root['/']
-    browser = WebApp(app)
+def test_add_user_ok(webapp, user):
+
+    app = webapp.__wrapped__
+    browser = WebApp(webapp)
 
     auth = app.utilities.get('authentication')
     assert isinstance(auth, uvcreha.auth.Auth) is True

@@ -19,21 +19,24 @@ def setup(config: OmegaConf):
     browser.connector = Connector.from_config(**config.arango)
     browser.request = config.app.factories.request
 
-    auth = Auth(browser.connector, config.app.env, filters=[
-        uvcreha.auth.filters.security_bypass({'/login'}),
-        uvcreha.auth.filters.secured('/login'),
-        uvcreha.auth.filters.filter_user_state({
-            user_workflow.states.inactive,
-            user_workflow.states.closed
-        }),
-        uvcreha.auth.filters.TwoFA('/2FA'),
-    ])
+    auth = Auth(
+        browser.connector,
+        config.app.env,
+        filters=[
+            uvcreha.auth.filters.security_bypass({"/login"}),
+            uvcreha.auth.filters.secured("/login"),
+            uvcreha.auth.filters.filter_user_state(
+                {user_workflow.states.inactive, user_workflow.states.closed}
+            ),
+            uvcreha.auth.filters.TwoFA("/2FA"),
+        ],
+    )
 
     # middlewares
     browser.register_middleware(
-        plugins.fanstatic_middleware(config.app.assets), order=10)
-    browser.register_middleware(
-        plugins.session_middleware(config.app), order=20)
+        plugins.fanstatic_middleware(config.app.assets), order=10
+    )
+    browser.register_middleware(plugins.session_middleware(config.app), order=20)
     browser.register_middleware(auth, order=30)
 
     # Utilities
@@ -60,11 +63,11 @@ def setup(config: OmegaConf):
 
     if config.twilio:
         twilio = plugins.twilio_plugin(config.twilio)
-        api.utilities.register(twilio, 'twilio')
-        browser.utilities.register(twilio, 'twilio')
+        api.utilities.register(twilio, "twilio")
+        browser.utilities.register(twilio, "twilio")
 
     app = URLMap()
-    app['/'] = browser
-    app['/api'] = api
+    app["/"] = browser
+    app["/api"] = api
 
     return app
