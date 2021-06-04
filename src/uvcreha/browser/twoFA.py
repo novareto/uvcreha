@@ -1,6 +1,6 @@
 from horseman.http import Multidict
 from reiter.form import trigger
-from uvcreha.app import browser
+from uvcreha.app import browser, ui
 from uvcreha.request import Request
 from uvcreha.browser.form import FormMeta, FormView
 import horseman.response
@@ -19,7 +19,7 @@ def user_totp_validator(totp):
     return validate_totp
 
 
-@browser.route("/2FA")
+@browser.register("/2FA")
 class TwoFA(FormView):
 
     title = "Überprüfung"
@@ -63,8 +63,7 @@ class TwoFA(FormView):
         return {'form': form}
 
 
-@browser.ui.register_slot(
-    request=Request, name="below-content", view=TwoFA)
+@ui.register_slot(request=Request, name="below-content", view=TwoFA)
 def QRCode(request, name, view):
     URI = request.user.OTP_URI
     qr = qrcode.QRCode(

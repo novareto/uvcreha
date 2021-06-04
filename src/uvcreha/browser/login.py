@@ -9,7 +9,7 @@ from uvcreha.request import Request
 from uvcreha import contenttypes
 
 
-@browser.route("/login")
+@browser.register("/login")
 class LoginForm(FormView):
 
     title = "Anmelden"
@@ -49,7 +49,7 @@ class LoginForm(FormView):
         pass
 
 
-@browser.route("/edit_pw")
+@browser.register("/edit_pw")
 class EditPassword(FormView):
 
     title = "Passwort ändern"
@@ -81,8 +81,9 @@ class EditPassword(FormView):
         pass
 
 
-@browser.route('/logout')
+@browser.register('/logout')
 def LogoutView(request: Request):
-    request.session.store.clear(request.session.sid)
+    auth = request.app.utilities.get("authentication")
+    auth.forget(request.environ)
     return horseman.response.Response.create(
             302, headers={'Location': '/'})

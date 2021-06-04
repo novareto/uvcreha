@@ -19,7 +19,7 @@ def allow_origins(origins: str, codes: Iterable[HTTPCode] = None):
     return cors_wrapper
 
 
-@browser.route("/jsonschema/{schema}", name="jsonschema")
+@browser.register("/jsonschema/{schema}", name="jsonschema")
 @allow_origins("*", [200])
 def jsonschema(request, schema: str):
     structure = store.get(schema)

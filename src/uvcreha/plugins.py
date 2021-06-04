@@ -1,46 +1,60 @@
 from horseman.types import WSGICallable
 
 
-def fanstatic_middleware(config) -> WSGICallable:
+def flash_messages(session_key):
+    from uvcreha.flash import SessionMessages
+
+    def flash(environ):
+        session = environ[session_key]
+        return SessionMessages(session)
+
+    return flash
+
+
+def vhm_middleware(**config) -> WSGICallable:
+    import functools
+    from repoze.vhm.middleware import VHMExplicitFilter
+
+    return functools.partial(VHMExplicitFilter, **config)
+
+
+def fanstatic_middleware(**config) -> WSGICallable:
     import fanstatic
     import functools
 
     return functools.partial(fanstatic.Fanstatic, **config)
 
 
-def session_middleware(config) -> WSGICallable:
+def session_middleware(
+        cache, cookie_secret, cookie_name, environ_key) -> WSGICallable:
     import cromlech.session
     import cromlech.sessions.file
 
-    handler = cromlech.sessions.file.FileStore(
-        config.session.cache, 3000
-    )
+    handler = cromlech.sessions.file.FileStore(cache, 3000)
     manager = cromlech.session.SignedCookieManager(
-        config.session.cookie_secret,
+        cookie_secret,
         handler,
-        cookie=config.session.cookie_name
+        cookie=cookie_name
     )
-    return cromlech.session.WSGISessionManager(
-        manager, environ_key=config.env.session)
+    return cromlech.session.WSGISessionManager(manager, environ_key=environ_key)
 
 
-def webpush_plugin(config):
+def webpush_plugin(private_key, public_key, vapid_claims):
     from uvcreha.webpush import Webpush
 
-    with open(config.private_key) as fd:
-        private_key = fd.readline().strip("\n")
+    with open(private_key) as fd:
+        privkey = fd.readline().strip("\n")
 
-    with open(config.public_key) as fd:
-        public_key = fd.read().strip("\n")
+    with open(public_key) as fd:
+        pubkey = fd.read().strip("\n")
 
     return Webpush(
-        private_key=private_key,
-        public_key=public_key,
-        claims=config.vapid_claims
+        private_key=privkey,
+        public_key=pubkey,
+        claims=vapid_claims
     )
 
 
-def twilio_plugin(config):
+def twilio_plugin(account_sid, auth_token):
     from twilio.rest import Client
-
-    return Client(config.account_sid, config.auth_token)
+    return Client(account_sid, auth_token)

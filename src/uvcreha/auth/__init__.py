@@ -12,9 +12,10 @@ class Auth:
 
     filters: Iterable[Filter]
 
-    def __init__(self, connector, config, filters=None):
+    def __init__(self, connector, user_key, session_key, filters=None):
         self.connector = connector
-        self.config = config
+        self.user_key = user_key
+        self.session_key = session_key
         if filters is None:
             filters = []
         self.filters = filters
@@ -35,22 +36,26 @@ class Auth:
         )
 
     def identify(self, environ: Environ):
-        if (user := environ.get(self.config.user)) is not None:
+        if (user := environ.get(self.user_key)) is not None:
             return user
 
-        session = environ[self.config.session]
-        if (user_key := session.get(self.config.user, None)) is not None:
+        session = environ[self.session_key]
+        if (user_key := session.get(self.user_key, None)) is not None:
             db = self.connector.get_database()
             binding = contenttypes.registry['user'].bind(db)
-            user = environ[self.config.user] = binding.fetch(user_key)
+            user = environ[self.user_key] = binding.fetch(user_key)
             return user
 
         return None
 
+    def forget(self, environ: Environ):
+        session = environ[self.session_key]
+        session.store.clear(session.sid)
+
     def remember(self, environ: Environ, user):
-        session = environ[self.config.session]
-        session[self.config.user] = user['uid']
-        environ[self.config.user] = user
+        session = environ[self.session_key]
+        session[self.user_key] = user['uid']
+        environ[self.user_key] = user
 
     def __call__(self, app):
 

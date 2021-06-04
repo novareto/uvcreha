@@ -5,7 +5,7 @@ from uvcreha.browser.form import Form, FormView
 from uvcreha import jsonschema, contenttypes
 
 
-@browser.route("/preferences")
+@browser.register("/preferences")
 class EditPreferences(FormView):
 
     title = "E-Mail Adresse ändern"

@@ -4,7 +4,7 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha import contenttypes
 
 
-@browser.route("/")
+@browser.register("/")
 class LandingPage(View):
 
     template = TEMPLATES["index.pt"]
@@ -26,7 +26,7 @@ class LandingPage(View):
         return docs
 
 
-@browser.route("/webpush")
+@browser.register("/webpush")
 class Webpush(View):
     template = TEMPLATES["webpush.pt"]
 

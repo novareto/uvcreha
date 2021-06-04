@@ -5,7 +5,7 @@ from reiter.view.meta import View
 from uvcreha.app import browser
 
 
-@browser.route("/webpush/subscription", name="webpush_subscription")
+@browser.register("/webpush/subscription", name="webpush_subscription")
 class Webpush(View):
 
     def GET(self):

@@ -9,7 +9,7 @@ from uvcreha import contenttypes, jsonschema
 from uvcreha.workflow import document_workflow
 
 
-@browser.route("/users/{uid}/files/{az}/docs/{docid}", name="doc.view")
+@browser.register("/users/{uid}/files/{az}/docs/{docid}", name="doc.view")
 class DocumentIndex(View):
     template = TEMPLATES["document.pt"]
 
@@ -28,7 +28,7 @@ class DocumentIndex(View):
         return dict(request=self.request, document=self.context)
 
 
-@browser.route(
+@browser.register(
     "/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit")
 class DocumentEditForm(FormView):
     title = "Form"

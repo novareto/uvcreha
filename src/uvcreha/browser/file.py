@@ -4,7 +4,7 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha import contenttypes
 
 
-@browser.route("/users/{uid}/files/{az}", name="file.view")
+@browser.register("/users/{uid}/files/{az}", name="file.view")
 class FileIndex(View):
     template = TEMPLATES["file_view.pt"]
 

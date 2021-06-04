@@ -12,9 +12,14 @@ SMTP_CONFIG = namedtuple(
 
 class SecureMailer:
 
-    def __init__(self, config, debug=False):
+    config: SMTP_CONFIG
+    debug: bool
+
+    __slots__ = ('config', 'debug')
+
+    def __init__(self, **config):
         self.config = SMTP_CONFIG(**config)
-        self.debug = debug
+        self.debug = False
 
     @staticmethod
     def format_email(_from, _to, subject, text, html=None):

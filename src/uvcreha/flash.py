@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from uvcreha.app import browser
+from uvcreha.app import events
 
 
 class Message(NamedTuple):
@@ -28,7 +28,8 @@ class SessionMessages:
         self.session.save()
 
 
-@browser.subscribe('request_created')
+@events.subscribe('request_created')
 def flash_utility(app, request):
-    flash = SessionMessages(request.session)
-    request.utilities.register(flash, 'flash')
+    #flash = app.utilities['flash'](request.environ)
+    #request.utilities.register(flash, 'flash')
+    pass
