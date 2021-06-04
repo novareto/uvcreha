@@ -12,7 +12,7 @@ else:
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
     from reiter.arango.connector import Connector
-    from reiter.startup.parser import get_project
+    from reiter.startup.parser import make_project
 
 
     class TestUser:
@@ -135,7 +135,9 @@ else:
                     }
                 }
             })
-            return get_project(configfile, override)
+            project = make_project(configfile, override)
+            project.scan()
+            return project
 
         @pytest.fixture(scope="session")
         def webapp(self, project):

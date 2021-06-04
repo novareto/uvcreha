@@ -1,3 +1,5 @@
+name: UVCREHA testing
+
 components:
 
   storage:
@@ -100,3 +102,6 @@ apps:
     middlewares:
       - ${component:session}
       - ${component:authentication}
+
+    modules:
+      - ${class:uvcreha}
