@@ -3,7 +3,7 @@ try:
 except ImportError:
     pass
 else:
-    import pathlib
+    from pathlib import Path
     import importscan
     import zope.dottedname.resolve
     import uvcreha
@@ -12,11 +12,8 @@ else:
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
     from reiter.arango.connector import Connector
-    from uvcreha.configure import setup
+    from reiter.startup.parser import get_project
 
-    def resolve_path(path: str) -> str:
-        path = pathlib.Path(path)
-        return str(path.resolve())
 
     class TestUser:
         def __init__(self, user):
@@ -33,16 +30,14 @@ else:
             )
             return response
 
+
     class UVCRehaTestRunner:
+
         def __init__(self):
-            if not OmegaConf.get_resolver("path"):
-                OmegaConf.register_resolver("path", resolve_path)
-            if not OmegaConf.get_resolver("class"):
-                OmegaConf.register_resolver("class", zope.dottedname.resolve.resolve)
             importscan.scan(uvcreha)
 
         def pytest_addoption(self, parser):
-            configfile = pathlib.Path(__file__).parent / pathlib.Path("./testing.yaml")
+            configfile = Path(__file__).parent / Path("./testing.yaml")
             parser.addoption(
                 "--uvcreha_config",
                 action="store_true",
@@ -125,14 +120,25 @@ else:
             return Session("a sid", MemoryStore(), new=True)
 
         @pytest.fixture(scope="session")
-        def root(self, request, tmp_path_factory, arango_config, db_init):
+        def project(self, request, tmp_path_factory, arango_config, db_init):
             configfile = request.config.getoption("--uvcreha_config")
-            config = OmegaConf.load(configfile)
-            arango = OmegaConf.create({"arango": arango_config._asdict()})
-            conf = OmegaConf.merge(config, arango)
             folder = tmp_path_factory.mktemp("sessions", numbered=True)
-            conf.app.session.cache = str(folder)
-            root = setup(conf)
-            return root
+            override = OmegaConf.create({
+                "components": {
+                    "session": {
+                        "config": {
+                            "cache": str(folder)
+                        }
+                    },
+                    "arango": {
+                        "config": arango_config._asdict()
+                    }
+                }
+            })
+            return get_project(configfile, override)
+
+        @pytest.fixture(scope="session")
+        def webapp(self, project):
+            return project.apps['browser']
 
     pytest_uvcreha = UVCRehaTestRunner()
