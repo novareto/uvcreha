@@ -38,8 +38,8 @@ class ContentType(roughrider.contenttypes.ContentType):
         validator = jsonschema_rs.JSONSchema(self.schema)
         validator.validate(data)  # may raise jsonschema_rs ValidationError
 
-    def bind(self, db: Any):
-        return Binder(db=db, content=self)
+    def bind(self, db: Any, create: bool = True):
+        return Binder(db=db, content=self, create=create)
 
 
 class ContentTypesRegistry(roughrider.contenttypes.Registry):

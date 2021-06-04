@@ -5,55 +5,34 @@ from setuptools import setup, find_packages
 version = "0.1"
 
 install_requires = [
-    'chameleon',
-    'colorlog',
-    'cromlech.jwt',
     'cromlech.session',
     'cromlech.sessions.file',
     'fanstatic',
-    'flatten-dict',
-    'fs',
     'horseman',
     'json_ref_dict',
     'jsonschema_rs',
     'jsonschema_wtforms',
-    'orjson',
-    'py-vapid',
     'pyotp',
-    'python-arango >= 7.1.0',
     'pywebpush',
     'qrcode[pil]',
-    'reg',
-    'reiter.amqp',
     'reiter.application',
     'reiter.arango',
     'reiter.form',
     'reiter.view',
     'repoze.vhm',
-    'roughrider.auth',
     'roughrider.contenttypes',
     'roughrider.events',
-    'roughrider.predicate',
     'roughrider.routing',
-    'roughrider.storage',
     'roughrider.workflow',
-    'rutter',
-    'twilio',
-    'uv.models',
-    'wrapt',
     'wtforms',
     'wtforms_components',
-    'zope.dottedname',
 ]
 
 
 test_requires = [
     'WebTest',
     'omegaconf',
-    'pyhamcrest',
     'pytest',
-    'pyyaml',
-    'pytest-cov',
     'reiter.arango[test]',
     'reiter.startup'
 ]
@@ -93,12 +72,5 @@ setup(
         "fanstatic.libraries": [
             "uvcreha = uvcreha.browser.resources:library",
         ],
-        "reiter.application.modules": [
-            "uvcreha = uvcreha",
-        ],
-        "reiter.application.wsgiapps": [
-            "/ = uvcreha.app:browser",
-            "/api = uvcreha.app:api",
-        ]
     }
 )
