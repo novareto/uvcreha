@@ -3,10 +3,12 @@ from typing import Literal
 from uvcreha.contenttypes import registry
 
 
-def test_model_crud(db_init):
+def test_model_crud(arangodb):
 
-    db = db_init.get_database()
     user_type = registry['user']
+
+    db = arangodb.get_database()
+
     wrapper = user_type.bind(db)
     model = user_type.factory(
         uid="123456",

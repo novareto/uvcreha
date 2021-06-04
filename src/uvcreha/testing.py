@@ -4,12 +4,10 @@ except ImportError:
     pass
 else:
     from pathlib import Path
-    import uvcreha
     from copy import deepcopy
     from cromlech.session import Store, Session
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
-    from reiter.arango.connector import Connector
     from reiter.startup.parser import make_project
 
 
@@ -41,34 +39,7 @@ else:
             )
 
         @pytest.fixture(scope="session")
-        def db_init(self, request, arango_config):
-            connector = Connector.from_config(**arango_config._asdict())
-
-            if connector._system.has_database(connector.config.database):
-                connector._system.delete_database(connector.config.database)
-            connector._system.create_database(
-                name=connector.config.database,
-                users=[
-                    {
-                        "username": connector.config.user,
-                        "password": connector.config.password,
-                        "active": True,
-                    }
-                ],
-            )
-
-            db = connector.get_database()
-            for name, ct in registry.items():
-                if ct.collection:
-                    db.create_collection(ct.collection)
-            yield connector
-            for name, ct in registry.items():
-                if ct.collection:
-                    db.delete_collection(ct.collection)
-            connector._system.delete_database(connector.config.database)
-
-        @pytest.fixture(scope="session")
-        def user(self, db_init):
+        def user(self, arangodb):
             # Add the User
             ct = registry["user"]
             user = ct.factory(
@@ -77,7 +48,9 @@ else:
                 password="test",
                 permissions=["document.view", "document.add"],
             )
-            db = db_init.get_database()
+            db = arangodb.get_database()
+            if not db.has_collection(ct.collection):
+                db.create_collection(ct.collection)
             user["_key"] = user["uid"]
             db[ct.collection].insert(dict(user))
             yield TestUser(user)
@@ -115,7 +88,7 @@ else:
             return Session("a sid", MemoryStore(), new=True)
 
         @pytest.fixture(scope="session")
-        def project(self, request, tmp_path_factory, arango_config, db_init):
+        def project(self, request, tmp_path_factory, arangodb):
             configfile = request.config.getoption("--uvcreha_config")
             folder = tmp_path_factory.mktemp("sessions", numbered=True)
             override = OmegaConf.create({
@@ -126,7 +99,7 @@ else:
                         }
                     },
                     "arango": {
-                        "config": arango_config._asdict()
+                        "config": arangodb.config._asdict()
                     }
                 }
             })
