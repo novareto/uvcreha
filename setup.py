@@ -77,12 +77,5 @@ setup(
         "fanstatic.libraries": [
             "uvcreha = uvcreha.browser.resources:library",
         ],
-        "reiter.application.modules": [
-            "uvcreha = uvcreha",
-        ],
-        "reiter.application.wsgiapps": [
-            "/ = uvcreha.app:browser",
-            "/api = uvcreha.app:api",
-        ]
     }
 )
