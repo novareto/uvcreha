@@ -58,16 +58,6 @@ cover/
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
 # Scrapy stuff:
 .scrapy
 
@@ -89,6 +79,7 @@ ipython_config.py
 #   For a library or package, you might want to ignore these files since the code is
 #   intended to run in multiple environments; otherwise, check them in:
 # .python-version
+pyvenv.cfg
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
@@ -96,16 +87,6 @@ ipython_config.py
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
 #Pipfile.lock
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
 
 # Environments
 .env
@@ -115,6 +96,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+checkouts/
+include/
+lib64
 
 # Spyder project settings
 .spyderproject
@@ -143,24 +127,5 @@ cython_debug/
 .python-version
 bin/
 outputs/
-
-config.yaml
-pytest.ini
-src/cromlech.marshallers/
-src/cromlech.session/
-src/cromlech.sessions.file/
-src/horseman/
-src/roughrider.auth/
-src/roughrider.routing/
-src/roughrider.traversing/
-src/roughrider.validation/
-src/uvcreha.example/
-src/wtforms_pydantic/
-src/reiter.form/
-src/reiter.routing/
-src/roughrider.workflow/
-src/reiter.application/
-src/reiter.arango/
-src/roughrider.predicate/
 
 docs/.DS_Store

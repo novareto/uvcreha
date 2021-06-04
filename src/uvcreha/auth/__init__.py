@@ -51,7 +51,7 @@ class Auth:
         session = environ[self.session_key]
         session.store.clear(session.sid)
 
-    def remember(self, environ: Environ, user):
+    def remember(self, environ: Environ, user: Any):
         session = environ[self.session_key]
         session[self.user_key] = user["uid"]
         environ[self.user_key] = user
