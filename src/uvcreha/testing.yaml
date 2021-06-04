@@ -55,12 +55,6 @@ components:
     config:
       session_key: ${components.session.config.environ_key}
 
-  amqp:
-    factory: ${class:reiter.amqp.emitter.AMQPEmitter}
-    config:
-      url: amqp://guest:guest@localhost:5672//
-      serializer: json
-
   webpush:
     factory: ${class:uvcreha.plugins.webpush_plugin}
     config:
@@ -77,24 +71,10 @@ components:
       password:
       emitter: uvcreha@novareto.de
 
-  twilio:
-    factory: ${class:twilio.rest.Client}
-    config:
-      username: test
-      password: test
-
   twoFA:
     factory: ${class:uvcreha.auth.utilities.TwoFA}
     config:
       session_key: ${components.session.config.environ_key}
-
-  assets:
-    factory: ${class:uvcreha.plugins.fanstatic_middleware}
-    config:
-      compile: True
-      recompute_hashes: True
-      bottom: True
-      publisher_signature: static
 
 
 apps:
@@ -111,14 +91,12 @@ apps:
       ui: ${class:uvcreha.app.ui}
       utilities:
         arango: ${component:arango}
-        webpush: ${component:webpush}
-        emailer: ${component:emailer}
-        twilio: ${component:twilio}
-        flash: ${component:flash}
         authentication: ${component:authentication}
+        emailer: ${component:emailer}
+        flash: ${component:flash}
         twoFA: ${component:twoFA}
+        webpush: ${component:webpush}
 
     middlewares:
-      - ${component:assets}
       - ${component:session}
       - ${component:authentication}
