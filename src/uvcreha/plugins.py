@@ -54,8 +54,3 @@ def webpush_plugin(private_key: Path, public_key: Path, vapid_claims: dict):
         public_key=pubkey,
         claims=vapid_claims
     )
-
-
-def twilio_plugin(account_sid, auth_token):
-    from twilio.rest import Client
-    return Client(account_sid, auth_token)

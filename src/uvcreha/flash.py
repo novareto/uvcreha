@@ -30,6 +30,5 @@ class SessionMessages:
 
 @events.subscribe('request_created')
 def flash_utility(app, request):
-    #flash = app.utilities['flash'](request.environ)
-    #request.utilities.register(flash, 'flash')
-    pass
+    flash = app.utilities['flash'](request.environ)
+    request.utilities.register(flash, 'flash')
