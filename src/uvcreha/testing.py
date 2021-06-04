@@ -4,8 +4,6 @@ except ImportError:
     pass
 else:
     from pathlib import Path
-    import importscan
-    import zope.dottedname.resolve
     import uvcreha
     from copy import deepcopy
     from cromlech.session import Store, Session
@@ -32,9 +30,6 @@ else:
 
 
     class UVCRehaTestRunner:
-
-        def __init__(self):
-            importscan.scan(uvcreha)
 
         def pytest_addoption(self, parser):
             configfile = Path(__file__).parent / Path("./testing.yaml")

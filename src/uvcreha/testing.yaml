@@ -2,9 +2,6 @@ name: UVCREHA testing
 
 components:
 
-  storage:
-    factory: ${class:roughrider.storage.meta.StorageCenter}
-
   auth_bypass:
     factory: ${class:uvcreha.auth.filters.security_bypass}
     config:
