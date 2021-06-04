@@ -11,62 +11,48 @@ file_schema = {
         "uid": {
             "title": "UID",
             "description": "Interne ID des Benutzers",
-            "type": "string"
+            "type": "string",
         },
         "az": {
             "title": "Aktenzeichen",
             "description": "Aktenzeichen des entsprechenden Falls",
-            "type": "string"
+            "type": "string",
         },
         "mnr": {
             "title": "Mitgliedsnummer",
             "description": "Mitgliedsnummer des Unternehmens",
-            "type": "string"
+            "type": "string",
         },
         "vid": {
             "title": "Versichertenfall ID",
             "description": "ID des Versichertenfalls",
-            "type": "string"
+            "type": "string",
         },
         "creation_date": {
             "title": "Creation Date",
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
         },
-        "state": {
-            "title": "State",
-            "default": "created",
-            "type": "string"
-        },
-        "unternehmen": {
-            "$ref": "Unternehmen#/"
-        },
-        "versichertenfall": {
-            "$ref": "VersichertenFall#/"
-        }
+        "state": {"title": "State", "default": "created", "type": "string"},
+        "unternehmen": {"$ref": "Unternehmen#/"},
+        "versichertenfall": {"$ref": "VersichertenFall#/"},
     },
-    "required": [
-        "uid",
-        "az",
-        "mnr",
-        "vid"
-    ]
+    "required": ["uid", "az", "mnr", "vid"],
 }
 
 
-store.add('File', file_schema)
+store.add("File", file_schema)
 
 
-@registry.factory("file", schema=store.get('File'), collection="files")
+@registry.factory("file", schema=store.get("File"), collection="files")
 class File(Content):
-
     @property
     def id(self):
-        return self['az']
+        return self["az"]
 
     @property
     def date(self):
-        return self['creation_date']
+        return self["creation_date"]
 
     @property
     def title(self):
@@ -78,23 +64,19 @@ class File(Content):
         return wf.state
 
 
-@File.actions.register('default', title="View")
+@File.actions.register("default", title="View")
 def view(request, item):
-    if request.user.title != 'admin':
+    if request.user.title != "admin":
         if item.state is file_workflow.states.created:
-            return request.route_path(
-                'file.register', uid=item['uid'], az=item['az'])
-    return request.route_path(
-        'file.view', uid=item['uid'], az=item['az'])
+            return request.route_path("file.register", uid=item["uid"], az=item["az"])
+    return request.route_path("file.view", uid=item["uid"], az=item["az"])
 
 
-@File.actions.register('edit', title="Bearbeiten", css='fa fa-edit')
+@File.actions.register("edit", title="Bearbeiten", css="fa fa-edit")
 def edit(request, item):
-    return request.route_path(
-        'file.edit', uid=item['uid'], az=item['az'])
+    return request.route_path("file.edit", uid=item["uid"], az=item["az"])
 
 
-@File.actions.register('doc', title="Dokument anlegen", css='fa fa-file')
+@File.actions.register("doc", title="Dokument anlegen", css="fa fa-file")
 def new_doc(request, item):
-    return request.route_path(
-        'file.new_doc', uid=item['uid'], az=item['az'])
+    return request.route_path("file.new_doc", uid=item["uid"], az=item["az"])

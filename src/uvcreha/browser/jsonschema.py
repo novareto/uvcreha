@@ -15,7 +15,9 @@ def allow_origins(origins: str, codes: Iterable[HTTPCode] = None):
                 return response
             response.headers["Access-Control-Allow-Origin"] = origins
             return response
+
         return add_cors_header
+
     return cors_wrapper
 
 

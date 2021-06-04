@@ -14,34 +14,28 @@ class DocumentIndex(View):
     template = TEMPLATES["document.pt"]
 
     def update(self):
-        ct = contenttypes.registry['document']
-        self.context = ct.bind(self.request.database).find_one(
-            **self.params)
+        ct = contenttypes.registry["document"]
+        self.context = ct.bind(self.request.database).find_one(**self.params)
 
     def GET(self):
         if self.context.state is document_workflow.states.inquiry:
             return horseman.response.redirect(
-                self.request.app.routes.url_for(
-                    "doc.edit", **self.params
-                )
+                self.request.app.routes.url_for("doc.edit", **self.params)
             )
         return dict(request=self.request, document=self.context)
 
 
-@browser.register(
-    "/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit")
+@browser.register("/users/{uid}/files/{az}/docs/{docid}/edit", name="doc.edit")
 class DocumentEditForm(FormView):
     title = "Form"
     description = "Bitte füllen Sie alle Details"
 
     def update(self):
-        ct = contenttypes.registry['document']
-        self.context = ct.bind(self.request.database).find_one(
-            **self.params)
+        ct = contenttypes.registry["document"]
+        self.context = ct.bind(self.request.database).find_one(**self.params)
 
     def setupForm(self, data={}, formdata=Multidict()):
-        schema = jsonschema.store.get(
-            self.context.data['content_type'])
+        schema = jsonschema.store.get(self.context.data["content_type"])
         form = Form.from_schema(schema)
         form.process(data=data, formdata=formdata)
         return form
@@ -50,8 +44,6 @@ class DocumentEditForm(FormView):
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {'form': form}
+            return {"form": form}
         raise NotImplementedError(form)
-        return horseman.response.redirect(
-            self.request.environ['SCRIPT_NAME'] + '/'
-        )
+        return horseman.response.redirect(self.request.environ["SCRIPT_NAME"] + "/")

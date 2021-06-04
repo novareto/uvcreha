@@ -17,12 +17,11 @@ class LoginForm(FormView):
 
     @property
     def action(self):
-        return self.request.environ['SCRIPT_NAME'] + '/login'
+        return self.request.environ["SCRIPT_NAME"] + "/login"
 
     def setupForm(self, data={}, formdata=Multidict()):
-        ct = contenttypes.registry['user']
-        form = Form.from_schema(
-            ct.schema, include=('loginname', 'password'))
+        ct = contenttypes.registry["user"]
+        form = Form.from_schema(ct.schema, include=("loginname", "password"))
         form.process(data=data, formdata=formdata)
         return form
 
@@ -35,14 +34,14 @@ class LoginForm(FormView):
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
-            return self.redirect(request.environ['SCRIPT_NAME'] + '/')
+            return self.redirect(request.environ["SCRIPT_NAME"] + "/")
 
-        flash_messages = request.utilities.get('flash')
+        flash_messages = request.utilities.get("flash")
         if flash_messages is not None:
-            flash_messages.add(body='Failed login.')
+            flash_messages.add(body="Failed login.")
         else:
-            print('Warning: flash messages utility is not available.')
-        return self.redirect(request.environ['SCRIPT_NAME'] + '/')
+            print("Warning: flash messages utility is not available.")
+        return self.redirect(request.environ["SCRIPT_NAME"] + "/")
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
@@ -57,7 +56,7 @@ class EditPassword(FormView):
     action = "edit_pw"
 
     def setupForm(self, data={}, formdata=Multidict()):
-        ct = content_types_registry['user']
+        ct = content_types_registry["user"]
         form = Form.from_schema(ct.schema, include=("password"))
         form.process(data=data, formdata=formdata)
         return form
@@ -68,12 +67,13 @@ class EditPassword(FormView):
         if not form.validate():
             return {"form": form}
 
-        ct = content_types_registry['user']
+        ct = content_types_registry["user"]
         um = request.database.bind(ct)
         um.update(key=request.user.id, **data.form)
-        flash_messages = request.utilities.get('flash')
+        flash_messages = request.utilities.get("flash")
         flash_messages.add(
-            body='Ihr neues Passwort wurde erfolgreich im System gespeichert.')
+            body="Ihr neues Passwort wurde erfolgreich im System gespeichert."
+        )
         return self.redirect("/%s" % self.action)
 
     @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
@@ -81,9 +81,8 @@ class EditPassword(FormView):
         pass
 
 
-@browser.register('/logout')
+@browser.register("/logout")
 def LogoutView(request: Request):
     auth = request.app.utilities.get("authentication")
     auth.forget(request.environ)
-    return horseman.response.Response.create(
-            302, headers={'Location': '/'})
+    return horseman.response.Response.create(302, headers={"Location": "/"})

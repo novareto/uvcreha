@@ -4,13 +4,13 @@ from uvcreha.browser.resources import siguvtheme
 from uvcreha.app import ui
 
 
-TEMPLATES = TemplateLoader('./templates')
+TEMPLATES = TemplateLoader("./templates")
 
 
 @ui.register_layout(Request)
 class Layout:
 
-    __slots__ = ('_template', 'name')
+    __slots__ = ("_template", "name")
 
     def __init__(self, request, name):
         self.name = name
@@ -47,7 +47,7 @@ def sidebar(request, name, view):
 
 @ui.register_slot(request=Request, name="site-messages")
 def messages(request, name, view):
-    utility = request.utilities.get('flash')
+    utility = request.utilities.get("flash")
     if utility is not None:
         messages = list(utility)
     else:

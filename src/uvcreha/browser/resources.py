@@ -6,47 +6,38 @@
 from fanstatic import Library, Resource, Group
 
 
-library = Library('uvcreha', 'static')
+library = Library("uvcreha", "static")
 
-custom_css = Resource(
-    library, 'siguvtheme.css'
-)
+custom_css = Resource(library, "siguvtheme.css")
 
-sidebar_css = Resource(
-    library, 'sidebar.css'
-)
+sidebar_css = Resource(library, "sidebar.css")
 
-main_css = Resource(
-    library, 'main.css'
-)
+main_css = Resource(library, "main.css")
 
-main_js = Resource(
-    library, 'main.js'
-)
+main_js = Resource(library, "main.js")
 
-application_webpush = Resource(
-    library, 'webpush.js'
-)
+application_webpush = Resource(library, "webpush.js")
 
 webpush_subscription = Resource(
-    library, 'webpush_subscription.js', depends=[application_webpush]
+    library, "webpush_subscription.js", depends=[application_webpush]
 )
 
 bootstrap_css = Resource(
-    library, 'uvc_serviceportal_bootstrap.css',
-    compiler="sass", source="scss/siguv.scss"
+    library,
+    "uvc_serviceportal_bootstrap.css",
+    compiler="sass",
+    source="scss/siguv.scss",
 )
 
-bootstrap_js = Resource(
-    library, 'bootstrap.bundle.js',
-    depends=[main_js], bottom=True
-)
+bootstrap_js = Resource(library, "bootstrap.bundle.js", depends=[main_js], bottom=True)
 
-siguvtheme = Group([
-    application_webpush,
-    custom_css,
-    main_css,
-    sidebar_css,
-    bootstrap_css,
-    bootstrap_js
-])
+siguvtheme = Group(
+    [
+        application_webpush,
+        custom_css,
+        main_css,
+        sidebar_css,
+        bootstrap_css,
+        bootstrap_js,
+    ]
+)

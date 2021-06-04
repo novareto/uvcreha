@@ -7,17 +7,13 @@ class UserFormIndex(DefaultView):
     title = "User"
 
     def get_fields(self):
-        return self.fields(
-            include=("uid", "loginname", "password", "email")
-        )
+        return self.fields(include=("uid", "loginname", "password", "email"))
 
 
 @browser.register("/users/{loginname}/edit")
 class EditUserForm(EditForm):
     title = "Benutzer anlegen"
-    readonly = ('uid',)
+    readonly = ("uid",)
 
     def get_fields(self):
-        return self.fields(
-            include=("uid", "loginname", "password", "email")
-        )
+        return self.fields(include=("uid", "loginname", "password", "email"))

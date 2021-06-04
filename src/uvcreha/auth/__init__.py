@@ -10,7 +10,7 @@ Filter = Callable[[Environ, WSGICallable, Any], Optional[Response]]
 
 class Auth:
 
-    __slots__ = ('connector', 'user_key', 'session_key', 'filters')
+    __slots__ = ("connector", "user_key", "session_key", "filters")
 
     filters: Iterable[Filter]
 
@@ -24,17 +24,15 @@ class Auth:
 
     def from_credentials(self, credentials: dict):
         db = self.connector.get_database()
-        binding = contenttypes.registry['user'].bind(db)
+        binding = contenttypes.registry["user"].bind(db)
         # We use either loginname or email
         user = binding.find_one(
-            loginname=credentials['loginname'],
-            password=credentials['password']
+            loginname=credentials["loginname"], password=credentials["password"]
         )
         if user is not None:
             return user
         return binding.find_one(
-            email=credentials['loginname'],
-            password=credentials['password']
+            email=credentials["loginname"], password=credentials["password"]
         )
 
     def identify(self, environ: Environ):
@@ -44,7 +42,7 @@ class Auth:
         session = environ[self.session_key]
         if (user_key := session.get(self.user_key, None)) is not None:
             db = self.connector.get_database()
-            binding = contenttypes.registry['user'].bind(db)
+            binding = contenttypes.registry["user"].bind(db)
             user = environ[self.user_key] = binding.fetch(user_key)
             return user
 
@@ -56,11 +54,10 @@ class Auth:
 
     def remember(self, environ: Environ, user):
         session = environ[self.session_key]
-        session[self.user_key] = user['uid']
+        session[self.user_key] = user["uid"]
         environ[self.user_key] = user
 
     def __call__(self, app):
-
         def auth_application_wrapper(environ, start_response):
             user = self.identify(environ)
             for filter in self.filters:

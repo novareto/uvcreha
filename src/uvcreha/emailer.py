@@ -11,7 +11,7 @@ class SMTPConfiguration(NamedTuple):
     password: str
     emitter: str
     port: int = 25
-    host: str = 'localhost'
+    host: str = "localhost"
 
 
 class SecureMailer:
@@ -19,7 +19,7 @@ class SecureMailer:
     config: SMTPConfiguration
     debug: bool
 
-    __slots__ = ('config', 'debug')
+    __slots__ = ("config", "debug")
 
     def __init__(self, **config):
         self.config = SMTPConfiguration(**config)
@@ -27,26 +27,25 @@ class SecureMailer:
 
     @staticmethod
     def format_email(_from, _to, subject, text, html=None):
-        msg = MIMEMultipart('alternative')
-        msg['From'] = _from
-        msg['To'] = _to
-        msg['Subject'] = subject
-        msg.set_charset('utf-8')
+        msg = MIMEMultipart("alternative")
+        msg["From"] = _from
+        msg["To"] = _to
+        msg["Subject"] = subject
+        msg.set_charset("utf-8")
 
-        part1 = MIMEText(text, 'plain')
-        part1.set_charset('utf-8')
+        part1 = MIMEText(text, "plain")
+        part1.set_charset("utf-8")
         msg.attach(part1)
 
         if html is not None:
-            part2 = MIMEText(html, 'html')
-            part2.set_charset('utf-8')
+            part2 = MIMEText(html, "html")
+            part2.set_charset("utf-8")
             msg.attach(part2)
 
         return msg
 
     def email(self, recipient, subject, text, html=None):
-        return self.format_email(
-            self.config.emitter, recipient, subject, text, html)
+        return self.format_email(self.config.emitter, recipient, subject, text, html)
 
     @contextmanager
     def smtp(self):
@@ -57,13 +56,12 @@ class SecureMailer:
         server.ehlo()
 
         # If we can encrypt this session, do it
-        if server.has_extn('STARTTLS'):
+        if server.has_extn("STARTTLS"):
             server.starttls()
             server.ehlo()  # re-identify ourselves over TLS connection
         if self.config.user:
             server.login(self.config.user, self.config.password)
         try:
-            yield functools.partial(
-                server.sendmail, self.config.emitter)
+            yield functools.partial(server.sendmail, self.config.emitter)
         finally:
             server.close()

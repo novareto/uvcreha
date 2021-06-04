@@ -18,8 +18,8 @@ class EditPreferences(FormView):
 
     def setupForm(self, data=None, formdata=Multidict()):
         if data is None:
-            data = self.request.user.data.get('preferences', {})
-        schema = jsonschema.store.get('UserPreferences')
+            data = self.request.user.data.get("preferences", {})
+        schema = jsonschema.store.get("UserPreferences")
         form = Form.from_schema(schema)
         form.process(data=data, formdata=formdata)
         return form
@@ -30,6 +30,6 @@ class EditPreferences(FormView):
         form = self.setupForm(formdata=data)
         if not form.validate():
             return {"form": form}
-        user = contenttypes.registry['user'].bind(self.request.database)
+        user = contenttypes.registry["user"].bind(self.request.database)
         user.update(request.user.key, preferences=data.dict())
         return self.redirect("/")
