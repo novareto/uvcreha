@@ -8,7 +8,7 @@ else:
     from cromlech.session import Store, Session
     from omegaconf import OmegaConf
     from uvcreha.contenttypes import registry
-    from reiter.startup.parser import make_project
+    from horsebox.project import make_project
 
 
     class TestUser:
