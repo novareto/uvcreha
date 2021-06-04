@@ -1,24 +1,28 @@
 import smtplib
 import functools
+from typing import NamedTuple
 from contextlib import contextmanager
-from collections import namedtuple
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-SMTP_CONFIG = namedtuple(
-    'SMTP', ['host', 'user', 'password', 'port', 'emitter'])
+class SMTPConfiguration(NamedTuple):
+    user: str
+    password: str
+    emitter: str
+    port: int = 25
+    host: str = 'localhost'
 
 
 class SecureMailer:
 
-    config: SMTP_CONFIG
+    config: SMTPConfiguration
     debug: bool
 
     __slots__ = ('config', 'debug')
 
     def __init__(self, **config):
-        self.config = SMTP_CONFIG(**config)
+        self.config = SMTPConfiguration(**config)
         self.debug = False
 
     @staticmethod
