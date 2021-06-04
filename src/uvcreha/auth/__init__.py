@@ -10,6 +10,8 @@ Filter = Callable[[Environ, WSGICallable, Any], Optional[Response]]
 
 class Auth:
 
+    __slots__ = ('connector', 'user_key', 'session_key', 'filters')
+
     filters: Iterable[Filter]
 
     def __init__(self, connector, user_key, session_key, filters=None):
