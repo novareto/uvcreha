@@ -1,3 +1,4 @@
+from pathlib import Path
 from horseman.types import WSGICallable
 
 
@@ -26,7 +27,7 @@ def fanstatic_middleware(**config) -> WSGICallable:
 
 
 def session_middleware(
-        cache, cookie_secret, cookie_name, environ_key) -> WSGICallable:
+        cache: Path, cookie_secret, cookie_name, environ_key) -> WSGICallable:
     import cromlech.session
     import cromlech.sessions.file
 
@@ -39,13 +40,13 @@ def session_middleware(
     return cromlech.session.WSGISessionManager(manager, environ_key=environ_key)
 
 
-def webpush_plugin(private_key, public_key, vapid_claims):
+def webpush_plugin(private_key: Path, public_key: Path, vapid_claims: dict):
     from uvcreha.webpush import Webpush
 
-    with open(private_key) as fd:
+    with private_key.open('r') as fd:
         privkey = fd.readline().strip("\n")
 
-    with open(public_key) as fd:
+    with public_key.open('r') as fd:
         pubkey = fd.read().strip("\n")
 
     return Webpush(
