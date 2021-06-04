@@ -1,10 +1,8 @@
 import horseman.response
 from horseman.http import Multidict
 from reiter.form import trigger
-from uvcreha import models
 from uvcreha.app import browser
 from uvcreha.browser.form import Form, FormView
-from uvcreha.browser.layout import TEMPLATES
 from uvcreha.request import Request
 from uvcreha import contenttypes
 
@@ -56,7 +54,7 @@ class EditPassword(FormView):
     action = "edit_pw"
 
     def setupForm(self, data={}, formdata=Multidict()):
-        ct = content_types_registry["user"]
+        ct = contenttypes.registry["user"]
         form = Form.from_schema(ct.schema, include=("password"))
         form.process(data=data, formdata=formdata)
         return form
@@ -67,7 +65,7 @@ class EditPassword(FormView):
         if not form.validate():
             return {"form": form}
 
-        ct = content_types_registry["user"]
+        ct = contenttypes.registry["user"]
         um = request.database.bind(ct)
         um.update(key=request.user.id, **data.form)
         flash_messages = request.utilities.get("flash")

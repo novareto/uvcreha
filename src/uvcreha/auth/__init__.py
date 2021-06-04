@@ -1,8 +1,7 @@
 from horseman.types import Environ, WSGICallable
 from horseman.response import Response
 from uvcreha import contenttypes
-from typing import Any, Callable, Set, Optional, Iterable
-from roughrider import workflow
+from typing import Any, Callable, Optional, Iterable
 
 
 Filter = Callable[[Environ, WSGICallable, Any], Optional[Response]]
