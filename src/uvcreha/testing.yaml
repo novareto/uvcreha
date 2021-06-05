@@ -3,30 +3,30 @@ name: UVCREHA testing
 components:
 
   auth_bypass:
-    factory: ${class:uvcreha.auth.filters.security_bypass}
+    factory: ${dotted:uvcreha.auth.filters.security_bypass}
     config:
        urls:
          - /login
 
   auth_urls:
-    factory: ${class:uvcreha.auth.filters.secured}
+    factory: ${dotted:uvcreha.auth.filters.secured}
     config:
        path: /login
 
   auth_user_states:
-    factory: ${class:uvcreha.auth.filters.filter_user_state}
+    factory: ${dotted:uvcreha.auth.filters.filter_user_state}
     config:
        states:
-         - ${class:uvcreha.workflow.user_workflow.states.inactive}
-         - ${class:uvcreha.workflow.user_workflow.states.closed}
+         - ${dotted:uvcreha.workflow.user_workflow.states.inactive}
+         - ${dotted:uvcreha.workflow.user_workflow.states.closed}
 
   auth_twoFA:
-    factory: ${class:uvcreha.auth.filters.TwoFA}
+    factory: ${dotted:uvcreha.auth.filters.TwoFA}
     config:
        path: /2FA
 
   session:
-    factory: ${class:uvcreha.plugins.session_middleware}
+    factory: ${dotted:uvcreha.plugins.session_middleware}
     config:
       cache: ???
       cookie_name: uvcreha.cookie
@@ -34,11 +34,11 @@ components:
       environ_key: uvcreha.test.session
 
   arango:
-    factory: ${class:reiter.arango.connector.Connector.from_config}
+    factory: ${dotted:reiter.arango.connector.Connector.from_config}
     config: ???
 
   authentication:
-    factory: ${class:uvcreha.auth.Auth}
+    factory: ${dotted:uvcreha.auth.Auth}
     config:
       user_key: test.principal
       session_key: ${components.session.config.environ_key}
@@ -50,12 +50,12 @@ components:
         - ${component:auth_twoFA}
 
   flash:
-    factory: ${class:uvcreha.plugins.flash_messages}
+    factory: ${dotted:uvcreha.plugins.flash_messages}
     config:
       session_key: ${components.session.config.environ_key}
 
   webpush:
-    factory: ${class:uvcreha.plugins.webpush_plugin}
+    factory: ${dotted:uvcreha.plugins.webpush_plugin}
     config:
       public_key: ${path:identities/public_key.txt}
       private_key: ${path:identities/private_key.txt}
@@ -64,14 +64,14 @@ components:
         aud: https://updates.push.services.mozilla.com
 
   emailer:
-    factory: ${class:uvcreha.emailer.SecureMailer}
+    factory: ${dotted:uvcreha.emailer.SecureMailer}
     config:
       user:
       password:
       emitter: uvcreha@novareto.de
 
   twoFA:
-    factory: ${class:uvcreha.auth.utilities.TwoFA}
+    factory: ${dotted:uvcreha.auth.utilities.TwoFA}
     config:
       session_key: ${components.session.config.environ_key}
 
@@ -80,14 +80,14 @@ apps:
 
   browser:
 
-    factory: ${class:reiter.application.app.BrowserApplication}
+    factory: ${dotted:reiter.application.app.BrowserApplication}
 
     config:
       name: Browser
-      request_factory: ${class:uvcreha.request.Request}
-      routes: ${class:uvcreha.app.browser}
-      subscribers: ${class:uvcreha.app.events}
-      ui: ${class:uvcreha.app.ui}
+      request_factory: ${dotted:uvcreha.request.Request}
+      routes: ${dotted:uvcreha.app.browser}
+      subscribers: ${dotted:uvcreha.app.events}
+      ui: ${dotted:uvcreha.app.ui}
       utilities:
         arango: ${component:arango}
         authentication: ${component:authentication}
@@ -101,4 +101,4 @@ apps:
       - ${component:authentication}
 
     modules:
-      - ${class:uvcreha}
+      - ${dotted:uvcreha}
