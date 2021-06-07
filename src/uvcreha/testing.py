@@ -103,7 +103,7 @@ else:
                     }
                 }
             })
-            project = make_project(configfile, override)
+            project = make_project([configfile], override)
             project.scan()
             return project
 

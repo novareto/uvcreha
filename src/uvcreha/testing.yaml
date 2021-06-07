@@ -76,6 +76,10 @@ components:
       session_key: ${components.session.config.environ_key}
 
 
+modules:
+  - ${dotted:uvcreha}
+
+
 apps:
 
   browser:
@@ -99,6 +103,3 @@ apps:
     middlewares:
       - ${component:session}
       - ${component:authentication}
-
-    modules:
-      - ${dotted:uvcreha}
