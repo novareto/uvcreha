@@ -44,3 +44,20 @@
     </footer>
   </body>
 </html>
+
+
+<div metal:define-macro="form_group" tal:condition="exists:  field" >
+    <div class="form-group">
+      <label tal:replace="field.label"> </label>
+      <div tal:content="structure field()"
+           tal:attributes="class field.errors and 'is-invalid' or 'is-valid'"> </div>
+      <div class="invalid-feedback" tal:condition="field.errors">
+        <div tal:repeat="error field.errors">
+          <span tal:content="error" />
+        </div>
+      </div>
+      <small class="form-text text-muted"
+             tal:content="field.description"
+             tal:condition="field.description" />
+    </div>
+</div>
