@@ -12,20 +12,6 @@ def flash_messages(session_key):
     return flash
 
 
-def vhm_middleware(**config) -> WSGICallable:
-    import functools
-    from repoze.vhm.middleware import VHMExplicitFilter
-
-    return functools.partial(VHMExplicitFilter, **config)
-
-
-def fanstatic_middleware(**config) -> WSGICallable:
-    import fanstatic
-    import functools
-
-    return functools.partial(fanstatic.Fanstatic, **config)
-
-
 def session_middleware(
     cache: Path, cookie_secret, cookie_name, environ_key
 ) -> WSGICallable:
