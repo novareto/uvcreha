@@ -4,10 +4,9 @@
 from abc import abstractmethod
 import horseman.response
 from horseman.http import Multidict
-from typing import ClassVar, Type, Optional, Iterable, Callable, Dict, Any
+from typing import Optional, Iterable, Dict, Any
 from reiter.form import trigger
 from uvcreha.browser.form import FormView
-from uvcreha.contenttypes import Content
 
 
 class BaseForm(FormView):
@@ -16,18 +15,15 @@ class BaseForm(FormView):
 
     @property
     def action(self):
-        return (
-            self.request.environ['SCRIPT_NAME'] +
-            self.request.route.path
-        )
+        return self.request.environ["SCRIPT_NAME"] + self.request.route.path
 
     @property
     def destination(self):
-        return self.request.environ['SCRIPT_NAME'] + '/'
+        return self.request.environ["SCRIPT_NAME"] + "/"
 
     @abstractmethod
     def get_form(self):
-        raise NotImplementedError('Implement your own.')
+        raise NotImplementedError("Implement your own.")
 
     def get_initial_data(self):
         return {}
@@ -43,21 +39,20 @@ class BaseForm(FormView):
 
 
 class AddForm(BaseForm):
-
     def get_initial_data(self):
         return self.params
 
     @abstractmethod
     def create(self, data):
-        """Created the object in the DB
-        """
+        """Created the object in the DB"""
 
     @trigger("speichern", "Speichern", css="btn btn-primary")
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {'form': form}
+            return {"form": form}
         obj = self.create(data)
+        print(obj)
         return horseman.response.redirect(self.destination)
 
 
@@ -71,11 +66,10 @@ class DefaultView(BaseForm):
 
     def GET(self):
         form = self.setupForm()
-        return {'form': form}
+        return {"form": form}
 
 
 class EditForm(BaseForm):
-
     @abstractmethod
     def get_initial_data(self):
         pass
@@ -92,8 +86,9 @@ class EditForm(BaseForm):
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
-            return {'form': form}
+            return {"form": form}
         obj = self.apply(data)
+        print(obj)
         return horseman.response.redirect(self.destination)
 
     @trigger("delete", "Delete", css="btn btn-danger")

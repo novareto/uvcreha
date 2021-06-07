@@ -1,34 +1,104 @@
-app:
+name: UVCREHA testing
 
-  factories:
-    user: ${class:uvcreha.models.User}
-    request: ${class:uvcreha.request.Request}
+components:
 
-  env:
-    session: uvcreha.test.session
-    user: test.principal
+  auth_bypass:
+    factory: ${dotted:uvcreha.auth.filters.security_bypass}
+    config:
+       urls:
+         - /login
+
+  auth_urls:
+    factory: ${dotted:uvcreha.auth.filters.secured}
+    config:
+       path: /login
+
+  auth_user_states:
+    factory: ${dotted:uvcreha.auth.filters.filter_user_state}
+    config:
+       states:
+         - ${dotted:uvcreha.workflow.user_workflow.states.inactive}
+         - ${dotted:uvcreha.workflow.user_workflow.states.closed}
+
+  auth_twoFA:
+    factory: ${dotted:uvcreha.auth.filters.TwoFA}
+    config:
+       path: /2FA
 
   session:
-    cookie_name: uvcreha.cookie
-    cookie_secret: secret
+    factory: ${dotted:uvcreha.plugins.session_middleware}
+    config:
+      cache: ???
+      cookie_name: uvcreha.cookie
+      cookie_secret: secret
+      environ_key: uvcreha.test.session
 
-  logger:
-    name: uvcreha.test.logger
+  arango:
+    factory: ${dotted:reiter.arango.connector.Connector.from_config}
+    config: ???
 
-  assets:
-    compile: True
-    recompute_hashes: True
-    bottom: True
+  authentication:
+    factory: ${dotted:uvcreha.auth.Auth}
+    config:
+      user_key: test.principal
+      session_key: ${components.session.config.environ_key}
+      connector: ${component:arango}
+      filters:
+        - ${component:auth_bypass}
+        - ${component:auth_urls}
+        - ${component:auth_user_states}
+        - ${component:auth_twoFA}
 
-  storage:
-    root: ${path:storage}
-    schemas: ${path:schemas}
+  flash:
+    factory: ${dotted:uvcreha.plugins.flash_messages}
+    config:
+      session_key: ${components.session.config.environ_key}
+
+  webpush:
+    factory: ${dotted:uvcreha.plugins.webpush_plugin}
+    config:
+      public_key: ${path:identities/public_key.txt}
+      private_key: ${path:identities/private_key.txt}
+      vapid_claims:
+        sub: mailto:cklinger@novareto.de
+        aud: https://updates.push.services.mozilla.com
+
+  emailer:
+    factory: ${dotted:uvcreha.emailer.SecureMailer}
+    config:
+      user:
+      password:
+      emitter: uvcreha@novareto.de
+
+  twoFA:
+    factory: ${dotted:uvcreha.auth.utilities.TwoFA}
+    config:
+      session_key: ${components.session.config.environ_key}
 
 
-twilio:
-   account_sid: AC0194a64ae983e980a03a0be66073d639
-   auth_token: 847502a1b6aabd837be20326993b2ecd
+apps:
 
+  browser:
 
-vhm:
-   host: http://localhost
+    factory: ${dotted:reiter.application.app.BrowserApplication}
+
+    config:
+      name: Browser
+      request_factory: ${dotted:uvcreha.request.Request}
+      routes: ${dotted:uvcreha.app.browser}
+      subscribers: ${dotted:uvcreha.app.events}
+      ui: ${dotted:uvcreha.app.ui}
+      utilities:
+        arango: ${component:arango}
+        authentication: ${component:authentication}
+        emailer: ${component:emailer}
+        flash: ${component:flash}
+        twoFA: ${component:twoFA}
+        webpush: ${component:webpush}
+
+    middlewares:
+      - ${component:session}
+      - ${component:authentication}
+
+    modules:
+      - ${dotted:uvcreha}

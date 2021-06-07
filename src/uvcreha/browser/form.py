@@ -14,7 +14,7 @@ class MultiCheckboxField(SelectMultipleField):
 
 class FormMeta(wtforms.meta.DefaultMeta):
 
-    locales = ['de_DE', 'de']
+    locales = ["de_DE", "de"]
 
     def render_field(inst, field, render_kw):
         if isinstance(field, MultiCheckboxField):
@@ -32,14 +32,14 @@ class FormMeta(wtforms.meta.DefaultMeta):
 
 
 class Form(JSONForm):
-
     def __init__(self, fields, prefix="", meta=FormMeta()):
         super().__init__(fields, prefix, meta)
 
     def readonly(self, names):
         if names is ...:
-            self._fields = {name: read_only(field)
-                            for name, field in self._fields.items()}
+            self._fields = {
+                name: read_only(field) for name, field in self._fields.items()
+            }
         else:
             for key in names:
                 self._fields[key] = read_only(self._fields[key])
@@ -51,13 +51,10 @@ class FormView(reiter.form.FormView):
 
     @property
     def action(self):
-        return (
-            self.request.environ['SCRIPT_NAME'] +
-            self.request.route.path
-        )
+        return self.request.environ["SCRIPT_NAME"] + self.request.route.path
 
     def setupForm(self, data={}, formdata=Multidict()):
-        raise NotImplementedError('Subclass needs to implement it.')
+        raise NotImplementedError("Subclass needs to implement it.")
 
     def GET(self):
         form = self.setupForm()

@@ -4,9 +4,11 @@ from email.mime.multipart import MIMEMultipart
 
 def test_emailer():
     mailer = SecureMailer(
-        config=dict(
-            host="localhost", user="", password="", port="", emitter="web@web.de"
-        )
+        host="localhost",
+        user="",
+        password="",
+        port="",
+        emitter="web@web.de"
     )
     assert isinstance(mailer, SecureMailer)
 

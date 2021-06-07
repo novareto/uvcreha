@@ -1,17 +1,16 @@
-import pathlib
 from reiter.application.browser import TemplateLoader
 from uvcreha.request import Request
 from uvcreha.browser.resources import siguvtheme
-from uvcreha.app import browser
+from uvcreha.app import ui
 
 
-TEMPLATES = TemplateLoader('./templates')
+TEMPLATES = TemplateLoader("./templates")
 
 
-@browser.ui.register_layout(Request)
+@ui.register_layout(Request)
 class Layout:
 
-    __slots__ = ('_template', 'name')
+    __slots__ = ("_template", "name")
 
     def __init__(self, request, name):
         self.name = name
@@ -26,29 +25,29 @@ class Layout:
         return self._template.render(content=content, **namespace)
 
 
-@browser.ui.register_slot(request=Request, name="sitecap")
+@ui.register_slot(request=Request, name="sitecap")
 def sitecap(request, name, view):
     return TEMPLATES["sitecap.pt"].render(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="globalmenu")
+@ui.register_slot(request=Request, name="globalmenu")
 def globalmenu(request, name, view):
     return TEMPLATES["globalmenu.pt"].render(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="navbar")
+@ui.register_slot(request=Request, name="navbar")
 def navbar(request, name, view):
     return TEMPLATES["navbar.pt"].render(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="sidebar")
+@ui.register_slot(request=Request, name="sidebar")
 def sidebar(request, name, view):
     return TEMPLATES["sidebar.pt"].render(request=request)
 
 
-@browser.ui.register_slot(request=Request, name="site-messages")
+@ui.register_slot(request=Request, name="site-messages")
 def messages(request, name, view):
-    utility = request.utilities.get('flash')
+    utility = request.utilities.get("flash")
     if utility is not None:
         messages = list(utility)
     else:
@@ -56,6 +55,6 @@ def messages(request, name, view):
     return TEMPLATES["messages.pt"].render(messages=messages)
 
 
-@browser.ui.register_slot(request=Request, name="footer")
+@ui.register_slot(request=Request, name="footer")
 def footer(request, name, view):
     return TEMPLATES["footer.pt"].render(request=request)
