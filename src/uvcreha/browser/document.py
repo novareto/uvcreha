@@ -29,7 +29,7 @@ class DocumentIndex(View):
 DocumentEdit = NamedComponents()
 
 
-@browser.route(
+@browser.register(
     "/users/{uid}/files/{az}/docs/{docid}/edit",
     methods=['GET', 'POST'],
     name="doc.edit")
