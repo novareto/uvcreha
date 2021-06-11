@@ -1,4 +1,6 @@
+import orjson
 from typing import Dict, Any
+from pathlib import Path
 from json_ref_dict.ref_dict import RefDict
 from json_ref_dict.loader import get_document
 
@@ -37,6 +39,14 @@ class JSONSchemaStore:
 
     def get(self, name) -> RefDict:
         return RefDict(name)
+
+    def load_from_folder(self, path: Path):
+        for f in path.iterdir():
+            if f.suffix == '.json':
+                print(f'JSONSchema: loading {f.as_uri()}')
+                with f.open('r') as fd:
+                    schema = orjson.loads(fd.read())
+                    store.add(schema.get('id', f.name), schema)
 
 
 store: JSONSchemaStore = JSONSchemaStore()
