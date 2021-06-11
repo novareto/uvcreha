@@ -146,12 +146,11 @@ class User(Content):
 
     @property
     def TOTP(self) -> bytes:
+        """We use mostly default values for Google Authenticator compat.
+        """
         return pyotp.TOTP(
             self.shared_key,
-            digits=8,
-            digest=hashlib.sha256,
             name=self["loginname"],
-            interval=60,
         )
 
     @property
