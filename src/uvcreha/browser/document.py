@@ -55,3 +55,22 @@ class DefaultDocumentEditForm(FormView):
         form = Form.from_schema(schema)
         form.process(data=data, formdata=formdata)
         return form
+
+    @trigger("save", "Save", css="btn btn-primary")
+    def save(self, request):
+        data = request.extract()["form"]
+        form = self.setupForm(formdata=data)
+        if not form.validate():
+            return {"form": form}
+        doc = contenttypes.registry["document"].bind(self.request.database)
+        document_workflow(doc).state = document_workflow.states.sent
+        doc.update(
+            request.params['docid'],
+            item=data.dict(),
+            state=doc['state']
+        )
+        return self.redirect("/")
+
+    @trigger("cancel", "Cancel", css="btn btn-primary")
+    def cancel(self, request):
+        return self.redirect("/")
