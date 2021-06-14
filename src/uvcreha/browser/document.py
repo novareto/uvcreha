@@ -63,7 +63,8 @@ class DefaultDocumentEditForm(FormView):
         if not form.validate():
             return {"form": form}
         doc = contenttypes.registry["document"].bind(self.request.database)
-        document_workflow(doc).state = document_workflow.states.sent
+        wf = document_workflow(doc)
+        wf.transition_to(document_workflow.states.sent)
         doc.update(
             request.params['docid'],
             item=data.dict(),
