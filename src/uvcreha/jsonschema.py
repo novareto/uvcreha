@@ -43,9 +43,11 @@ class JSONSchemaStore:
     def load_from_folder(self, path: Path):
         for f in path.iterdir():
             if f.suffix == '.json':
-                print(f'JSONSchema: loading {f.as_uri()}')
+                print(f'JSONSchema: loading {str(f.absolute())}')
                 with f.open('r') as fd:
                     schema = orjson.loads(fd.read())
+                    schema['$comment'] = "document item"
+                    print(f'Added Schema {schema} ')
                     store.add(schema.get('id', f.name), schema)
 
 

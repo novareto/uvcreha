@@ -57,6 +57,7 @@ class Document(Content):
 
     @property
     def date(self):
+        return "01.01.2021"
         return self["creation_date"]
 
     @property

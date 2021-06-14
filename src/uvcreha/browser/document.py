@@ -36,10 +36,11 @@ DocumentEdit = NamedComponents()
 def document_edit_dispatch(request, **params):
     content_type = contenttypes.registry['document']
     context = content_type.bind(request.database).find_one(**params)
-    form = DocumentEdit.get(context["content_type"], "default")
+    print(context["content_type"])
+    form = DocumentEdit.get(context["content_type"], DefaultDocumentEditForm)
     form.content_type = content_type
     form.context = content_type.bind(request.database).find_one(**params)
-    return form(request, **params)
+    return form(request, **params)()
 
 
 @DocumentEdit.component('default')
@@ -51,3 +52,6 @@ class DefaultDocumentEditForm(FormView):
 
     def setupForm(self, data={}, formdata=Multidict()):
         schema = jsonschema.store.get(self.context['content_type'])
+        form = Form.from_schema(schema)
+        form.process(data=data, formdata=formdata)
+        return form
