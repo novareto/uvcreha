@@ -1,9 +1,11 @@
 import wtforms
 import reiter.form
+from abc import ABC, abstractmethod
 from horseman.http import Multidict
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
 from uvcreha.browser.layout import TEMPLATES
+from uvcreha import jsonschema
 from jsonschema_wtforms import Form as JSONForm
 
 
@@ -45,7 +47,7 @@ class Form(JSONForm):
                 self._fields[key] = read_only(self._fields[key])
 
 
-class FormView(reiter.form.FormView):
+class FormView(ABC, reiter.form.FormView):
 
     template = TEMPLATES["base_form.pt"]
 
@@ -53,8 +55,15 @@ class FormView(reiter.form.FormView):
     def action(self):
         return self.request.environ["SCRIPT_NAME"] + self.request.route.path
 
+    @abstractmethod
+    def get_fields(self):
+        pass
+
     def setupForm(self, data={}, formdata=Multidict()):
-        raise NotImplementedError("Subclass needs to implement it.")
+        fields = self.get_fields()
+        form = Form(fields)
+        form.process(data=data, formdata=formdata)
+        return form
 
     def GET(self):
         form = self.setupForm()
