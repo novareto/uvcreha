@@ -50,13 +50,11 @@ class DefaultDocumentEditForm(FormView):
     content_type = None
     context = None
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def get_fields(self):
         schema = jsonschema.store.get(self.context['content_type'])
-        form = Form.from_schema(schema)
-        form.process(data=data, formdata=formdata)
-        return form
+        return schema_fields(schema)
 
-    @trigger("save", "Save", css="btn btn-primary")
+    @trigger("save", "Speichern", css="btn btn-primary")
     def save(self, request):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)
@@ -72,6 +70,6 @@ class DefaultDocumentEditForm(FormView):
         )
         return self.redirect("/")
 
-    @trigger("cancel", "Cancel", css="btn btn-primary")
+    @trigger("cancel", "Abbrechen", css="btn btn-primary")
     def cancel(self, request):
         return self.redirect("/")

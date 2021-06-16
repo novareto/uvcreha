@@ -25,6 +25,8 @@ class FormMeta(wtforms.meta.DefaultMeta):
             class_ = "form-check"
         elif isinstance(field, wtforms.fields.core.SelectFieldBase._Option):
             class_ = "form-check-input"
+        elif isinstance(field, wtforms.fields.core.RadioField):
+            class_ = "form-check"
         else:
             class_ = "form-control"
         if field.errors:
@@ -47,7 +49,7 @@ class Form(JSONForm):
                 self._fields[key] = read_only(self._fields[key])
 
 
-class FormView(ABC, reiter.form.FormView):
+class FormView(reiter.form.FormView):
 
     template = TEMPLATES["base_form.pt"]
 
