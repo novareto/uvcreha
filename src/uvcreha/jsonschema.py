@@ -1,4 +1,5 @@
 import orjson
+import logging
 from typing import Dict, Any
 from pathlib import Path
 from json_ref_dict.ref_dict import RefDict
@@ -43,12 +44,12 @@ class JSONSchemaStore:
     def load_from_folder(self, path: Path):
         for f in path.iterdir():
             if f.suffix == '.json':
-                print(f'JSONSchema: loading {str(f.absolute())}')
                 with f.open('r') as fd:
                     schema = orjson.loads(fd.read())
                     schema['$comment'] = "document item"
-                    print(f'Added Schema {schema} ')
-                    store.add(schema.get('id', f.name), schema)
+                    key = schema.get('id', f.name)
+                    store.add(key, schema)
+                    print(f'JSONSchema: loading {key} : {str(f.absolute())} ')
 
 
 store: JSONSchemaStore = JSONSchemaStore()

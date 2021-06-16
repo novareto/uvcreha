@@ -47,7 +47,7 @@ class Form(JSONForm):
                 self._fields[key] = read_only(self._fields[key])
 
 
-class FormView(ABC, reiter.form.FormView):
+class FormView(reiter.form.FormView):
 
     template = TEMPLATES["base_form.pt"]
 

@@ -26,12 +26,14 @@ class Auth:
         binding = contenttypes.registry["user"].bind(db)
         # We use either loginname or email
         user = binding.find_one(
-            loginname=credentials["loginname"], password=credentials["password"]
+            loginname=credentials["loginname"],
+            password=credentials["password"]
         )
         if user is not None:
             return user
         return binding.find_one(
-            email=credentials["loginname"], password=credentials["password"]
+            email=credentials["loginname"],
+            password=credentials["password"]
         )
 
     def identify(self, environ: Environ):

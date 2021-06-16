@@ -13,6 +13,9 @@ class LandingPage(View):
         user = self.request.user
         # flash_messages = self.request.utilities.get("flash")
         # flash_messages.add(body="HELLO WORLD.")
+        self.request.app.utilities['amqp'].send(
+            {'test': 'YEAH'}, key='object.add'
+        )
         return {"user": user}
 
     def get_files(self, key):
@@ -36,6 +39,7 @@ class Webpush(View):
     def POST(self):
         wp = self.request.app.utilities["webpush"]
         wp.send(
-            message="klaus", token=self.request.user.preferences.webpush_subscription
+            message="klaus",
+            token=self.request.user.preferences.webpush_subscription
         )
         return dict(success="ok")
