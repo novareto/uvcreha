@@ -27,5 +27,8 @@ class TestConsumer(CustomConsumer):
 # Senden
 
 ```python
-# TODO
+
+amqp = self.request.app.utilities['amqp']
+amqp.send({'test': 'YEAH'}, key='object.add')
+
 ```
