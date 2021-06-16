@@ -25,6 +25,8 @@ class FormMeta(wtforms.meta.DefaultMeta):
             class_ = "form-check"
         elif isinstance(field, wtforms.fields.core.SelectFieldBase._Option):
             class_ = "form-check-input"
+        elif isinstance(field, wtforms.fields.core.RadioField):
+            class_ = "form-check"
         else:
             class_ = "form-control"
         if field.errors:
