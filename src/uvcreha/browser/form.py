@@ -4,9 +4,11 @@ from abc import ABC, abstractmethod
 from horseman.http import Multidict
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
+from wtforms.fields.simple import MultipleFileField
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha import jsonschema
 from jsonschema_wtforms import Form as JSONForm
+from uvcreha.browser.resources import f_input_group
 
 
 class MultiCheckboxField(SelectMultipleField):
@@ -19,6 +21,8 @@ class FormMeta(wtforms.meta.DefaultMeta):
     locales = ["de_DE", "de"]
 
     def render_field(inst, field, render_kw):
+        if isinstance(field, MultipleFileField):
+            f_input_group.need()
         if isinstance(field, MultiCheckboxField):
             class_ = "form-check"
         elif isinstance(field, wtforms.fields.core.BooleanField):

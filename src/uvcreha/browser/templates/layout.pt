@@ -22,15 +22,15 @@
       function dateFormat(value, row, index) {
         return moment(value).format('DD.MM.YYYY');
       }
-      $(document).ready(function() {
-        $("input[type=file]").fileinput();
-      });
+
     </script>
+    <!--
     <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.2.1/js/plugins/piexif.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.2.1/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.2.1/js/fileinput.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.2.1/js/locales/DE.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.2.1/js/locales/DE.js"></script>
+    -->
   </head>
   <body data-with-sidebar="false">
     <header>
