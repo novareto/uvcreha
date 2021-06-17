@@ -29,6 +29,16 @@ bootstrap_css = Resource(
     source="scss/siguv.scss",
 )
 
+
+
+f_input_css = Resource(library, 'fileinput/fileinput.min.css')  
+f_input_js  = Resource(library, 'fileinput/fileinput.min.js')
+f_input_jsf = Resource(library, 'fileinput/piexif.min.js')
+f_input_de = Resource(library, 'fileinput/de.js')
+
+f_input_group = Group([f_input_css, f_input_js, f_input_jsf, f_input_de])
+
+
 bootstrap_js = Resource(library, "bootstrap.bundle.js", depends=[main_js], bottom=True)
 
 siguvtheme = Group(
@@ -39,5 +49,6 @@ siguvtheme = Group(
         sidebar_css,
         bootstrap_css,
         bootstrap_js,
+        f_input_group
     ]
 )

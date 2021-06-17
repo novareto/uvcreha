@@ -72,4 +72,8 @@ $(document).ready(function () {
     showSidebar();
   });
 
+
+  // Fileinput
+  $("input[type=file]").fileinput();
+
 });

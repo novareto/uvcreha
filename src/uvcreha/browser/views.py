@@ -13,9 +13,9 @@ class LandingPage(View):
         user = self.request.user
         # flash_messages = self.request.utilities.get("flash")
         # flash_messages.add(body="HELLO WORLD.")
-        self.request.app.utilities['amqp'].send(
-            {'test': 'YEAH'}, key='object.add'
-        )
+        #self.request.app.utilities['amqp'].send(
+        #    {'test': 'YEAH'}, key='object.add'
+        #)
         return {"user": user}
 
     def get_files(self, key):
