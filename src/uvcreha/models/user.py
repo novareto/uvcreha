@@ -157,6 +157,16 @@ class User(Content):
     def OTP_URI(self) -> str:
         return self.TOTP.provisioning_uri()
 
+    def generate_token(
+            self, digits=8, digest=hashlib.sha256, interval=60*60):  # 1h
+        return pyotp.TOTP(
+            self.shared_key,
+            name=self["loginname"],
+            digits=digits,
+            digest=digest,
+            interval=interval
+        )
+
 
 @User.actions.register("default", title="View")
 def view(request, item):
