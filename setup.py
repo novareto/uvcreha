@@ -36,6 +36,7 @@ test_requires = [
     'pytest',
     'pyhamcrest',
     'reiter.arango[test]',
+    'reiter.amqp',
 ]
 
 

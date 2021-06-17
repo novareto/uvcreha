@@ -67,6 +67,9 @@ assets: !name:fanstatic.Fanstatic
   bottom: True
   publisher_signature: static
 
+modules:
+  - !module:uvcreha
+
 uvcreha: !new:reiter.application.app.BrowserApplication
   name: Browser
   request_factory: !name:uvcreha.request.Request
