@@ -1,105 +1,90 @@
 name: UVCREHA testing
 
-components:
+auth_bypass: !apply:uvcreha.auth.filters.security_bypass
+  urls:
+    - /login
 
-  auth_bypass:
-    factory: ${dotted:uvcreha.auth.filters.security_bypass}
-    config:
-       urls:
-         - /login
+auth_urls: !apply:uvcreha.auth.filters.secured
+  path: /login
 
-  auth_urls:
-    factory: ${dotted:uvcreha.auth.filters.secured}
-    config:
-       path: /login
+auth_user_states: !apply:uvcreha.auth.filters.filter_user_state
+  states:
+    - !name:uvcreha.workflow.user_workflow.states.inactive
+    - !name:uvcreha.workflow.user_workflow.states.closed
 
-  auth_user_states:
-    factory: ${dotted:uvcreha.auth.filters.filter_user_state}
-    config:
-       states:
-         - ${dotted:uvcreha.workflow.user_workflow.states.inactive}
-         - ${dotted:uvcreha.workflow.user_workflow.states.closed}
+auth_twoFA: !apply:uvcreha.auth.filters.TwoFA
+  path: /2FA
 
-  auth_twoFA:
-    factory: ${dotted:uvcreha.auth.filters.TwoFA}
-    config:
-       path: /2FA
+session: !apply:uvcreha.plugins.session_middleware
+  cache: !new:pathlib.Path [var/sessions]
+  cookie_name: uvcreha.cookie
+  cookie_secret: secret
+  environ_key: uvcreha.test.session
 
-  session:
-    factory: ${dotted:uvcreha.plugins.session_middleware}
-    config:
-      cache: ???
-      cookie_name: uvcreha.cookie
-      cookie_secret: secret
-      environ_key: uvcreha.test.session
+arango: !apply:reiter.arango.connector.Connector.from_config
+  user: ck
+  password: ck
+  database: p2
+  url: http://localhost:8529
 
-  arango:
-    factory: ${dotted:reiter.arango.connector.Connector.from_config}
-    config: ???
+authentication: !new:uvcreha.auth.Auth
+  user_key: test.principal
+  session_key: !ref <session[environ_key]>
+  connector: !ref <arango>
+  filters:
+    - !ref <auth_bypass>
+    - !ref <auth_urls>
+    - !ref <auth_user_states>
+    - !ref <auth_twoFA>
 
-  authentication:
-    factory: ${dotted:uvcreha.auth.Auth}
-    config:
-      user_key: test.principal
-      session_key: ${components.session.config.environ_key}
-      connector: ${component:arango}
-      filters:
-        - ${component:auth_bypass}
-        - ${component:auth_urls}
-        - ${component:auth_user_states}
-        - ${component:auth_twoFA}
+flash: !apply:uvcreha.plugins.flash_messages
+  session_key: !ref <session[environ_key]>
 
-  flash:
-    factory: ${dotted:uvcreha.plugins.flash_messages}
-    config:
-      session_key: ${components.session.config.environ_key}
+webpush: !apply:uvcreha.plugins.webpush_plugin
+  public_key: !new:pathlib.Path [identities/public_key.pem]
+  private_key: !new:pathlib.Path [identities/private_key.pem]
+  vapid_claims:
+    sub: mailto:cklinger@novareto.de
+    aud: https://updates.push.services.mozilla.com
 
-  webpush:
-    factory: ${dotted:uvcreha.plugins.webpush_plugin}
-    config:
-      public_key: ${path:identities/public_key.txt}
-      private_key: ${path:identities/private_key.txt}
-      vapid_claims:
-        sub: mailto:cklinger@novareto.de
-        aud: https://updates.push.services.mozilla.com
+emailer: !new:uvcreha.emailer.SecureMailer
+  user:
+  password:
+  emitter: uvcreha@novareto.de
 
-  emailer:
-    factory: ${dotted:uvcreha.emailer.SecureMailer}
-    config:
-      user:
-      password:
-      emitter: uvcreha@novareto.de
+twoFA: !new:uvcreha.auth.utilities.TwoFA
+  session_key: !ref <session[environ_key]>
 
-  twoFA:
-    factory: ${dotted:uvcreha.auth.utilities.TwoFA}
-    config:
-      session_key: ${components.session.config.environ_key}
+vhm: !name:repoze.vhm.middleware.VHMExplicitFilter
+  host: http://kraft.novareto.de:8080
 
+amqp: !new:reiter.amqp.emitter.AMQPEmitter
+  url: amqp://guest:guest@localhost:5672//
 
-modules:
-  - ${dotted:uvcreha}
+assets: !name:fanstatic.Fanstatic
+  compile: True
+  recompute_hashes: True
+  bottom: True
+  publisher_signature: static
 
+uvcreha: !new:reiter.application.app.BrowserApplication
+  name: Browser
+  request_factory: !name:uvcreha.request.Request
+  routes: !name:uvcreha.app.browser
+  subscribers: !name:uvcreha.app.events
+  ui: !name:uvcreha.app.ui
+  utilities:
+    amqp: !ref <amqp>
+    arango: !ref <arango>
+    webpush: !ref <webpush>
+    emailer: !ref <emailer>
+    flash: !ref <flash>
+    authentication: !ref <authentication>
+    twoFA: !ref <twoFA>
 
-apps:
-
-  browser:
-
-    factory: ${dotted:reiter.application.app.BrowserApplication}
-
-    config:
-      name: Browser
-      request_factory: ${dotted:uvcreha.request.Request}
-      routes: ${dotted:uvcreha.app.browser}
-      subscribers: ${dotted:uvcreha.app.events}
-      ui: ${dotted:uvcreha.app.ui}
-      utilities:
-        arango: ${component:arango}
-        authentication: ${component:authentication}
-        emailer: ${component:emailer}
-        flash: ${component:flash}
-        twoFA: ${component:twoFA}
-        webpush: ${component:webpush}
-
-    middlewares:
-      - ${component:session}
-      - ${component:authentication}
+app: !apply:horsebox.utils.apply_middlewares
+  canonic: !ref <uvcreha>
+  middlewares:
+    - !ref <assets>
+    - !ref <session>
+    - !ref <authentication>

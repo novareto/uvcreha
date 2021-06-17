@@ -6,9 +6,9 @@ else:
     from pathlib import Path
     from copy import deepcopy
     from cromlech.session import Store, Session
-    from omegaconf import OmegaConf
+    from horsebox.project import DefaultProject
+    from hyperpyyaml import load_hyperpyyaml
     from uvcreha.contenttypes import registry
-    from horsebox.project import make_project
 
 
     class TestUser:
@@ -88,27 +88,27 @@ else:
             return Session("a sid", MemoryStore(), new=True)
 
         @pytest.fixture(scope="session")
-        def project(self, request, tmp_path_factory, arangodb):
+        def config(self, request, tmp_path_factory, arangodb):
             configfile = request.config.getoption("--uvcreha_config")
             folder = tmp_path_factory.mktemp("sessions", numbered=True)
-            override = OmegaConf.create({
-                "components": {
-                    "session": {
-                        "config": {
-                            "cache": str(folder)
-                        }
-                    },
-                    "arango": {
-                        "config": arangodb.config._asdict()
-                    }
+            override = {
+                "session": {
+                    "cache": str(folder)
+                },
+                "arango": {
+                    **arangodb.config._asdict()
                 }
-            })
-            project = make_project([configfile], override)
+            }
+            with configfile.open('r') as f:
+                config: dict = load_hyperpyyaml(f, overrides=override)
+
+            project = DefaultProject.from_config(config)
             project.scan()
-            return project
+            project.load()
+            return config
 
         @pytest.fixture(scope="session")
-        def webapp(self, project):
-            return project.apps['browser']
+        def webapp(self, config):
+            return config['app']
 
     pytest_uvcreha = UVCRehaTestRunner()
