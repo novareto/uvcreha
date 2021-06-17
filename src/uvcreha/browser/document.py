@@ -8,6 +8,7 @@ from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.form import Form, FormView
 from uvcreha import contenttypes, jsonschema
 from uvcreha.workflow import document_workflow
+from jsonschema_wtforms import schema_fields
 
 
 @browser.register("/users/{uid}/files/{az}/docs/{docid}", name="doc.view")
@@ -54,9 +55,10 @@ class DefaultDocumentEditForm(FormView):
         schema = jsonschema.store.get(self.context['content_type'])
         return schema_fields(schema)
 
-    @trigger("save", "Speichern", css="btn btn-primary")
-    def save(self, request):
-        data = request.extract()["form"]
+    @trigger("save", "Speichern", css="btn btn-primary", order=10)
+    def save(self, request, data):
+        #data = request.extract()["form"]
+        data = request.get_data().form
         form = self.setupForm(formdata=data)
         if not form.validate():
             return {"form": form}
@@ -70,6 +72,6 @@ class DefaultDocumentEditForm(FormView):
         )
         return self.redirect("/")
 
-    @trigger("cancel", "Abbrechen", css="btn btn-primary")
-    def cancel(self, request):
+    @trigger("cancel", "Abbrechen", css="btn btn-secondary", order=20)
+    def cancel(self, request, data):
         return self.redirect("/")
