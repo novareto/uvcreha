@@ -19,7 +19,6 @@ install_requires = [
     'reiter.arango',
     'reiter.form',
     'reiter.view',
-    'repoze.vhm',
     'roughrider.contenttypes',
     'roughrider.events',
     'roughrider.routing',

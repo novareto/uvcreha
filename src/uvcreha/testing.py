@@ -108,6 +108,10 @@ else:
             return config
 
         @pytest.fixture(scope="session")
+        def uvcreha(self, config):
+            return config['uvcreha']
+
+        @pytest.fixture(scope="session")
         def webapp(self, config):
             return config['app']
 
