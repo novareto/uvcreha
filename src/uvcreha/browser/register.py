@@ -13,7 +13,7 @@ from wtforms import StringField
 from reiter.form import trigger
 
 
-TEXT = """Vielen Dank für Ihre Registrierung 
+TEXT = """Vielen Dank für Ihre Registrierung
 Bitte klicken Sie auf folgenden Link %s
 """
 
@@ -40,12 +40,13 @@ class AddUserForm(AddForm):
         })
 
         token = obj.generate_token().now()
-        url = "https://reha.siguv.de%s?%s" % (self.request.route_path(name='verify_register'), urlencode(dict(uid=uid, token=token)))
-        print(url)
-        data = {}
+        url = "https://reha.siguv.de%s?%s" % (
+            self.request.route_path(name='verify_register'),
+            urlencode(dict(uid=uid, token=token))
+        )
         self.request.app.notify(
             "user_created",
-            request=self.request, uid=obj['uid'], user=obj)
+            request=self.request, uid=obj['uid'], user=obj, message=url)
         return obj
 
     def get_form(self):
@@ -54,7 +55,7 @@ class AddUserForm(AddForm):
             include=("loginname", "password", "email")
         )
 
-        
+
 @browser.register("/verify_register", name="verify_register")
 class VerifyRegistraion(FormView):
     title = "Registrierung abschließen"
@@ -75,7 +76,8 @@ class VerifyRegistraion(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Registrierung abschließen", order=1, css="btn btn-primary")
+    @trigger("speichern", "Registrierung abschließen",
+             order=1, css="btn btn-primary")
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         flash_messages = request.utilities.get("flash")
@@ -84,17 +86,22 @@ class VerifyRegistraion(FormView):
         binding = self.content_type.bind(self.request.database)
         data = data.form.dict()
         user = binding.find_one(uid=data['uid'])
-        if not user:
+
+        if user is None:
             flash_messages.add(body="Kein Benutzer gefunden.")
             return {"form": form}
+
         token = user.generate_token()
         if not token.verify(data['token']):
             flash_messages.add(body="Fehler im Token.")
             return {"form": form}
-        import pdb; pdb.set_trace()
-        if not data['password'] == user['password']:
+
+        if data['password'] != user['password']:
             flash_messages.add(body="Fehler Passwort.")
             return {"form": form}
-        user.update(uid=data['uid'], state=user_workflow.states.active.name)
-        return self.redirect(request.environ["SCRIPT_NAME"] + "/")
 
+        binding.update(
+            uid=data['uid'],
+            state=user_workflow.states.active.name
+        )
+        return self.redirect(request.environ["SCRIPT_NAME"] + "/")

@@ -62,6 +62,6 @@ class SecureMailer:
         if self.config.user:
             server.login(self.config.user, self.config.password)
         try:
-            yield functools.partial(server.sendmail, self.config.emitter)
+            yield server.send_message
         finally:
             server.close()
