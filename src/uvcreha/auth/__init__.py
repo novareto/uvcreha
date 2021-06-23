@@ -40,12 +40,13 @@ class Auth:
         if (user := environ.get(self.user_key)) is not None:
             return user
 
-        session = environ[self.session_key]
-        if (user_key := session.get(self.user_key, None)) is not None:
-            db = self.connector.get_database()
-            binding = contenttypes.registry["user"].bind(db)
-            user = environ[self.user_key] = binding.fetch(user_key)
-            return user
+        session = environ.get(self.session_key)
+        if session is not None:
+            if (user_key := session.get(self.user_key, None)) is not None:
+                db = self.connector.get_database()
+                binding = contenttypes.registry["user"].bind(db)
+                user = environ[self.user_key] = binding.fetch(user_key)
+                return user
 
         return None
 

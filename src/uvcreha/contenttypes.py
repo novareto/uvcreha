@@ -1,12 +1,14 @@
 import jsonschema_rs
-import roughrider.contenttypes
 from typing import Optional, Dict, Any
-from roughrider.contenttypes import Action
+
+import roughrider.contenttypes
 import reiter.arango.meta
 from reiter.arango.binding import Binder
 
 
 class Content(reiter.arango.meta.Content, roughrider.contenttypes.Content):
+    """Content class
+    """
     def get_action(self, request, name):
         action = self.actions[name]
         return action, action.resolve(request, self)
@@ -39,25 +41,38 @@ class ContentType(roughrider.contenttypes.ContentType):
         validator.validate(data)  # may raise jsonschema_rs ValidationError
 
     def bind(self, db: Any, create: bool = True):
+        if self.collection is None:
+            raise NotImplementedError(
+                "You can't bind a content type with no defined collection.")
         return Binder(db=db, content=self, create=create)
 
 
 class ContentTypesRegistry(roughrider.contenttypes.Registry):
-    def new(self, name: str, schema: Dict, factory: Content, collection: str = None):
+
+    def new(self,
+            name: str,
+            schema: Dict, factory: Content, collection: str = None):
         self.register(
-            name, ContentType(schema=schema, factory=factory, collection=collection)
+            name,
+            ContentType(
+                schema=schema,
+                factory=factory,
+                collection=collection
+            )
         )
 
     def factory(self, name: str, schema: Dict, collection: str = ""):
+        """Decorator for registering a new content type
+        """
         def register_contenttype(cls: Content):
-            self.register(
-                name, ContentType(schema=schema, factory=cls, collection=collection)
-            )
+            self.new(name, schema, factory=cls, collection=collection)
             return cls
 
         return register_contenttype
 
 
+# Content Types registry singleton
 registry = ContentTypesRegistry()
 
-Action  # noqa
+# Exposing for convenience
+Action = roughrider.contenttypes.Action  # noqa
