@@ -1,7 +1,40 @@
-from reiter.view.meta import View
+from reiter.view.meta import View, APIView
 from uvcreha.app import browser
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha import contenttypes
+
+
+def layout_rendering(view: View, result: Result, raw=False, layout=...):
+    if isinstance(result, str):
+        if raw:
+            return result
+        return Response.create(body=result)
+
+    if isinstance(result, (dict, type(None))):
+        if view.template is None:
+            raise ValueError(
+                "{view} returned a namespace but does "
+                "not define a template")
+        if result is None:
+            ns = view.namespace()
+        else:
+            ns = view.namespace(**result)
+        if raw:
+            return view.request.app.ui.render(
+                view.template, layout=layout, **ns)
+        return view.request.app.ui.response(
+            view.template, layout=layout, **ns)
+
+    if isinstance(result, Response):
+        if raw:
+            raise ValueError('The view returned a Response object.')
+        return result
+
+    raise ValueError("Can't interpret return")
+
+
+class View(APIView):
+    render = layout_rendering
 
 
 @browser.register("/")

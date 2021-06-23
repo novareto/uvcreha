@@ -70,6 +70,7 @@ class DefaultView(BaseForm):
 
 
 class EditForm(BaseForm):
+
     @abstractmethod
     def get_initial_data(self):
         pass
