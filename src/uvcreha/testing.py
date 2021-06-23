@@ -103,8 +103,8 @@ else:
                 config: dict = load_hyperpyyaml(f, overrides=override)
 
             project = DefaultProject.from_config(config)
-            project.scan()
-            project.load()
+            for loader in project.loaders:
+                loader()
             return config
 
         @pytest.fixture(scope="session")

@@ -64,8 +64,9 @@ assets: !name:fanstatic.Fanstatic
   bottom: True
   publisher_signature: static
 
-modules:
-  - !module:uvcreha
+loaders:
+  - !name:horsebox.utils.modules_loader
+    - !module:uvcreha
 
 uvcreha: !new:reiter.application.app.BrowserApplication
   name: Browser

@@ -6,7 +6,7 @@ from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
 from wtforms.fields.simple import MultipleFileField
 from uvcreha.browser.layout import TEMPLATES
-from uvcreha.browser.view import layout_rendering
+from uvcreha.browser.views import layout_rendering
 from uvcreha import jsonschema
 from jsonschema_wtforms import Form as JSONForm
 from uvcreha.browser.resources import f_input_group

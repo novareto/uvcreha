@@ -1,10 +1,12 @@
-from reiter.view.meta import View, APIView
+from typing import Any
+from reiter.view.meta import APIView
 from uvcreha.app import browser
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha import contenttypes
+from horseman.response import Response
 
 
-def layout_rendering(view: View, result: Result, raw=False, layout=...):
+def layout_rendering(view: APIView, result: Any, raw=False, layout=...):
     if isinstance(result, str):
         if raw:
             return result

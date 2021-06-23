@@ -3,7 +3,7 @@ from horseman.http import Multidict
 from reiter.form import trigger
 from reiter.application.registries import NamedComponents
 from uvcreha.app import browser
-from uvcreha.browser.view import View
+from uvcreha.browser.views import View
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.form import Form, FormView
 from uvcreha import contenttypes, jsonschema

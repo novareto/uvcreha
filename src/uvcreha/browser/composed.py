@@ -1,5 +1,5 @@
 import reiter.view.composed
-from uvcreha.browser.view import layout_rendering
+from uvcreha.browser.views import layout_rendering
 from uvcreha.browser.layout import TEMPLATES
 
 
