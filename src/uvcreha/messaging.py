@@ -1,3 +1,4 @@
+import logging
 from roughrider.events.dispatcher import Dispatcher
 from uvcreha.app import events
 from uvcreha import contenttypes
@@ -6,14 +7,21 @@ from uvcreha import contenttypes
 class UserMessageCenter(Dispatcher):
 
     def dispatch(self, user):
-        preferences = user.get('preferences')
-        if preferences is not None:
-            return user.get('messaging_type', 'email')
+        if preferences := user.get('preferences'):
+            return preferences.get('messaging_type', 'email')
         return 'email'
 
-    def __call__(self, request, uid, message, **kwargs):
-        user = kwargs.pop('user')
-        if user is None:
+    def __call__(self, request, uid=None, user=None, message=None, **kw):
+        if user is None and uid is None:
+            logging.info(
+                'Dispatcher needs a user or uid to send a message.')
+            return
+        if message is None:
+            logging.info(
+                'Dispatcher needs a message to send.')
+            return
+
+        if uid is not None and user is None:
             content_type = contenttypes.registry['user']
             binding = content_type.bind(request.database)
             user = binding.find_one(uid=uid)

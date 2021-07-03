@@ -1,0 +1,107 @@
+Messaging dispatcher
+********************
+
+The messaging dispatcher allows a message to be broadcast on the correct
+channel, depending on the user's preferences. It is in plain words an
+event subscriber that is also an events registry, redistributing messages
+that is gets using a computed key based on the user's messging type choice.
+
+To show how it works, let's create a user. By default, the user has no
+preferences. The messaging dispatcher will use 'email' as default:
+
+  >>> from uvcreha.messaging import message_center
+  >>> someuser = dict(email='SomeUser@test.com', preferences = {})
+  >>> assert message_center.dispatch(someuser) == 'email'
+
+To allow the testing of the 'email' part of the process, we'll create a
+test emailer.
+
+  >>> from unittest.mock import Mock
+  >>> from contextlib import contextmanager
+  >>> mymock = Mock()
+
+  >>> class Mailer:
+  ...
+  ...     def email(self, *args, **kwargs):
+  ...         return (args, kwargs)
+  ...
+  ...     @contextmanager
+  ...     def smtp(self):
+  ...         yield mymock
+
+
+By default, the only event the message center listens to is 'user_created'.
+We will register later on another subscriber to demonstrate, but the
+'user_created' event works like all the other events. Let's see how :
+
+  >>> from uvcreha.app import events
+
+The main event registry is notified. The messaging center needs
+'request', 'user' and 'message' as arguments. The request is only used to
+retrieve the emailer, through the app utilities.
+
+  >>> from typing import NamedTuple
+
+  >>> class Application(NamedTuple):
+  ...     utilities: dict
+
+  >>> class Request(NamedTuple):
+  ...     app: Application
+
+  >>> request = Request(app=Application(utilities={'emailer': Mailer()}))
+  >>> events.notify(
+  ...     'user_created', request,
+  ...     user=someuser, message='The user `someuser` was created.')
+
+  >>> mymock.assert_called_with(((
+  ...     'SomeUser@test.com',
+  ...     'Some message',
+  ...     'The user `someuser` was created.'
+  ...  ), {'html': None}))
+
+  >>> mymock.reset_mock()
+
+
+Calling the event without the proper arguments will get you logs.
+
+  >>> import logging
+  >>> caplog = getfixture('caplog')
+
+  >>> with caplog.at_level(logging.INFO):
+  ...     events.notify('user_created', request)
+
+  >>> assert not mymock.called
+  >>> assert len(caplog.records) == 1
+  >>> assert caplog.records[0].msg == 'Dispatcher needs a user or uid to send a message.'
+
+  >>> with caplog.at_level(logging.INFO):
+  ...     events.notify('user_created', request, user=someuser)
+
+  >>> assert not mymock.called
+  >>> assert len(caplog.records) == 2
+  >>> assert caplog.records[1].msg == 'Dispatcher needs a message to send.'
+
+Notifying the message center with a key that is unknown will do nothing:
+
+  >>> someuser['preferences']['messaging_type'] = 'airmail'
+  >>> assert message_center.dispatch(someuser) == 'airmail'
+  >>> events.notify(
+  ...     'user_created', request,
+  ...     user=someuser, message='The user `someuser` was created.')
+  >>> assert not mymock.called
+
+
+Creating a subscriber for this type is as simple as :
+
+  >>> @message_center.subscribe('airmail')
+  ... def airmail_sender(request, user, message, **kw):
+  ...     raise NotImplementedError(message)
+
+  >>> import pytest
+  >>> with pytest.raises(NotImplementedError) as exc:
+  ...     events.notify(
+  ...         'user_created', request,
+  ...         user=someuser, message='The user `someuser` was created.')
+
+  >>> assert str(exc.value) == 'The user `someuser` was created.'
+  >>> assert not mymock.called
