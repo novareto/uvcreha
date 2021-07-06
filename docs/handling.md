@@ -11,16 +11,9 @@ unserer Applikationen.
 # Start bjoern
 
 ```bash
-./bin/start http config.yaml
+./bin/horseman run etc/config.yaml
 ```
 
-Wenn wir zusätzlich mit einer AMQP-Queue kommunizieren möchten können wir
-den Dienst wiefolgt starten
-
-# Start MQ 
-```bash
-./bin/start amqp config.yaml
-```
 
 # Supervisor
 
