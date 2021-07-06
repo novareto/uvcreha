@@ -39,8 +39,9 @@ Bevor wir das cookiecutter Projekt installieren führe ich zunächst einen upgra
 
 
 ``` bash 
-bin/pip install --upgrade pip
+bin/pip install --upgrade pip==21.1.0
 bin/pip install --upgrade setuptools==51.1.0
+bin/pip install wheel
 bin/pip install cookiecutter
 ```
 
@@ -55,9 +56,12 @@ Das eigentlich Projekt können wir dann wiefolgt installieren.
 bin/cookiecutter https://github.com/novareto/uvc_reha_project 
 ```
 
-Anschließend können wir in das Verzeichnis wechseln, und dann wird der
+Anschließend können wir in das Verzeichnis wechseln, und dann können wir 
+zc.buildout erstellen Hierzu verwenden wir das mitgelieferte default script
+
 
 ``` 
+python bootstrap-buildout.py --allow-site-packages
 bin/buildout
 ```
 
