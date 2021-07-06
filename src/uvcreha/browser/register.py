@@ -40,7 +40,9 @@ class AddUserForm(AddForm):
         })
 
         token = obj.generate_token().now()
-        url = "https://reha.siguv.de%s?%s" % (
+        import pdb; pdb.set_trace()
+        url = "%s/%s?%s" % (
+            self.request.application_uri(),
             self.request.route_path(name='verify_register'),
             urlencode(dict(uid=uid, token=token))
         )

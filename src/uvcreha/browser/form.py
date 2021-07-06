@@ -81,5 +81,5 @@ class FormView(reiter.form.FormView):
 
     def POST(self):
         data = self.request.extract()
-        action = data.form.get('form.trigger')  # can be None.
+        action = data.form.pop('form.trigger')  # can be None.
         return self.process_action(action)
