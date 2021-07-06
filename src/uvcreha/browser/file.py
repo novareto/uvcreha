@@ -2,6 +2,7 @@ from uvcreha.app import browser
 from reiter.view.meta import View
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha import contenttypes
+from uvcreha.browser.views import View
 
 
 @browser.register("/users/{uid}/files/{az}", name="file.view")

@@ -9,9 +9,10 @@ from json_ref_dict.loader import get_document
 class JSONSchemaStore:
     def __init__(self, *managed_urls):
         self.schemas = {}
-        self.urls = set(
-            (url + "/" if not url.endswith("/") else url for url in managed_urls)
-        )
+        self.urls = set((
+            url + "/" if not url.endswith("/") else url
+            for url in managed_urls
+        ))
 
     def add(self, name: str, schema: dict):
         if name in self.schemas:
@@ -49,7 +50,7 @@ class JSONSchemaStore:
                     schema['$comment'] = "document item"
                     key = schema.get('id', f.name)
                     store.add(key, schema)
-                    print(f'JSONSchema: loading {key} : {str(f.absolute())} ')
+                    logging.info(f'loading {key} : {str(f.absolute())}.')
 
 
 store: JSONSchemaStore = JSONSchemaStore()

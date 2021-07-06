@@ -1,3 +1,4 @@
+import json
 import horseman.response
 from horseman.http import Multidict
 from reiter.form import trigger
@@ -24,7 +25,11 @@ class DocumentIndex(View):
             return horseman.response.redirect(
                 self.request.app.routes.url_for("doc.edit", **self.params)
             )
-        return dict(request=self.request, document=self.context)
+        return dict(
+            request=self.request,
+            document=self.context,
+            json=json.dumps(dict(self.context), indent=4)
+        )
 
 
 DocumentEdit = NamedComponents()
@@ -37,7 +42,6 @@ DocumentEdit = NamedComponents()
 def document_edit_dispatch(request, **params):
     content_type = contenttypes.registry['document']
     context = content_type.bind(request.database).find_one(**params)
-    print(context["content_type"])
     form = DocumentEdit.get(context["content_type"], DefaultDocumentEditForm)
     form.content_type = content_type
     form.context = content_type.bind(request.database).find_one(**params)
@@ -55,23 +59,31 @@ class DefaultDocumentEditForm(FormView):
         schema = jsonschema.store.get(self.context['content_type'])
         return schema_fields(schema)
 
-    @trigger("save", "Speichern", css="btn btn-primary", order=10)
+    def setupForm(self, formdata=Multidict()):
+        fields = self.get_fields()
+        form = Form(fields)
+        form.process(data=self.context, formdata=formdata)
+        return form
+
+    @trigger("Speichern", css="btn btn-primary", order=10)
     def save(self, request, data):
         #data = request.extract()["form"]
         data = request.get_data().form
         form = self.setupForm(formdata=data)
         if not form.validate():
             return {"form": form}
+
+        if self.context.state != document_workflow.states.sent:
+            wf = document_workflow(self.context, request=request)
+            wf.transition_to(document_workflow.states.sent)
         doc = contenttypes.registry["document"].bind(self.request.database)
-        wf = document_workflow(doc)
-        wf.transition_to(document_workflow.states.sent)
-        doc.update(
-            request.params['docid'],
+        response = doc.update(
+            request.route.params['docid'],
             item=data.dict(),
-            state=doc['state']
+            state=self.context.state.name
         )
         return self.redirect("/")
 
-    @trigger("cancel", "Abbrechen", css="btn btn-secondary", order=20)
+    @trigger("Abbrechen", css="btn btn-secondary", order=20)
     def cancel(self, request, data):
         return self.redirect("/")

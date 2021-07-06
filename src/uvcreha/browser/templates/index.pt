@@ -69,7 +69,8 @@
                tal:attributes="href file.actions['default'].resolve(request, file)"
                tal:content="file.id" />
           </td>
-          <td tal:content="file.date" />
+          <!--<td tal:content="getattr(file, 'date', '-')" /> -->
+          <td> DATUM </td>
           <td tal:content="file.state.value" />
         </tr>
       </tbody>

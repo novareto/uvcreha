@@ -18,7 +18,7 @@
   <div class="shadow-sm p-3 mb-5 bg-body rounded">
     ID: <span tal:content="context.id"> </span> <br>
     State: <span tal:content="context.state.name"> </span> <br>
-    Datum: <span tal:content="context.date"> </span>
+    Datum: <!-- <span tal:content="context.date"> </span> -->
   </div>
   <section id="documents">
     <h2>Dokumente</h2>

@@ -23,7 +23,7 @@ class LoginForm(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Speichern", order=1, css="btn btn-primary")
+    @trigger("Speichern", order=1, css="btn btn-primary")
     def login(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
@@ -41,7 +41,7 @@ class LoginForm(FormView):
             print("Warning: flash messages utility is not available.")
         return self.redirect(request.environ["SCRIPT_NAME"] + "/")
 
-    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
+    @trigger("Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):
         pass
 
@@ -59,7 +59,7 @@ class EditPassword(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("speichern", "Speichern", order=1)
+    @trigger("Speichern", order=1)
     def speichern(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
@@ -74,7 +74,7 @@ class EditPassword(FormView):
         )
         return self.redirect("/%s" % self.action)
 
-    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
+    @trigger("Abbrechen", css="btn btn-secondary")
     def abbrechen(self, *args):
         pass
 

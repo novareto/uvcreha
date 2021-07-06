@@ -1,1 +1,2 @@
 <h1>${document.docid}</h1>
+<pre>${json}</pre>

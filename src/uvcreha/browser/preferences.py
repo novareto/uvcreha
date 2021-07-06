@@ -12,7 +12,7 @@ class EditPreferences(FormView):
     description = "Edit your preferences."
     action = "preferences"
 
-    @trigger("abbrechen", "Abbrechen", css="btn btn-secondary")
+    @trigger("Abbrechen", css="btn btn-secondary")
     def abbrechen(self, request):
         pass
 
@@ -24,7 +24,7 @@ class EditPreferences(FormView):
         form.process(data=data, formdata=formdata)
         return form
 
-    @trigger("update", "Update", css="btn btn-primary")
+    @trigger("Update", css="btn btn-primary")
     def do_update(self, request):
         data = request.extract()["form"]
         form = self.setupForm(formdata=data)

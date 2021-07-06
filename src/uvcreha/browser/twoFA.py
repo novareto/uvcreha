@@ -46,7 +46,7 @@ class TwoFA(FormView):
         print(token)
         return {"form": form}
 
-    @trigger("validate", "Überprüfen", css="btn btn-primary")
+    @trigger("Überprüfen", css="btn btn-primary")
     def validate(self, request, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
@@ -56,7 +56,7 @@ class TwoFA(FormView):
         twoFA.validate_twoFA(self.request.environ)
         return horseman.response.redirect("/")
 
-    @trigger("request", "Neuen Key anfordern", css="btn btn-primary")
+    @trigger("Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):
         token = request.user.TOTP.now()
         request.app.notify("2FA", request, token)
