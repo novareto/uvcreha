@@ -14,7 +14,7 @@ Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha 
 
 
 ```bash
-   apt-get install build-essential libxml2-dev libxslt1-dev libev-dev libev-dev python3-virtualenv git 
+   apt-get install curl build-essential libxml2-dev libxslt1-dev libev-dev libev-dev python3-virtualenv git 
 ```
 
 
@@ -88,7 +88,6 @@ Informationen für die ArangoDB kann über folgende Seite aufgerufen werden:
 # Schlüssel für Push Notifications
 
 ``` bash
-mkdir identities
 cd identities
 ../bin/py ../parts/omelette/py_vapid/main.py
 ../bin/py ../parts/omelette/py_vapid/main.py --sign claim.json
