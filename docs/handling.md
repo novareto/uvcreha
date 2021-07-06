@@ -11,7 +11,7 @@ unserer Applikationen.
 # Start bjoern
 
 ```bash
-./bin/horseman run etc/config.yaml
+./bin/horsebox run etc/config.yaml
 ```
 
 

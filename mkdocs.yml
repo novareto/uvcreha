@@ -21,6 +21,7 @@ nav:
 - Forms: forms.md
 - SMTP: smtp.md
 - AMQP: amqp.md
+- RehaClient: rehaclient.md
 
 
 markdown_extensions:
