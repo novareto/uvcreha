@@ -14,7 +14,7 @@ Folgende Voraussetzung müssen auf Betriebssystemseite gegeben sein um UVC-Reha 
 
 
 ```bash
-   apt-get install build-essential libxml2-dev libxslt1-dev cookiecutter libev-dev python-virtualenv git 
+   apt-get install build-essential libxml2-dev libxslt1-dev libev-dev libev-dev python3-virtualenv git 
 ```
 
 
@@ -39,7 +39,7 @@ Bevor wir das cookiecutter Projekt installieren führe ich zunächst einen upgra
 
 
 ``` bash 
-bin/pip install --upgrade pip==21.1.0
+bin/pip install --upgrade pip==21.0
 bin/pip install --upgrade setuptools==51.1.0
 bin/pip install wheel
 bin/pip install cookiecutter
@@ -61,7 +61,7 @@ zc.buildout erstellen Hierzu verwenden wir das mitgelieferte default script
 
 
 ``` 
-python bootstrap-buildout.py --allow-site-packages
+bin/python bootstrap-buildout.py --allow-site-packages
 bin/buildout
 ```
 
