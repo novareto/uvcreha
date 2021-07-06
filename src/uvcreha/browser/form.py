@@ -61,7 +61,9 @@ class FormView(reiter.form.FormView):
 
     @property
     def action(self):
-        return self.request.environ["SCRIPT_NAME"] + self.request.route.path
+        return (
+            self.request.environ["SCRIPT_NAME"] + self.request.route.path
+        )
 
     @abstractmethod
     def get_fields(self):
@@ -76,3 +78,8 @@ class FormView(reiter.form.FormView):
     def GET(self):
         form = self.setupForm()
         return dict(form=form, error=None)
+
+    def POST(self):
+        data = self.request.extract()
+        action = data.form.get('form.trigger')  # can be None.
+        return self.process_action(action)
