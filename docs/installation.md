@@ -61,7 +61,7 @@ zc.buildout erstellen Hierzu verwenden wir das mitgelieferte default script
 
 
 ``` 
-bin/python bootstrap-buildout.py --allow-site-packages
+../bin/python bootstrap-buildout.py --allow-site-packages
 bin/buildout
 ```
 

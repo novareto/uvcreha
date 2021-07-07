@@ -68,7 +68,10 @@ class File(Content):
 def view(request, item):
     if request.user.title != "admin":
         if item.state is file_workflow.states.created:
-            return request.route_path("file.register", uid=item["uid"], az=item["az"])
+            try:
+                return request.route_path("file.register", uid=item["uid"], az=item["az"])
+            except:
+                pass
     return request.route_path("file.view", uid=item["uid"], az=item["az"])
 
 
