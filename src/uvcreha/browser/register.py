@@ -2,7 +2,7 @@ from uvcreha.browser.crud import AddForm
 from uvcreha import contenttypes
 from uvcreha.browser.form import Form, FormView
 from uvcreha.workflow import user_workflow
-from uvcreha.app import browser
+from uvcreha.app import browser, events
 from uvcreha.browser.layout import TEMPLATES
 from uuid import uuid4
 from urllib.parse import urlencode
@@ -11,6 +11,7 @@ from jsonschema_wtforms import schema_fields
 from uvcreha import contenttypes, jsonschema
 from wtforms import StringField
 from reiter.form import trigger
+from uvcreha.events import UserRegisteredEvent
 
 
 TEXT = """Vielen Dank für Ihre Registrierung
@@ -40,15 +41,14 @@ class AddUserForm(AddForm):
         })
 
         token = obj.generate_token().now()
-        import pdb; pdb.set_trace()
         url = "%s/%s?%s" % (
             self.request.application_uri(),
             self.request.route_path(name='verify_register'),
             urlencode(dict(uid=uid, token=token))
         )
         self.request.app.notify(
-            "user_created",
-            request=self.request, uid=obj['uid'], user=obj, message=url)
+            UserRegisteredEvent(request, obj, message=url)
+        )
         return obj
 
     def get_form(self):
@@ -59,7 +59,7 @@ class AddUserForm(AddForm):
 
 
 @browser.register("/verify_register", name="verify_register")
-class VerifyRegistraion(FormView):
+class VerifyRegistration(FormView):
     title = "Registrierung abschließen"
     description = ""
 

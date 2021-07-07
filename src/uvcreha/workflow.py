@@ -1,7 +1,10 @@
 from roughrider import workflow
+from uvcreha.events import WorkflowTransitionEvent
+from reiter.events import Subscribers
 
 
 class ModelWorkflowItem(workflow.WorkflowItem):
+
     @property
     def state(self):
         return self.workflow.get(self.item.get("state"))
@@ -10,13 +13,32 @@ class ModelWorkflowItem(workflow.WorkflowItem):
     def state(self, wfstate):
         self.item["state"] = wfstate.name
 
+    def apply_transition(self, transition: workflow.Transition):
+        super().apply_transition(transition)
+        self.workflow.notify(WorkflowTransitionEvent(
+            transition, self.item, **self.namespace
+        ))
+
 
 def ValidUser(item, **namespace):
     if not item["email"]:
         raise workflow.Error(message=f"User {item} needs a valid email.")
 
 
-class UserWorkflow(workflow.Workflow):
+class Workflow(workflow.Workflow):
+
+    def __init__(self, default_state):
+        super().__init__(default_state)
+        self.subscribers: Subscribers = Subscribers()
+
+    def notify(self, *args, **kwargs):
+        return self.subscribers.notify(*args, **kwargs)
+
+    def subscribe(self, event_type):
+        return self.subscribers.subscribe(event_type)
+
+
+class UserWorkflow(Workflow):
 
     wrapper = ModelWorkflowItem
 
@@ -55,7 +77,7 @@ class UserWorkflow(workflow.Workflow):
     )
 
 
-class DocumentWorkflow(workflow.Workflow):
+class DocumentWorkflow(Workflow):
 
     wrapper = ModelWorkflowItem
 
@@ -80,7 +102,7 @@ class DocumentWorkflow(workflow.Workflow):
     )
 
 
-class FileWorkflow(workflow.Workflow):
+class FileWorkflow(Workflow):
 
     wrapper = ModelWorkflowItem
 
@@ -108,9 +130,3 @@ class FileWorkflow(workflow.Workflow):
 document_workflow = DocumentWorkflow("inquiry")
 user_workflow = UserWorkflow("pending")
 file_workflow = FileWorkflow("created")
-
-
-@document_workflow.subscribe("Send")
-@document_workflow.subscribe("Approve")
-def notify_trigger(transition, item, request, **ns):
-    print(f"This is a notification: {item}, {request}.")

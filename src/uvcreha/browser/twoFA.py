@@ -1,13 +1,15 @@
+import base64
+import qrcode
+import wtforms
+from io import BytesIO
+
+import horseman.response
 from horseman.http import Multidict
 from reiter.form import trigger
+from uvcreha.events import TwoFAEvent
 from uvcreha.app import browser, ui
 from uvcreha.request import Request
 from uvcreha.browser.form import FormMeta, FormView
-import horseman.response
-import wtforms
-import qrcode
-from io import BytesIO
-import base64
 
 
 def user_totp_validator(totp):
@@ -43,6 +45,7 @@ class TwoFA(FormView):
     def GET(self):
         form = self.setupForm()
         token = self.request.user.TOTP.now()
+        self.request.app.notify(TwoFAEvent(self.request, token))
         print(token)
         return {"form": form}
 
@@ -59,7 +62,7 @@ class TwoFA(FormView):
     @trigger("Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):
         token = request.user.TOTP.now()
-        request.app.notify("2FA", request, token)
+        self.request.app.notify(TwoFAEvent(self.request, token))
         print(token)
         form = self.setupForm()
         return {"form": form}

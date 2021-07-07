@@ -1,3 +1,4 @@
+import reiter.application.events
 from typing import NamedTuple
 from uvcreha.app import events
 
@@ -27,7 +28,7 @@ class SessionMessages:
         self.session.save()
 
 
-@events.subscribe("request_created")
-def flash_utility(app, request):
-    flash = app.utilities["flash"](request.environ)
-    request.utilities.register(flash, "flash")
+@events.subscribe(reiter.application.events.RequestCreated)
+def flash_utility(event):
+    flash = event.app.utilities["flash"](event.request.environ)
+    event.request.utilities.register(flash, "flash")

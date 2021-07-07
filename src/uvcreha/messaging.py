@@ -1,44 +1,37 @@
 import logging
-from roughrider.events.dispatcher import Dispatcher
+from reiter.events.meta import Subscribers
 from uvcreha.app import events
 from uvcreha import contenttypes
+import uvcreha.events
+from typing import Dict
 
 
-class UserMessageCenter(Dispatcher):
+class UserMessageCenter:
 
-    def dispatch(self, user):
-        if preferences := user.get('preferences'):
-            return preferences.get('messaging_type', 'email')
-        return 'email'
+    def __init__(self):
+        self._subscribers: Dict[str, Subscribers] = {}
 
-    def __call__(self, request, uid=None, user=None, message=None, **kw):
-        if user is None and uid is None:
-            logging.info(
-                'Dispatcher needs a user or uid to send a message.')
-            return
-        if message is None:
-            logging.info(
-                'Dispatcher needs a message to send.')
-            return
+    def subscribe(self, name, event_type):
+        def register_subscriber(func):
+            if name not in self._subscribers:
+                subs = self._subscribers[name] = Subscribers()
+            else:
+                subs = self._subscribers[name]
+            subs.add(event_type, func)
+            return func
+        return register_subscriber
 
-        if uid is not None and user is None:
-            content_type = contenttypes.registry['user']
-            binding = content_type.bind(request.database)
-            user = binding.find_one(uid=uid)
+    def dispatch(self, event):
+        if isinstance(event, uvcreha.events.UserEvent):
+            if preferences := event.user.get('preferences'):
+                return preferences.get('messaging_type', 'email')
+            return 'email'
 
-        key = self.dispatch(user)
-        if key is not None:
-            self.notify(key, request, user, message)
+    def __call__(self, event):
+        key = self.dispatch(event)
+        if key is not None and key in self._subscribers:
+            self._subscribers[key].notify(event)
 
 
 message_center = UserMessageCenter()
-events.subscribe('user_created')(message_center)
-
-
-@message_center.subscribe('email')
-def email_messaging(request, user, message):
-    emailer = request.app.utilities['emailer']
-    with emailer.smtp() as send:
-        msg = emailer.email(
-            user['email'], 'Some message', message, html=None)
-        send(msg)
+events.subscribe(uvcreha.events.UserEvent)(message_center)
