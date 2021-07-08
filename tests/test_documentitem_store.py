@@ -120,6 +120,12 @@ def test_document_item_store():
     assert num == 2
     assert len(items) == 1
 
+    assert list(items.items_for('name')) == [
+        (1, 'jane'), (2, 'john')
+    ]
+
+    assert list(items.versions_for('name')) == [1, 2]
+
     version = items.get('name', version=2)
     assert version == items.get('name')
     assert version.number == 2

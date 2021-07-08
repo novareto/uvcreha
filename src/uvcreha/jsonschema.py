@@ -29,6 +29,13 @@ class VersionedValue:
         value = self._store[version]
         return Version(number=version, value=value)
 
+    def __iter__(self):
+        for key, value in self._store.items():
+            yield Version(number=key, value=value)
+
+    def keys(self):
+        return self._store.keys()
+
     def add(self, value: Any, version: Optional[int] = None) -> int:
         if version is not None:
             version = int(version)  # assert type casting
@@ -93,6 +100,16 @@ class DocumentItemStore:
         if value is not None:
             return value.get(version)
         return None
+
+    def versions_for(self, name):
+        v = self._store.get(name)
+        if v is not None:
+            return iter(v.keys())
+
+    def items_for(self, name):
+        v = self._store.get(name)
+        if v is not None:
+            return iter(v)
 
 
 class JSONSchemaStore:
