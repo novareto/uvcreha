@@ -21,7 +21,7 @@ else:
                 {
                     "loginname": self.user["loginname"],
                     "password": self.user["password"],
-                    "form.trigger": "trigger.speichern",
+                    "form.trigger": "trigger.login",
                 },
             )
             return response

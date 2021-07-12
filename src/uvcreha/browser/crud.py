@@ -7,6 +7,7 @@ from horseman.http import Multidict
 from typing import Optional, Iterable, Dict, Any
 from reiter.form import trigger
 from uvcreha.browser.form import FormView
+from uvcreha.events import ObjectAddedEvent, ObjectModifiedEvent
 
 
 class BaseForm(FormView):
@@ -52,7 +53,7 @@ class AddForm(BaseForm):
         if not form.validate():
             return {"form": form}
         obj = self.create(data)
-        print(obj)
+        request.app.notify(ObjectCreatedEvent(self.request, obj))
         return horseman.response.redirect(self.destination)
 
 
@@ -89,10 +90,11 @@ class EditForm(BaseForm):
         if not form.validate():
             return {"form": form}
         obj = self.apply(data)
-        print(obj)
+        request.app.notify(ObjectModifiedEvent(self.request, obj))
         return horseman.response.redirect(self.destination)
 
     @trigger("Delete", css="btn btn-danger")
     def delete(self, request, data):
         self.remove(self.context.id)
+        request.app.notify(ObjectRemovedEvent(self.request, obj))
         return horseman.response.redirect(self.destination)

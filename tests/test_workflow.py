@@ -1,7 +1,7 @@
 import pytest
 from roughrider.workflow import WorkflowItem, Transition, Action
 from uvcreha.models import Document
-from uvcreha.workflow import DocumentWorkflow, document_workflow, notify_trigger
+from uvcreha.workflow import DocumentWorkflow, document_workflow
 
 
 def test_workflow_default():

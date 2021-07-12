@@ -1,3 +1,6 @@
+from reiter.application import events
+
+
 def test_flash(webapp, session):
 
     app = webapp.__wrapped__
@@ -10,7 +13,7 @@ def test_flash(webapp, session):
     flash_manager = request.utilities.get('flash')
     assert flash_manager is None
 
-    app.notify('request_created', app, request)
+    app.notify(events.RequestCreated(app, request))
     flash_manager = request.utilities.get('flash')
     assert flash_manager is not None
 

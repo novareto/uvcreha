@@ -1,5 +1,5 @@
 import reiter.view.utils
-from roughrider.events.registry import Subscribers
+from reiter.events.meta import Subscribers
 from reiter.application.browser import registries
 from roughrider.routing.route import NamedRoutes
 

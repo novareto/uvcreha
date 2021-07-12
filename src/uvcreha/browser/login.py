@@ -5,6 +5,8 @@ from uvcreha.app import browser
 from uvcreha.browser.form import Form, FormView
 from uvcreha.request import Request
 from uvcreha import contenttypes
+from uvcreha.app import events 
+from uvcreha.events import UserLoggedInEvent
 
 
 @browser.register("/login")
@@ -32,6 +34,7 @@ class LoginForm(FormView):
         auth = request.app.utilities.get("authentication")
         if (user := auth.from_credentials(data.form.dict())) is not None:
             auth.remember(request.environ, user)
+            request.app.notify(UserLoggedInEvent(request, user))
             return self.redirect(request.environ["SCRIPT_NAME"] + "/")
 
         flash_messages = request.utilities.get("flash")
