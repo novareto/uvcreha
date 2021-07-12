@@ -1,9 +1,6 @@
-# Views
-
+# Views / Layout / Viewlets
 
 ## Beispiel für einen View
-
-
 
 
 ```python
@@ -24,3 +21,37 @@ class TestView(View):
 
 ```
 
+Ein komplettes Layout kann man wiefolgt registriert.
+
+
+```python
+
+@ui.register_layout(Request, name="bg.example")
+class BGExampleLayout:
+
+    __slots__ = ("_template", "name")
+
+    def __init__(self, request, name):
+        self.name = name
+        self._template = TEMPLATES["layout.pt"]
+
+    @property
+    def macros(self):
+        return self._template.macros
+
+    def render(self, content, **namespace):
+        return self._template.render(content=content, **namespace)
+
+
+```
+
+Viewlets können werden wiefolgt registriert.
+
+
+```python
+
+@ui.register_slot(request=Request, name="sitecap")
+def sitecap(request, name, view):
+    return TEMPLATES["sitecap.pt"].render(request=request)
+
+```

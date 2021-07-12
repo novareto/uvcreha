@@ -15,6 +15,7 @@ class JSONSchemaStore:
         ))
 
     def add(self, name: str, schema: dict):
+        print(name)
         if name in self.schemas:
             raise KeyError(f"Schema {name} already exists.")
         self.schemas[name] = schema
@@ -47,7 +48,8 @@ class JSONSchemaStore:
             if f.suffix == '.json':
                 with f.open('r') as fd:
                     schema = orjson.loads(fd.read())
-                    schema['$comment'] = "document item"
+                    if not '$comment' in schema:
+                        schema['$comment'] = "document item"
                     key = schema.get('id', f.name)
                     store.add(key, schema)
                     logging.info(f'loading {key} : {str(f.absolute())}.')
