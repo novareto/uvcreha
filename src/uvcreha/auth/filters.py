@@ -29,7 +29,7 @@ def filter_user_state(states: List[WorkflowState]) -> Filter:
 
     def _filter(environ, caller, user):
         if user.state in forbidden_states:
-            return Response.create(403)
+            return Response(403)
         return None  # Continue the chain
 
     return _filter

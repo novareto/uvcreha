@@ -16,7 +16,7 @@ class ComposedView(reiter.view.composed.ComposedView):
         raw = self.request.query.bool("raw", default=False)
         body = self.page(raw=True, layout=None)
         if raw:
-            return Response.create(200, body=body)
+            return Response(200, body=body)
         pages = [(key, view.title) for key, view in self.pages.items()]
         return self.render(
             {

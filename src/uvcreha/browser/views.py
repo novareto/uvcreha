@@ -10,7 +10,7 @@ def layout_rendering(view: APIView, result: Any, raw=False, layout=...):
     if isinstance(result, str):
         if raw:
             return result
-        return Response.create(body=result)
+        return Response(body=result)
 
     if isinstance(result, (dict, type(None))):
         if view.template is None:

@@ -1,5 +1,4 @@
 import horseman.response
-from multidict import MultiDict
 from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.browser.form import Form, FormView
@@ -19,7 +18,7 @@ class LoginForm(FormView):
     def action(self):
         return self.request.environ["SCRIPT_NAME"] + "/login"
 
-    def setupForm(self, data={}, formdata=MultiDict()):
+    def setupForm(self, data=None, formdata=None):
         ct = contenttypes.registry["user"]
         form = Form.from_schema(ct.schema, include=("loginname", "password"))
         form.process(data=data, formdata=formdata)
@@ -86,4 +85,4 @@ class EditPassword(FormView):
 def LogoutView(request: Request):
     auth = request.app.utilities.get("authentication")
     auth.forget(request.environ)
-    return horseman.response.Response.create(302, headers={"Location": "/"})
+    return horseman.response.Response(302, headers={"Location": "/"})

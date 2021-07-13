@@ -26,4 +26,4 @@ class Webpush(View):
         #     self.request.user.key,
         #     preferences=self.request.user.preferences.dict()
         # )
-        # return horseman.response.Response.create(200)
+        # return horseman.response.Response(200)
