@@ -1,6 +1,5 @@
 import json
-import horseman.response
-from multidict import MultiDict
+from horseman.response import Response
 from reiter.form import trigger
 from reiter.application.registries import NamedComponents
 from uvcreha.app import browser
@@ -22,7 +21,7 @@ class DocumentIndex(View):
 
     def GET(self):
         if self.context.state is document_workflow.states.inquiry:
-            return horseman.response.redirect(
+            return Response.redirect(
                 self.request.app.routes.url_for("doc.edit", **self.params)
             )
         return dict(
@@ -60,7 +59,7 @@ class DefaultDocumentEditForm(FormView):
         schema = jsonschema.documents_store.get(name, version)
         return schema_fields(schema.value)
 
-    def setupForm(self, formdata=MultiDict()):
+    def setupForm(self, formdata=None):
         fields = self.get_fields()
         form = Form(fields)
         form.process(data=self.context, formdata=formdata)
@@ -80,7 +79,7 @@ class DefaultDocumentEditForm(FormView):
         doc = contenttypes.registry["document"].bind(self.request.database)
         response = doc.update(
             request.route.params['docid'],
-            item=data.dict(),
+            item=form.data,
             state=self.context.state.name
         )
         return self.redirect("/")

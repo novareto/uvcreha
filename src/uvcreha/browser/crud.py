@@ -54,7 +54,7 @@ class AddForm(BaseForm):
             return {"form": form}
         obj = self.create(form.data)
         request.app.notify(events.ObjectCreatedEvent(self.request, obj))
-        return horseman.response.redirect(self.destination)
+        return horseman.response.Response.redirect(self.destination)
 
 
 class DefaultView(BaseForm):
