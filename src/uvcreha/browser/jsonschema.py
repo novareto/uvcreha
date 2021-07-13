@@ -1,4 +1,4 @@
-from horseman.response import Response, reply
+from horseman.response import Response
 from uvcreha.app import browser
 from uvcreha.jsonschema import store
 from functools import wraps
@@ -26,5 +26,5 @@ def allow_origins(origins: str, codes: Iterable[HTTPCode] = None):
 def jsonschema(request, schema: str):
     structure = store.get(schema)
     if structure is None:
-        return reply(404)
+        return Response(404)
     return Response.to_json(body=dict(structure))

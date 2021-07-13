@@ -45,6 +45,7 @@ class VersionedValue:
                 raise ValueError(f'Version {version} already exists.')
         else:
             version = self.latest + 1
+
         self._store[version] = value
         if version > self.latest:
             self.latest = version
@@ -111,6 +112,22 @@ class DocumentItemStore:
         if v is not None:
             return iter(v)
 
+    def keys(self):
+        return self._store.keys()
+
+    def items(self):
+        return self._store.items()
+
+    def load_from_folder(self, path: Path):
+        for f in path.iterdir():
+            if f.suffix == '.json':
+                with f.open('r') as fd:
+                    schema = orjson.loads(fd.read())
+                    key = schema.get('id', f.name)
+                    version = schema.pop('$version', None)
+                    self.add(key, schema, version=version)
+                    logging.info(f'loading {key} : {str(f.absolute())}.')
+
 
 class JSONSchemaStore:
     def __init__(self, *managed_urls):
@@ -153,11 +170,11 @@ class JSONSchemaStore:
             if f.suffix == '.json':
                 with f.open('r') as fd:
                     schema = orjson.loads(fd.read())
-                    schema['$comment'] = "document item"
                     key = schema.get('id', f.name)
-                    store.add(key, schema)
+                    self.add(key, schema)
                     logging.info(f'loading {key} : {str(f.absolute())}.')
 
 
+documents_store: DocumentItemStore = DocumentItemStore()
 store: JSONSchemaStore = JSONSchemaStore()
 get_document.register(store.fetch)

@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any
 
 import roughrider.contenttypes
 import reiter.arango.meta
+from json_ref_dict import materialize
 from reiter.arango.binding import Binder
 
 
@@ -37,7 +38,7 @@ class ContentType(roughrider.contenttypes.ContentType):
         self.collection = collection
 
     def validate(self, data):
-        validator = jsonschema_rs.JSONSchema(self.schema)
+        validator = jsonschema_rs.JSONSchema(materialize(self.schema))
         validator.validate(data)  # may raise jsonschema_rs ValidationError
 
     def bind(self, db: Any, create: bool = True):

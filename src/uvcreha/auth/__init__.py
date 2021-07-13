@@ -1,3 +1,4 @@
+from multidict import MultiDict
 from horseman.types import Environ, WSGICallable
 from horseman.response import Response
 from uvcreha import contenttypes

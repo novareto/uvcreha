@@ -1,6 +1,6 @@
 import json
 import horseman.response
-from horseman.http import Multidict
+from multidict import MultiDict
 from reiter.form import trigger
 from reiter.application.registries import NamedComponents
 from uvcreha.app import browser
@@ -56,10 +56,11 @@ class DefaultDocumentEditForm(FormView):
     context = None
 
     def get_fields(self):
-        schema = jsonschema.store.get(self.context['content_type'])
-        return schema_fields(schema)
+        name, version = self.context["content_type"].rsplit(".", 1)
+        schema = jsonschema.documents_store.get(name, version)
+        return schema_fields(schema.value)
 
-    def setupForm(self, formdata=Multidict()):
+    def setupForm(self, formdata=MultiDict()):
         fields = self.get_fields()
         form = Form(fields)
         form.process(data=self.context, formdata=formdata)

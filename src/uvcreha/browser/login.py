@@ -1,11 +1,11 @@
 import horseman.response
-from horseman.http import Multidict
+from multidict import MultiDict
 from reiter.form import trigger
 from uvcreha.app import browser
 from uvcreha.browser.form import Form, FormView
 from uvcreha.request import Request
 from uvcreha import contenttypes
-from uvcreha.app import events 
+from uvcreha.app import events
 from uvcreha.events import UserLoggedInEvent
 
 
@@ -19,7 +19,7 @@ class LoginForm(FormView):
     def action(self):
         return self.request.environ["SCRIPT_NAME"] + "/login"
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def setupForm(self, data={}, formdata=MultiDict()):
         ct = contenttypes.registry["user"]
         form = Form.from_schema(ct.schema, include=("loginname", "password"))
         form.process(data=data, formdata=formdata)
@@ -32,7 +32,7 @@ class LoginForm(FormView):
             return {"form": form}
 
         auth = request.app.utilities.get("authentication")
-        if (user := auth.from_credentials(data.form.dict())) is not None:
+        if (user := auth.from_credentials(form.data)) is not None:
             auth.remember(request.environ, user)
             request.app.notify(UserLoggedInEvent(request, user))
             return self.redirect(request.environ["SCRIPT_NAME"] + "/")
@@ -56,7 +56,7 @@ class EditPassword(FormView):
     description = "Hier können Sie Ihr Passwort ändern"
     action = "edit_pw"
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def setupForm(self, data={}, formdata=MultiDict()):
         ct = contenttypes.registry["user"]
         form = Form.from_schema(ct.schema, include=("password"))
         form.process(data=data, formdata=formdata)

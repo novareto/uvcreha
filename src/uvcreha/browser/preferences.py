@@ -1,4 +1,4 @@
-from horseman.http import Multidict
+from multidict import MultiDict
 from uvcreha.app import browser
 from reiter.form import trigger
 from uvcreha.browser.form import Form, FormView
@@ -16,7 +16,7 @@ class EditPreferences(FormView):
     def abbrechen(self, request):
         pass
 
-    def setupForm(self, data=None, formdata=Multidict()):
+    def setupForm(self, data=None, formdata=MultiDict()):
         if data is None:
             data = self.request.user.data.get("preferences", {})
         schema = jsonschema.store.get("UserPreferences")

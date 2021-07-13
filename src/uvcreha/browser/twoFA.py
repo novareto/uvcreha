@@ -2,9 +2,9 @@ import base64
 import qrcode
 import wtforms
 from io import BytesIO
+from multidict import MultiDict
 
 import horseman.response
-from horseman.http import Multidict
 from reiter.form import trigger
 from uvcreha.events import TwoFAEvent
 from uvcreha.app import browser, ui
@@ -30,7 +30,7 @@ class TwoFA(FormView):
     def action(self):
         return self.request.environ["SCRIPT_NAME"] + "/2FA"
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def setupForm(self, data={}, formdata=MultiDict()):
         form = wtforms.form.BaseForm(
             {
                 "token": wtforms.fields.StringField(
@@ -57,7 +57,7 @@ class TwoFA(FormView):
 
         twoFA = request.app.utilities.get("twoFA")
         twoFA.validate_twoFA(self.request.environ)
-        return horseman.response.redirect("/")
+        return horseman.response.Response.redirect("/")
 
     @trigger("Neuen Key anfordern", css="btn btn-primary")
     def request_token(self, request, data):

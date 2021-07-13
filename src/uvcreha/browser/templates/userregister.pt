@@ -1,0 +1,20 @@
+
+<form action="" novalidate method="POST" tal:attributes="hx-post view.action" hx-swap="outerHTML">
+<h1> Benutzer Registrieren </h1>
+  <div tal:define="field form['loginname']" metal:use-macro="macros['form_group']"> </div>
+  <div tal:define="field form['password']" metal:use-macro="macros['form_group']"> </div>
+  <div tal:define="field form['email']" metal:use-macro="macros['form_group']"> </div>
+
+  <input tpye="text" name="form.trigger" value="trigger.speichern">
+
+  <div class="row form-actions">
+    <tal:action repeat="action actions.values()">
+    <button
+      name='form.trigger'
+      tal:attributes="value action.id;
+      class action.css"
+      type="submit" tal:content="action.title"> </button>
+    </tal:action>
+  </div>
+
+</form>

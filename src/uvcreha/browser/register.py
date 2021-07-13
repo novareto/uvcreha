@@ -6,12 +6,13 @@ from uvcreha.app import browser, events
 from uvcreha.browser.layout import TEMPLATES
 from uuid import uuid4
 from urllib.parse import urlencode
-from horseman.http import Multidict
+from multidict import MultiDict
 from jsonschema_wtforms import schema_fields
 from uvcreha import contenttypes, jsonschema
 from wtforms import StringField
 from reiter.form import trigger
 from uvcreha.events import UserRegisteredEvent
+from uvcreha.browser.layout import TEMPLATES
 
 
 TEXT = """Vielen Dank für Ihre Registrierung
@@ -24,13 +25,26 @@ Bitte klicken Sie auf folgenden Link %s
 class AddUserForm(AddForm):
     title = "Benutzer anlegen"
     description = "Benutzer registrieren"
+    template = TEMPLATES['userregister.pt']
+
+    def POST(self):
+        data = self.request.extract()
+        layout = self.request.app.ui.get_layout(self.request, name=...)
+        action = data.form.get('form.trigger')  # can be None.
+        if action:
+            return self.template.render(
+                macros=layout.macros,
+                view=self,
+                actions=self.triggers,
+                **self.process_action(action)
+            )
+        return HTTPError(400)
 
     def update(self):
         self.content_type = contenttypes.registry['user']
 
     def create(self, data):
         binding = self.content_type.bind(self.request.database)
-        data = data.form.dict()
         uid = str(uuid4())
         obj, response = binding.create(**{
             **self.params,
@@ -70,8 +84,8 @@ class VerifyRegistration(FormView):
         schema = jsonschema.store.get('User')
         return schema_fields(schema, include=("password", "uid"))
 
-    def setupForm(self, data={}, formdata=Multidict()):
-        data = self.request.query.dict()
+    def setupForm(self, data={}, formdata=MultiDict()):
+        data = self.request.query.to_dict()
         fields = self.get_fields()
         fields['token'] = StringField('token')
         form = Form(fields)
@@ -86,15 +100,14 @@ class VerifyRegistration(FormView):
         if not form.validate():
             return {"form": form}
         binding = self.content_type.bind(self.request.database)
-        data = data.form.dict()
-        user = binding.find_one(uid=data['uid'])
+        user = binding.find_one(uid=form.data['uid'])
 
         if user is None:
             flash_messages.add(body="Kein Benutzer gefunden.")
             return {"form": form}
 
         token = user.generate_token()
-        if not token.verify(data['token']):
+        if not token.verify(form.data['token']):
             flash_messages.add(body="Fehler im Token.")
             return {"form": form}
 
@@ -103,7 +116,7 @@ class VerifyRegistration(FormView):
             return {"form": form}
 
         binding.update(
-            uid=data['uid'],
+            uid=form.data['uid'],
             state=user_workflow.states.active.name
         )
         return self.redirect(request.environ["SCRIPT_NAME"] + "/")

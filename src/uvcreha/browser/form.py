@@ -1,7 +1,8 @@
 import wtforms
 import reiter.form
 from abc import ABC, abstractmethod
-from horseman.http import Multidict, HTTPError
+from multidict import MultiDict
+from horseman.http import HTTPError
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
 from wtforms.fields.simple import MultipleFileField
@@ -69,7 +70,7 @@ class FormView(reiter.form.FormView):
     def get_fields(self):
         pass
 
-    def setupForm(self, data={}, formdata=Multidict()):
+    def setupForm(self, data={}, formdata=MultiDict()):
         fields = self.get_fields()
         form = Form(fields)
         form.process(data=data, formdata=formdata)
@@ -81,7 +82,7 @@ class FormView(reiter.form.FormView):
 
     def POST(self):
         data = self.request.extract()
-        action = data.form.pop('form.trigger')  # can be None.
+        action = data.form.get('form.trigger')  # can be None.
         if action:
-            return self.process_action(action[0])  # Multidict
+            return self.process_action(action)
         return HTTPError(400)

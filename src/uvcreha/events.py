@@ -8,7 +8,7 @@ class ObjectEvent(Event):
         self.obj = obj
 
 
-class ObjectCreatedEevent(ObjectEvent):
+class ObjectCreatedEvent(ObjectEvent):
     pass
 
 
