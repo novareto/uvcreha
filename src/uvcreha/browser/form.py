@@ -1,7 +1,6 @@
 import wtforms
 import reiter.form
 from abc import ABC, abstractmethod
-from multidict import MultiDict
 from horseman.http import HTTPError
 from wtforms import widgets, SelectMultipleField
 from wtforms_components import read_only
@@ -70,7 +69,7 @@ class FormView(reiter.form.FormView):
     def get_fields(self):
         pass
 
-    def setupForm(self, data={}, formdata=MultiDict()):
+    def setupForm(self, data=None, formdata=None):
         fields = self.get_fields()
         form = Form(fields)
         form.process(data=data, formdata=formdata)

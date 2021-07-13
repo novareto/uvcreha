@@ -55,7 +55,7 @@ class EditPassword(FormView):
     description = "Hier können Sie Ihr Passwort ändern"
     action = "edit_pw"
 
-    def setupForm(self, data={}, formdata=MultiDict()):
+    def setupForm(self, data=None, formdata=None):
         ct = contenttypes.registry["user"]
         form = Form.from_schema(ct.schema, include=("password"))
         form.process(data=data, formdata=formdata)

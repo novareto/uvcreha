@@ -6,7 +6,6 @@ from uvcreha.app import browser, events
 from uvcreha.browser.layout import TEMPLATES
 from uuid import uuid4
 from urllib.parse import urlencode
-from multidict import MultiDict
 from jsonschema_wtforms import schema_fields
 from uvcreha import contenttypes, jsonschema
 from wtforms import StringField
@@ -84,7 +83,7 @@ class VerifyRegistration(FormView):
         schema = jsonschema.store.get('User')
         return schema_fields(schema, include=("password", "uid"))
 
-    def setupForm(self, data={}, formdata=MultiDict()):
+    def setupForm(self, data=None, formdata=None):
         data = self.request.query.to_dict()
         fields = self.get_fields()
         fields['token'] = StringField('token')

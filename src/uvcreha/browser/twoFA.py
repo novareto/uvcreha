@@ -2,7 +2,6 @@ import base64
 import qrcode
 import wtforms
 from io import BytesIO
-from multidict import MultiDict
 
 import horseman.response
 from reiter.form import trigger
@@ -30,7 +29,7 @@ class TwoFA(FormView):
     def action(self):
         return self.request.environ["SCRIPT_NAME"] + "/2FA"
 
-    def setupForm(self, data={}, formdata=MultiDict()):
+    def setupForm(self, data=None, formdata=None):
         form = wtforms.form.BaseForm(
             {
                 "token": wtforms.fields.StringField(
