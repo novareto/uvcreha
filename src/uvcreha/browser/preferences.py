@@ -30,5 +30,5 @@ class EditPreferences(FormView):
         if not form.validate():
             return {"form": form}
         user = contenttypes.registry["user"].bind(self.request.database)
-        user.update(request.user.key, preferences=data.dict())
+        user.update(request.user.key, preferences=form.data)
         return self.redirect("/")

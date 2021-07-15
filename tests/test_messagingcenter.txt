@@ -29,7 +29,7 @@ The messaging dispatcher will use 'email' as default:
   >>> from uvcreha.messaging import message_center
   >>> someuser = dict(email='SomeUser@test.com', preferences = {})
   >>> assert message_center.dispatch(
-  ...     UserEvent(request, someuser)) == 'email'
+  ...     UserEvent(someuser, request=request)) == 'email'
 
 To allow the testing of the 'email' part of the process, we'll create a
 test emailer.
@@ -44,7 +44,7 @@ We will register later on another subscriber to demonstrate, but the
 'UserEvent' works like all the other events. Let's see how :
 
   >>> from uvcreha.events import UserEvent
-  >>> events.notify(UserEvent(request, someuser))
+  >>> events.notify(UserEvent(someuser, request=request))
 
 The event center is notified but there's no specific listener so nothing
 really happens. Let's register a messaging subscriber for email and
@@ -57,7 +57,7 @@ a specific UserEvent, UserLoggedInEvent:
   ...    event.request.app.utilities['emailer'](
   ...        'A user logged in and I have an email trigger on it.')
 
-  >>> events.notify(UserLoggedInEvent(request, someuser))
+  >>> events.notify(UserLoggedInEvent(someuser, request=request))
   >>> mymock.assert_called_once_with(
   ...     'A user logged in and I have an email trigger on it.')
 
@@ -67,7 +67,7 @@ a specific UserEvent, UserLoggedInEvent:
 Notifying the message center with a key that is unknown will do nothing:
 
   >>> someuser['preferences']['messaging_type'] = 'airmail'
-  >>> events.notify(UserLoggedInEvent(request, someuser))
+  >>> events.notify(UserLoggedInEvent(someuser, request=request))
   >>> assert not mymock.called
 
 
@@ -79,7 +79,7 @@ Creating a subscriber for this type is as simple as :
 
   >>> import pytest
   >>> with pytest.raises(NotImplementedError) as exc:
-  ...     events.notify(UserLoggedInEvent(request, someuser))
+  ...     events.notify(UserLoggedInEvent(someuser, request))
 
   >>> assert str(exc.value) == 'Could not airmail'
   >>> assert not mymock.called
@@ -87,4 +87,4 @@ Creating a subscriber for this type is as simple as :
 
 Of course, notifying a basic UserEvent won't create a problem:
 
-  >>> events.notify(UserEvent(request, someuser))
+  >>> events.notify(UserEvent(someuser, request))

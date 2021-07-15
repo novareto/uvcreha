@@ -1,6 +1,7 @@
 import pyotp
 import base64
 import hashlib
+from uvcreha import events
 from uvcreha.workflow import user_workflow
 from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
@@ -123,8 +124,10 @@ store.add(
 )
 
 
-@registry.factory("user", schema=store.get("User"), collection="users")
+@registry.factory(
+    "user", schema=store.get("User"), collection="users")
 class User(Content):
+
     @property
     def id(self):
         return self["uid"]

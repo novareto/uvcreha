@@ -25,23 +25,23 @@ class LoginForm(FormView):
         return form
 
     @trigger("Speichern", order=1, css="btn btn-primary")
-    def login(self, request, data):
+    def login(self, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
 
-        auth = request.app.utilities.get("authentication")
+        auth = self.request.app.utilities.get("authentication")
         if (user := auth.from_credentials(form.data)) is not None:
-            auth.remember(request.environ, user)
-            request.app.notify(UserLoggedInEvent(request, user))
-            return self.redirect(request.environ["SCRIPT_NAME"] + "/")
+            auth.remember(self.request.environ, user)
+            self.request.app.notify(UserLoggedInEvent(user, request=self.request))
+            return self.redirect(self.request.environ["SCRIPT_NAME"] + "/")
 
-        flash_messages = request.utilities.get("flash")
+        flash_messages = self.request.utilities.get("flash")
         if flash_messages is not None:
             flash_messages.add(body="Failed login.")
         else:
             print("Warning: flash messages utility is not available.")
-        return self.redirect(request.environ["SCRIPT_NAME"] + "/")
+        return self.redirect(self.request.environ["SCRIPT_NAME"] + "/")
 
     @trigger("Abbrechen", css="btn btn-secondary")
     def cancel(form, *args):

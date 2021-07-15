@@ -48,12 +48,11 @@ class AddForm(BaseForm):
         """Created the object in the DB"""
 
     @trigger("Speichern", css="btn btn-primary")
-    def speichern(self, request, data):
+    def speichern(self, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
         obj = self.create(form.data)
-        request.app.notify(events.ObjectCreatedEvent(self.request, obj))
         return horseman.response.Response.redirect(self.destination)
 
 
@@ -85,16 +84,14 @@ class EditForm(BaseForm):
         pass
 
     @trigger("Speichern", css="btn btn-primary")
-    def speichern(self, request, data):
+    def speichern(self, data):
         form = self.setupForm(formdata=data.form)
         if not form.validate():
             return {"form": form}
         obj = self.apply(form.data)
-        request.app.notify(events.ObjectModifiedEvent(self.request, obj))
         return horseman.response.Response.redirect(self.destination)
 
     @trigger("Delete", css="btn btn-danger")
-    def delete(self, request, data):
-        self.remove(self.context.id)
-        request.app.notify(events.ObjectRemovedEvent(self.request, obj))
+    def delete(self, data):
+        self.remove(self.context)
         return horseman.response.Response.redirect(self.destination)

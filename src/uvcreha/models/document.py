@@ -49,16 +49,17 @@ store.add(
 )
 
 
-@registry.factory("document", schema=store.get("Document"), collection="documents")
+@registry.factory(
+    "document", schema=store.get("Document"), collection="documents")
 class Document(Content):
+
     @property
     def id(self):
         return self["docid"]
 
     @property
     def date(self):
-        return "01.01.2021"
-        return self["creation_date"]
+        return self.get("creation_date")
 
     @property
     def title(self):

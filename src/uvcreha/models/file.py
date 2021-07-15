@@ -1,3 +1,4 @@
+from uvcreha import events
 from uvcreha.workflow import file_workflow
 from uvcreha.jsonschema import store
 from uvcreha.contenttypes import registry, Content
@@ -46,13 +47,14 @@ store.add("File", file_schema)
 
 @registry.factory("file", schema=store.get("File"), collection="files")
 class File(Content):
+
     @property
     def id(self):
         return self["az"]
 
     @property
     def date(self):
-        return self["creation_date"]
+        return self.get("creation_date")
 
     @property
     def title(self):

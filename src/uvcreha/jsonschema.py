@@ -138,7 +138,6 @@ class JSONSchemaStore:
         ))
 
     def add(self, name: str, schema: dict):
-        print(name)
         if name in self.schemas:
             raise KeyError(f"Schema {name} already exists.")
         self.schemas[name] = schema

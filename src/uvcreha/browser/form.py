@@ -1,11 +1,12 @@
 import wtforms
-import reiter.form
 from abc import ABC, abstractmethod
 from horseman.http import HTTPError
-from wtforms import widgets, SelectMultipleField
-from wtforms_components import read_only
-from wtforms.fields.simple import MultipleFileField
 from jsonschema_wtforms import Form as JSONForm
+from wtforms import widgets, SelectMultipleField
+from wtforms.fields.simple import MultipleFileField
+from wtforms_components import read_only
+
+import reiter.form
 from uvcreha import jsonschema
 from uvcreha.browser.layout import TEMPLATES
 from uvcreha.browser.resources import f_input_group
@@ -47,7 +48,8 @@ class Form(JSONForm):
     def readonly(self, names):
         if names is ...:
             self._fields = {
-                name: read_only(field) for name, field in self._fields.items()
+                name: read_only(field)
+                for name, field in self._fields.items()
             }
         else:
             for key in names:
