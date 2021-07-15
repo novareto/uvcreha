@@ -29,6 +29,7 @@ install_requires = [
 
 
 test_requires = [
+    'docker',
     'WebTest',
     'frozendict',
     'horsebox',
@@ -37,6 +38,7 @@ test_requires = [
     'pytest-cov',
     'reiter.amqp',
     'reiter.arango[test]',
+    'roughrider.selenium'
 ]
 
 
