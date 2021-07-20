@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 version = "0.1"
 
 install_requires = [
+    'apispec',
     'cromlech.session',
     'cromlech.sessions.file',
     'fanstatic',
