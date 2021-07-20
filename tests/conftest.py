@@ -1,7 +1,7 @@
-
 import pytest
 from frozendict import frozendict
 from io import BytesIO
+
 
 
 @pytest.fixture(scope="session")
