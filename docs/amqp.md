@@ -3,32 +3,51 @@
 In uvcreha können wir einfach AMQP Nachrichten senden und empfangen.
 
 
+# Config entry
+
+```yaml
+amqp: !new:reiter.amqp.mq.AMQPCenter
+  - queue_name: !new:kombu.Queue
+      name: queue_identifier
+      routing_key: my_routing_key
+      exchange: !new:kombu.Exchange
+        name: my_topical_name
+        type: topic
+  - !name:python.path.to.MyCustomConsumer
+```
+
+if we have several queues, we can declare the exchange globally
+
+```yaml
+mq_exhange: !new:kombu.Exchange
+  name: my_topical_name
+  type: topic
+
+amqp: !new:reiter.amqp.mq.AMQPCenter
+  - queue_name: !new:kombu.Queue
+      name: queueid
+      routing_key: my_routing_key
+      exchange: !ref <mq_exhange>
+    other_queue: !new:kombu.Queue
+      name: queue2id
+      routing_key: some_other_key
+      exchange: !ref <mq_exhange>
+  - !name:python.path.to.MyCustomConsumer
+  - !name:python.path.to.MyOtherCustomConsumer
+```
+
+
 # Empfangen
 
 ```python
-from reiter.amqp.mq import AMQP
 from reiter.amqp.meta import CustomConsumer
-from reiter.startup.utils import make_logger
 
 
-@AMQP.consumer
-class TestConsumer(CustomConsumer):
+class MyConsumer(CustomConsumer):
 
-    queues = ['add', 'update']
-    accept = ['pickle', 'json']
+    queues = ['queue_name']
+    accept = ['json']
 
-    def __call__(self, body, message):
-        logging = make_logger('Consumer')
-        logging.info("Got task body: %s", body)
-        logging.debug("Got task Message: %s", message)
-        message.ack()
-```
-
-# Senden
-
-```python
-
-amqp = self.request.app.utilities['amqp']
-amqp.send({'test': 'YEAH'}, key='object.add')
-
+    def __call__(self, body: dict, message):
+        pass
 ```
